@@ -50,6 +50,11 @@ public partial class StateMachine : Node
         currentState = data.ContainsKey("currentState") ? data["currentState"].AsString() : "";
     }
 
+    public string CurrentState()
+    {
+        return currentState;
+    }
+
     [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
     private void localSwitchState(string stateName)
     {
