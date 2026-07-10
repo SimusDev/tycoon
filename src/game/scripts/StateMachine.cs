@@ -65,6 +65,10 @@ public partial class StateMachine : Node
 
     public void SwitchState(string stateName)
     {
+        if (CurrentState() == stateName)
+            return;
+        
+
         Rpc("localSwitchState", stateName);
     }
 
