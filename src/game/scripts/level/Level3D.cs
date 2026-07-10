@@ -19,6 +19,23 @@ public partial class Level3D : Node3D
         }
     }
 
+#nullable enable
+    public static Node? FindAbove(Node? node)
+    {
+        if (!IsInstanceValid(node))
+        {
+            return null;
+        }
+
+        if (node is Level3D)
+        {
+            return node;
+        }
+
+        return FindAbove(node.GetParent());
+    }
+#nullable disable
+
     public override void _ExitTree()
     {
         if (!Multiplayer.IsServer())
@@ -45,5 +62,7 @@ public partial class Level3D : Node3D
     {
         ConnectedPeers.Remove(id);
     }
+
+
 
 }
