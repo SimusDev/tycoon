@@ -12,10 +12,6 @@ public partial class StateMachine : Node
 
     private string currentState = "";
 
-    StateMachine(string initState)
-    {
-        currentState = initState;
-    }
 
     public override void _Ready()
     {
