@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ddbu03jcwhfia"]
 
 [ext_resource type="Texture2D" uid="uid://cive6gr2g1pah" path="res://icon.svg" id="1_3t7mg"]
+[ext_resource type="Script" uid="uid://dnm325f2wvmcu" path="res://src/game/scripts/level/Level3D.cs" id="2_x5be6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_td0jm"]
 albedo_texture = ExtResource("1_3t7mg")
@@ -11,3 +12,7 @@ uv1_triplanar = true
 [node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=324904736]
 size = Vector3(100, 1, 100)
 material = SubResource("StandardMaterial3D_td0jm")
+
+[node name="Level3D" type="Node3D" parent="." unique_id=338152441]
+script = ExtResource("2_x5be6")
+metadata/_custom_type_script = "uid://dnm325f2wvmcu"
