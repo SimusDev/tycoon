@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://cive6gr2g1pah" path="res://icon.svg" id="1_3t7mg"]
 [ext_resource type="Script" uid="uid://cw25rb8q2jrio" path="res://src/game/scripts/CustomMultiplayerSpawner.cs" id="2_x5be6"]
 [ext_resource type="PackedScene" uid="uid://ogoa6gjeikh" path="res://src/game/player/player.tscn" id="3_wo64a"]
+[ext_resource type="Script" uid="uid://dnm325f2wvmcu" path="res://src/game/scripts/level/Level3D.cs" id="2_x5be6"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_td0jm"]
 albedo_texture = ExtResource("1_3t7mg")
@@ -39,3 +40,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -4)
 
 [node name="Marker3D5" type="Marker3D" parent="SpawnPoints" unique_id=1620982630]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 3)
+
+[node name="Level3D" type="Node3D" parent="." unique_id=338152441]
+script = ExtResource("2_x5be6")
+metadata/_custom_type_script = "uid://dnm325f2wvmcu"

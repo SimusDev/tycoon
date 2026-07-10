@@ -28,6 +28,11 @@ public partial class GameNetwork : Node
     [Signal] public delegate void OnNetworkConnectingEventHandler();
     [Signal] public delegate void OnNetworkDisconnectedEventHandler();
 
+    public enum Channel: int
+    {
+        Connection,
+    }
+
     public enum PacketType: byte
     {
         CommunicatorMessage,
