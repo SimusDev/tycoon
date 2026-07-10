@@ -1,0 +1,13 @@
+[gd_scene format=3 uid="uid://ddbu03jcwhfia"]
+
+[ext_resource type="Texture2D" uid="uid://cive6gr2g1pah" path="res://icon.svg" id="1_3t7mg"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_td0jm"]
+albedo_texture = ExtResource("1_3t7mg")
+uv1_triplanar = true
+
+[node name="World" type="Node3D" unique_id=337665220]
+
+[node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=324904736]
+size = Vector3(100, 1, 100)
+material = SubResource("StandardMaterial3D_td0jm")
