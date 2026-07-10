@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 
 [GlobalClass, Icon("")]
-public partial class GDNetBuffer : RefCounted
+public partial class NetBuffer : RefCounted
 {
     #region Enums
 
@@ -73,7 +73,7 @@ public partial class GDNetBuffer : RefCounted
 
     #region Constructor
 
-    public GDNetBuffer()
+    public NetBuffer()
     {
         _writeMethods = new Dictionary<Variant.Type, Action<Variant>>
         {
@@ -137,7 +137,7 @@ public partial class GDNetBuffer : RefCounted
         return result;
     }
 
-    public GDNetBuffer Write(Variant value)
+    public NetBuffer Write(Variant value)
     {
         if (_writeMethods.TryGetValue(value.VariantType, out Action<Variant> method))
         {
@@ -165,7 +165,7 @@ public partial class GDNetBuffer : RefCounted
         return default;
     }
 
-    public GDNetBuffer WriteVar(Variant variant)
+    public NetBuffer WriteVar(Variant variant)
     {
         WriteType(DataType.Var);
         _stream.PutVar(variant);
@@ -179,7 +179,7 @@ public partial class GDNetBuffer : RefCounted
         return _stream.GetVar();
     }
 
-    public GDNetBuffer SetBytes(byte[] data)
+    public NetBuffer SetBytes(byte[] data)
     {
         _stream.DataArray = data;
         return this;
@@ -190,13 +190,13 @@ public partial class GDNetBuffer : RefCounted
     public int Position => _stream.GetPosition();
     public int Size => _stream.GetSize();
 
-    public GDNetBuffer Seek(int position)
+    public NetBuffer Seek(int position)
     {
         _stream.Seek(position);
         return this;
     }
 
-    public GDNetBuffer Clear()
+    public NetBuffer Clear()
     {
         _stream.Clear();
         Seek(0);
@@ -210,7 +210,7 @@ public partial class GDNetBuffer : RefCounted
     private void WriteType(DataType type) => _stream.PutU8((byte)type);
     private DataType ReadType() => (DataType)_stream.GetU8();
 
-    public GDNetBuffer WriteNull()
+    public NetBuffer WriteNull()
     {
         WriteType(DataType.Null);
         return this;
@@ -222,7 +222,7 @@ public partial class GDNetBuffer : RefCounted
         return default;
     }
 
-    public GDNetBuffer WriteBool(bool value)
+    public NetBuffer WriteBool(bool value)
     {
         WriteType(value ? DataType.BoolTrue : DataType.BoolFalse);
         return this;
@@ -230,7 +230,7 @@ public partial class GDNetBuffer : RefCounted
 
     public bool ReadBool() => ReadType() == DataType.BoolTrue;
 
-    public GDNetBuffer WriteInt8(sbyte value)
+    public NetBuffer WriteInt8(sbyte value)
     {
         WriteType(DataType.Int8);
         _stream.Put8(value);
@@ -243,7 +243,7 @@ public partial class GDNetBuffer : RefCounted
         return _stream.Get8();
     }
 
-    public GDNetBuffer WriteInt16(short value)
+    public NetBuffer WriteInt16(short value)
     {
         WriteType(DataType.Int16);
         _stream.Put16(value);
@@ -256,7 +256,7 @@ public partial class GDNetBuffer : RefCounted
         return _stream.Get16();
     }
 
-    public GDNetBuffer WriteInt32(int value)
+    public NetBuffer WriteInt32(int value)
     {
         WriteType(DataType.Int32);
         _stream.Put32(value);
@@ -269,7 +269,7 @@ public partial class GDNetBuffer : RefCounted
         return _stream.Get32();
     }
 
-    public GDNetBuffer WriteInt64(long value)
+    public NetBuffer WriteInt64(long value)
     {
         WriteType(DataType.Int64);
         _stream.Put64(value);
@@ -282,7 +282,7 @@ public partial class GDNetBuffer : RefCounted
         return _stream.Get64();
     }
 
-    public GDNetBuffer WriteInt(long value)
+    public NetBuffer WriteInt(long value)
     {
         if (value is >= -128 and <= 127)
             WriteInt8((sbyte)value);
@@ -306,7 +306,7 @@ public partial class GDNetBuffer : RefCounted
             : 0;
     }
 
-    public GDNetBuffer WriteUInt64(ulong value)
+    public NetBuffer WriteUInt64(ulong value)
     {
         WriteType(DataType.UInt64);
         _stream.PutU64(value);
@@ -319,7 +319,7 @@ public partial class GDNetBuffer : RefCounted
         return _stream.GetU64();
     }
 
-    public GDNetBuffer WriteBytes(byte[] value)
+    public NetBuffer WriteBytes(byte[] value)
     {
         int length = value.Length;
 
@@ -362,7 +362,7 @@ public partial class GDNetBuffer : RefCounted
         };
     }
 
-    public GDNetBuffer WriteString(string value)
+    public NetBuffer WriteString(string value)
     {
         WriteType(DataType.String);
         WriteBytes(Encoding.UTF8.GetBytes(value));
@@ -375,7 +375,7 @@ public partial class GDNetBuffer : RefCounted
         return Encoding.UTF8.GetString(ReadBytes());
     }
 
-    public GDNetBuffer WriteVector3(Vector3 value)
+    public NetBuffer WriteVector3(Vector3 value)
     {
         WriteType(DataType.Vector3);
         _stream.PutFloat(value.X);
@@ -390,7 +390,7 @@ public partial class GDNetBuffer : RefCounted
         return new Vector3(_stream.GetFloat(), _stream.GetFloat(), _stream.GetFloat());
     }
 
-    public GDNetBuffer WriteVector2(Vector2 value)
+    public NetBuffer WriteVector2(Vector2 value)
     {
         WriteType(DataType.Vector2);
         _stream.PutFloat(value.X);
@@ -404,7 +404,7 @@ public partial class GDNetBuffer : RefCounted
         return new Vector2(_stream.GetFloat(), _stream.GetFloat());
     }
 
-    public GDNetBuffer WriteFloat(float value)
+    public NetBuffer WriteFloat(float value)
     {
         if (float.IsFinite(value))
         {
@@ -432,7 +432,7 @@ public partial class GDNetBuffer : RefCounted
         };
     }
 
-    public GDNetBuffer WriteArraySimple(Godot.Collections.Array array)
+    public NetBuffer WriteArraySimple(Godot.Collections.Array array)
     {
         WriteType(DataType.ArraySimple);
         _stream.PutVar(array);
@@ -445,11 +445,11 @@ public partial class GDNetBuffer : RefCounted
         return _stream.GetVar().As<Godot.Collections.Array>();
     }
 
-    public GDNetBuffer WriteArrayComplex(Godot.Collections.Array array)
+    public NetBuffer WriteArrayComplex(Godot.Collections.Array array)
     {
         WriteType(DataType.ArrayComplex);
 
-        var buffer = new GDNetBuffer();
+        var buffer = new NetBuffer();
         buffer.WriteInt(array.Count);
         WriteArrayComplexInternal(buffer, array);
 
@@ -457,7 +457,7 @@ public partial class GDNetBuffer : RefCounted
         return this;
     }
 
-    private void WriteArrayComplexInternal(GDNetBuffer buffer, Godot.Collections.Array array)
+    private void WriteArrayComplexInternal(NetBuffer buffer, Godot.Collections.Array array)
     {
         foreach (Variant value in array)
         {
@@ -485,7 +485,7 @@ public partial class GDNetBuffer : RefCounted
     {
         Assert(ReadType() == DataType.ArrayComplex, $"Expected ArrayComplex, got {ReadType()}");
 
-        var buffer = new GDNetBuffer();
+        var buffer = new NetBuffer();
         buffer.SetBytes(ReadBytes());
 
         int count = (int)buffer.ReadInt();
@@ -499,7 +499,7 @@ public partial class GDNetBuffer : RefCounted
         return result;
     }
 
-    private Variant ReadArrayElement(GDNetBuffer buffer)
+    private Variant ReadArrayElement(NetBuffer buffer)
     {
         Variant value = buffer.Read();
 
@@ -528,7 +528,7 @@ public partial class GDNetBuffer : RefCounted
         return value;
     }
 
-    public GDNetBuffer WriteObjectAuto(GodotObject obj)
+    public NetBuffer WriteObjectAuto(GodotObject obj)
     {
         if (!IsInstanceValid(obj))
         {
@@ -550,7 +550,7 @@ public partial class GDNetBuffer : RefCounted
         };
     }
 
-    public GDNetBuffer WriteNodeReference(Node node)
+    public NetBuffer WriteNodeReference(Node node)
     {
         WriteType(DataType.NodeReference);
         WriteString(node.GetPath().ToString());
@@ -563,7 +563,7 @@ public partial class GDNetBuffer : RefCounted
         return GameNetwork.Instance.GetNode(ReadString());
     }
 
-    public GDNetBuffer WriteResource(Resource resource)
+    public NetBuffer WriteResource(Resource resource)
     {
         long hashId = -1;
 
@@ -596,7 +596,7 @@ public partial class GDNetBuffer : RefCounted
         };
     }
 
-    public GDNetBuffer WriteFullObject(GodotObject obj)
+    public NetBuffer WriteFullObject(GodotObject obj)
     {
         WriteType(DataType.FullObject);
 
@@ -651,7 +651,7 @@ public partial class GDNetBuffer : RefCounted
         return obj;
     }
 
-    public GDNetBuffer WriteCustomObject(GodotObject obj)
+    public NetBuffer WriteCustomObject(GodotObject obj)
     {
         WriteType(DataType.Custom);
         WriteResource((Resource)obj.GetScript());
@@ -677,31 +677,31 @@ public partial class GDNetBuffer : RefCounted
 
     #region Blocking Methods
 
-    public GDNetBuffer BlockWriteMethod(string methodName)
+    public NetBuffer BlockWriteMethod(string methodName)
     {
         _blockedWriteMethods.Add(methodName.ToSnakeCase());
         return this;
     }
 
-    public GDNetBuffer UnblockWriteMethod(string methodName)
+    public NetBuffer UnblockWriteMethod(string methodName)
     {
         _blockedWriteMethods.Remove(methodName.ToSnakeCase());
         return this;
     }
 
-    public GDNetBuffer BlockReadMethod(string methodName)
+    public NetBuffer BlockReadMethod(string methodName)
     {
         _blockedReadMethods.Add(methodName.ToSnakeCase());
         return this;
     }
 
-    public GDNetBuffer UnblockReadMethod(string methodName)
+    public NetBuffer UnblockReadMethod(string methodName)
     {
         _blockedReadMethods.Remove(methodName.ToSnakeCase());
         return this;
     }
 
-    public GDNetBuffer BlockWriteMethods()
+    public NetBuffer BlockWriteMethods()
     {
         foreach (var pair in _writeMethods)
         {
@@ -710,7 +710,7 @@ public partial class GDNetBuffer : RefCounted
         return this;
     }
 
-    public GDNetBuffer UnblockWriteMethods()
+    public NetBuffer UnblockWriteMethods()
     {
         foreach (var pair in _writeMethods)
         {
@@ -719,7 +719,7 @@ public partial class GDNetBuffer : RefCounted
         return this;
     }
 
-    public GDNetBuffer BlockReadMethods()
+    public NetBuffer BlockReadMethods()
     {
         foreach (var pair in _readMethods)
         {
@@ -728,7 +728,7 @@ public partial class GDNetBuffer : RefCounted
         return this;
     }
 
-    public GDNetBuffer UnblockReadMethods()
+    public NetBuffer UnblockReadMethods()
     {
         foreach (var pair in _readMethods)
         {
@@ -737,20 +737,20 @@ public partial class GDNetBuffer : RefCounted
         return this;
     }
 
-    public GDNetBuffer ClearBlockers()
+    public NetBuffer ClearBlockers()
     {
         _blockedWriteMethods.Clear();
         _blockedReadMethods.Clear();
         return this;
     }
 
-    public GDNetBuffer ClearReadBlockers()
+    public NetBuffer ClearReadBlockers()
     {
         _blockedReadMethods.Clear();
         return this;
     }
 
-    public GDNetBuffer ClearWriteBlockers()
+    public NetBuffer ClearWriteBlockers()
     {
         _blockedWriteMethods.Clear();
         return this;

@@ -82,7 +82,7 @@ public partial class GDNetOptimizedSend : Node
 
 	private List<byte[]> TryUnbatchRawPackets(byte[] bytes)
 	{
-		GDNetBuffer buffer = new();
+		NetBuffer buffer = new();
 		buffer.SetBytes(bytes);
 		List<byte[]> result = new();
 		while(buffer.AvailableBytes > 0)
@@ -303,7 +303,7 @@ public partial class GDNetOptimizedSend : Node
 		public long TargetPeer;
 		public MultiplayerPeer.TransferModeEnum Mode;
 		public int Channel;
-		public GDNetBuffer Buffer;
+		public NetBuffer Buffer;
 	}
 
 	public void MultiplayerSendBytes(byte[] data, int id, MultiplayerPeer.TransferModeEnum mode, int channel)
