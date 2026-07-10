@@ -40,10 +40,12 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
 
     private void onPlayerInstanceTreeEntered(long id)
     {
+        
         Rpc("initSpawnedPlayer", id);
     }
 
 
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
     private async Task<Error> initSpawnedPlayer(long id)
     {
         await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);

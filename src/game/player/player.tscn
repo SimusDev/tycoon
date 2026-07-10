@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://ogoa6gjeikh"]
+
+[ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_sx3cy"]
+
+[node name="Player" type="CharacterBody3D" unique_id=1518439692]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=657878852]
+mesh = SubResource("CapsuleMesh_sx3cy")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=541539990]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
+
+[node name="StateMachine" type="Node" parent="." unique_id=125389502]
+script = ExtResource("1_sp1u7")
+onReadyState = "Idle"
+metadata/_custom_type_script = "uid://uwx7o3qw48xq"
