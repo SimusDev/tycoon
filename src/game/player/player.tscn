@@ -22,8 +22,10 @@ metadata/_custom_type_script = "uid://c46eu7wy7s7ck"
 
 [node name="StateMachine" type="Node" parent="." unique_id=1463452377]
 script = ExtResource("1_sp1u7")
+onReadyState = "Idle"
 metadata/_custom_type_script = "uid://uwx7o3qw48xq"
 
-[node name="CharacterMovement" type="Node" parent="." unique_id=138591935]
+[node name="CharacterMovement" type="Node" parent="." unique_id=138591935 node_paths=PackedStringArray("StateMachine")]
 script = ExtResource("1_3sks1")
+StateMachine = NodePath("../StateMachine")
 metadata/_custom_type_script = "uid://cergfw7flr4fn"
