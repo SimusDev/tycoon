@@ -45,12 +45,21 @@ public partial class GameNetwork : Node
 
     private void OptimizedPeerPacket(long id, byte[] bytes)
     {
+        _readerStream.Position = 0;
+        _readerStream.SetLength(0);
+        _readerStream.Write(bytes, 0, bytes.Length);
 
+        var packetType = (PacketType)_reader.ReadByte();
+        EmitSignal(SignalName.PacketReceived, (byte)packetType, id, _reader.ReadBytes((int)_readerStream.Length - 1));
     }
 
     public void SendPacket(PacketType type, int peer, byte[] data, MultiplayerPeer.TransferModeEnum mode, int channel)
     {
-        _optimizedSend.MultiplayerSendBytes(data, peer, mode, channel);
+        _writerStream.Position = 0;
+        _writerStream.SetLength(0);
+        _writer.Write((byte)type);
+        _writer.Write(data);
+        _optimizedSend.MultiplayerSendBytes(_writerStream.ToArray(), peer, mode, channel);
     }
 
 
