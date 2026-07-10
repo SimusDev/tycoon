@@ -2,6 +2,7 @@ using Godot;
 using System;
 
 [Tool]
+[GlobalClass]
 public partial class CharacterMovement : Node
 {
     [Export] public StateMachine StateMachine { get; set; }
