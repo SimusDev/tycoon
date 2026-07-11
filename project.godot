@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Tycoon"
-run/main_scene="uid://ddbu03jcwhfia"
+run/main_scene="uid://buxy54iln71fk"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/icon="res://icon.svg"
 
@@ -21,12 +21,18 @@ GameNetwork="*uid://dtncqi53jcbr4"
 
 [display]
 
+window/size/viewport_width=1280
+window/size/viewport_height=720
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
 [dotnet]
 
 project/assembly_name="Tycoon"
+
+[gui]
+
+theme/custom_font="uid://dpm3h0yu22rbc"
 
 [input]
 
@@ -58,6 +64,11 @@ crouch={
 sprint={
 "deadzone": 0.2,
 "events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":4194325,"key_label":0,"unicode":0,"location":0,"echo":false,"script":null)
+]
+}
+jump={
+"deadzone": 0.2,
+"events": [Object(InputEventKey,"resource_local_to_scene":false,"resource_name":"","device":-1,"window_id":0,"alt_pressed":false,"shift_pressed":false,"ctrl_pressed":false,"meta_pressed":false,"pressed":false,"keycode":0,"physical_keycode":32,"key_label":0,"unicode":32,"location":0,"echo":false,"script":null)
 ]
 }
 

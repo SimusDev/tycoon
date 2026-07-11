@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Text.RegularExpressions;
 
 [GlobalClass]
 public partial class CharacterMovement : Node
@@ -9,9 +10,11 @@ public partial class CharacterMovement : Node
     [ExportGroup("Settings")]
     [Export] public float JumpForce { get; set; } = 15.0f;
     [Export] public float SpeedMultiplier { get; set; } = 1.0f;
-    [Export] public float Speed { get; set; } = 1.0f;
-    [Export] public float Acceleration { get; set; } = 1.0f;
-    [Export] public float Friction { get; set; } = 1.0f;
+    [Export] public float CrouchedSpeed { get; set; } = 2.5f;
+    [Export] public float WalkSpeed { get; set; } = 4.5f;
+    [Export] public float SprintSpeed { get; set; } = 9.0f;
+    [Export] public float Acceleration { get; set; } = 25.0f;
+    [Export] public float Friction { get; set; } = 25.0f;
 
     [ExportSubgroup("Keys", "key_")]
     [Export] public StringName KeyForward { get; set; } = "move_forward";
@@ -22,9 +25,7 @@ public partial class CharacterMovement : Node
     [Export] public StringName KeySprint { get; set; } = "sprint";
 
     [ExportGroup("Custom", "custom_")]
-    private CharacterBody3D _customCharacter;
-    [Export]
-    public CharacterBody3D CustomCharacter
+    [Export] public CharacterBody3D CustomCharacter
     {
         get => _customCharacter;
         set
@@ -34,6 +35,7 @@ public partial class CharacterMovement : Node
         }
     }
 
+    private CharacterBody3D _customCharacter;
     private CharacterBody3D _character;
     private bool _inputEnabled = true;
 
@@ -115,9 +117,27 @@ public partial class CharacterMovement : Node
             direction = Vector3.Zero;
         }
 
+        float speed;
+        switch (currentState)
+        {
+            case "CrouchedWalking":
+                speed = CrouchedSpeed;
+                break;
+            case "Walking":
+                speed = WalkSpeed;
+                break;
+            case "Running":
+                speed = SprintSpeed;
+                break;
+            default:
+                speed = 0.0f;
+                break;
+
+        }
+
         if (_character.IsOnFloor())
         {
-            Vector3 targetVel = direction * Speed * SpeedMultiplier;
+            Vector3 targetVel = direction * speed * SpeedMultiplier;
             float weight = direction.Length() > 0 ? Acceleration : Friction;
 
             _character.Velocity = new Vector3(
@@ -134,7 +154,7 @@ public partial class CharacterMovement : Node
                 Vector3 accelForce = direction * airAccel * deltaF;
 
                 Vector2 horizontalVel = new Vector2(_character.Velocity.X, _character.Velocity.Z);
-                if (horizontalVel.Dot(new Vector2(direction.X, direction.Z)) < Speed)
+                if (horizontalVel.Dot(new Vector2(direction.X, direction.Z)) < speed)
                 {
                     _character.Velocity = new Vector3(
                         _character.Velocity.X + accelForce.X,

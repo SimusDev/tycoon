@@ -5,13 +5,36 @@
 [ext_resource type="PackedScene" uid="uid://ogoa6gjeikh" path="res://src/game/player/player.tscn" id="3_5xa05"]
 [ext_resource type="Script" uid="uid://dnm325f2wvmcu" path="res://src/game/scripts/level/Level3D.cs" id="3_wo64a"]
 
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hk5hr"]
+sky_top_color = Color(0.35389316, 0.4476372, 0.6316345, 1)
+sky_horizon_color = Color(0.58306235, 0.6773255, 0.674083, 1)
+ground_bottom_color = Color(0.35389316, 0.4476372, 0.6316345, 1)
+ground_horizon_color = Color(0.58306235, 0.6773255, 0.674083, 1)
+
+[sub_resource type="Sky" id="Sky_fnvcv"]
+sky_material = SubResource("ProceduralSkyMaterial_hk5hr")
+
+[sub_resource type="Environment" id="Environment_sx3cy"]
+background_mode = 2
+sky = SubResource("Sky_fnvcv")
+
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_td0jm"]
 albedo_texture = ExtResource("1_3t7mg")
 uv1_triplanar = true
 
 [node name="World" type="Node3D" unique_id=337665220]
 
+[node name="Env" type="Node3D" parent="." unique_id=756303682]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Env" unique_id=975704983]
+environment = SubResource("Environment_sx3cy")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Env" unique_id=1731723846]
+transform = Transform3D(0.33271265, 0.9430283, 0, -0.8857334, 0.3124983, 0.3432508, 0.3236952, -0.114203885, 0.9392438, 0, 0, 0)
+shadow_enabled = true
+
 [node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=324904736]
+use_collision = true
 size = Vector3(100, 1, 100)
 material = SubResource("StandardMaterial3D_td0jm")
 

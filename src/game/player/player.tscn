@@ -3,13 +3,13 @@
 [ext_resource type="Script" uid="uid://cergfw7flr4fn" path="res://src/game/scripts/character/CharacterMovement.cs" id="1_3sks1"]
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
+[ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
 
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_sx3cy"]
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_lb1x8"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0r077"]
 
 [node name="Player" type="CharacterBody3D" unique_id=1518439692]
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=657878852]
-mesh = SubResource("CapsuleMesh_sx3cy")
 
 [node name="PlayerHead" type="Node3D" parent="." unique_id=1122001657 node_paths=PackedStringArray("Player", "HeadCamera")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.8, 0)
@@ -29,3 +29,16 @@ metadata/_custom_type_script = "uid://uwx7o3qw48xq"
 script = ExtResource("1_3sks1")
 StateMachine = NodePath("../StateMachine")
 metadata/_custom_type_script = "uid://cergfw7flr4fn"
+
+[node name="Visuals" type="Node3D" parent="." unique_id=1317231076]
+
+[node name="NetNodeFreeNodesIfServer" type="Node" parent="Visuals" unique_id=1254843018 node_paths=PackedStringArray("Targets")]
+script = ExtResource("4_aymqg")
+Targets = [NodePath("")]
+metadata/_custom_type_script = "uid://bly8grub8jce5"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Visuals" unique_id=1729939236]
+mesh = SubResource("CapsuleMesh_lb1x8")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1171993644]
+shape = SubResource("CapsuleShape3D_0r077")

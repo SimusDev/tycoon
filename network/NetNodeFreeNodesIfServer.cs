@@ -16,6 +16,7 @@ public partial class NetNodeFreeNodesIfServer : NetNode
         {
             foreach (var node in Targets)
             {
+                if (!IsInstanceValid(node)) { continue; }
                 node.QueueFree();
             }
         }

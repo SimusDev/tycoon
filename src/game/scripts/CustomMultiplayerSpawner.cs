@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Godot;
 
+
 [GlobalClass]
 public partial class CustomMultiplayerSpawner : MultiplayerSpawner
 {
@@ -14,12 +15,30 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
         if (Multiplayer.IsServer())
         {
             Multiplayer.PeerConnected += onPeerConnected;
+            spawnPlayer(1);
         }
+
+        Multiplayer.PeerDisconnected += onPeerDisconnected;
     }
 
     private void onPeerConnected(long id)
     {
+        GD.Print(System.String.Format("peer connected: {0}", id));
         spawnPlayer(id);
+    }
+
+    private void onPeerDisconnected(long id)
+    {
+        try
+        {
+            Node spawnNode = GetNode(SpawnPath);
+            Node player = spawnNode.GetNode(id.ToString());
+            player.QueueFree();
+        }
+        catch
+        {
+            GD.Print(System.String.Format("failed to free player: {0}", id));
+        }
     }
 
     private void spawnPlayer(long id)
@@ -29,24 +48,30 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
             Node spawnNode = GetNodeOrNull(SpawnPath);
             Node playerInstance = PlayerPrefab.Instantiate();
             playerInstance.Name = id.ToString();
-            
-
+            playerInstance.TreeEntered += () => onPlayerInstanceTreeEntered(id);
+            spawnNode.CallDeferred(MethodName.AddChild, playerInstance);
         }
         catch
         {
-            // sas
+            GD.Print(System.String.Format("failed to spawn player: {0}", id));
         }
     }
 
     private void onPlayerInstanceTreeEntered(long id)
     {
         
-        Rpc("initSpawnedPlayer", id);
+        Rpc(MethodName.initSpawnedPlayer, id);
     }
 
 
     [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
-    private async Task<Error> initSpawnedPlayer(long id)
+    private void initSpawnedPlayer(long id)
+    {
+        initSpawnedPlayerAsync(id);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
+    private async Task<Error> initSpawnedPlayerAsync(long id)
     {
         await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
 
