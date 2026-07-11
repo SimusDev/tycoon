@@ -1,3 +1,4 @@
+using Godot.Collections;
 using Godot;
 
 [GlobalClass]
@@ -10,7 +11,7 @@ public partial class PlayerData : Resource
         get => _nickname;
         set { if (_nickname != value) { _nickname = value; Save(); } }
     }
-    [Export] Godot.Collections.Dictionary<string, Variant> data;
+    [Export] public Godot.Collections.Dictionary<string, Variant> data;
 
     public static PlayerData GetOrCreate()
     {
@@ -25,11 +26,29 @@ public partial class PlayerData : Resource
         return data;
     }
 
-    
-
     public void Save()
     {
         ResourceSaver.Save(this, SAVEPATH);
     }
 
+    public byte[] NetworkSerialize()
+    {
+        Dictionary buffer = [];
+        buffer["nickname"] = nickname;
+        buffer["data"] = data;
+
+        return GD.VarToBytes(buffer);
+    }
+
+    public static PlayerData NetworkDeserialize(byte[] bytes)
+    {
+        Dictionary buffer = (Dictionary)GD.BytesToVar(bytes);
+        PlayerData playerData = new()
+        {
+            nickname = (string)buffer["nickname"],
+            data = (Dictionary<string, Variant>)buffer["data"]
+        };
+
+        return playerData;
+    }
 }
