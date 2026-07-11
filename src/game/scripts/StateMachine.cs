@@ -19,7 +19,7 @@ public partial class StateMachine : Node
         
         if (!Multiplayer.IsServer())
         {
-            Rpc(MethodName.requestReceive);
+            requestReceive();
         }
     }
 

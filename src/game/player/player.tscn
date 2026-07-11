@@ -9,6 +9,20 @@
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0r077"]
 
+[sub_resource type="SceneReplicationConfig" id="SceneReplicationConfig_aymqg"]
+properties/0/path = NodePath(".:velocity")
+properties/0/spawn = true
+properties/0/replication_mode = 2
+properties/1/path = NodePath(".:position")
+properties/1/spawn = true
+properties/1/replication_mode = 2
+properties/2/path = NodePath(".:rotation")
+properties/2/spawn = true
+properties/2/replication_mode = 2
+properties/3/path = NodePath(".:scale")
+properties/3/spawn = true
+properties/3/replication_mode = 2
+
 [node name="Player" type="CharacterBody3D" unique_id=1518439692]
 
 [node name="PlayerHead" type="Node3D" parent="." unique_id=1122001657 node_paths=PackedStringArray("Player", "HeadCamera")]
@@ -28,13 +42,14 @@ metadata/_custom_type_script = "uid://uwx7o3qw48xq"
 [node name="CharacterMovement" type="Node" parent="." unique_id=138591935 node_paths=PackedStringArray("StateMachine")]
 script = ExtResource("1_3sks1")
 StateMachine = NodePath("../StateMachine")
+JumpForce = 7.0
 metadata/_custom_type_script = "uid://cergfw7flr4fn"
 
 [node name="Visuals" type="Node3D" parent="." unique_id=1317231076]
 
 [node name="NetNodeFreeNodesIfServer" type="Node" parent="Visuals" unique_id=1254843018 node_paths=PackedStringArray("Targets")]
 script = ExtResource("4_aymqg")
-Targets = [NodePath("")]
+Targets = [null]
 metadata/_custom_type_script = "uid://bly8grub8jce5"
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Visuals" unique_id=1729939236]
@@ -42,3 +57,6 @@ mesh = SubResource("CapsuleMesh_lb1x8")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1171993644]
 shape = SubResource("CapsuleShape3D_0r077")
+
+[node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1397088945]
+replication_config = SubResource("SceneReplicationConfig_aymqg")

@@ -8,7 +8,7 @@ public partial class CharacterMovement : Node
     [Export] public StateMachine StateMachine { get; set; }
 
     [ExportGroup("Settings")]
-    [Export] public float JumpForce { get; set; } = 15.0f;
+    [Export] public float JumpForce { get; set; } = 7.0f;
     [Export] public float SpeedMultiplier { get; set; } = 1.0f;
     [Export] public float CrouchedSpeed { get; set; } = 2.5f;
     [Export] public float WalkSpeed { get; set; } = 4.5f;
@@ -34,6 +34,8 @@ public partial class CharacterMovement : Node
             BindCharacter();
         }
     }
+
+    
 
     private CharacterBody3D _customCharacter;
     private CharacterBody3D _character;
@@ -87,6 +89,7 @@ public partial class CharacterMovement : Node
         if (currentState == null) return;
 
         float deltaF = (float)delta;
+        double gravity = (double)ProjectSettings.GetSetting("physics/3d/default_gravity");
 
         if (!_character.IsOnFloor())
         {

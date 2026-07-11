@@ -1,5 +1,5 @@
-using System.Threading.Tasks;
 using Godot;
+using System;
 
 
 [GlobalClass]
@@ -12,6 +12,8 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
 
     public override void _Ready()
     {
+        SpawnFunction = new Callable(this, MethodName.CustomSpawn);
+
         if (Multiplayer.IsServer())
         {
             Multiplayer.PeerConnected += onPeerConnected;
@@ -23,72 +25,58 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
 
     private void onPeerConnected(long id)
     {
-        GD.Print(System.String.Format("peer connected: {0}", id));
+        GD.Print($"peer connected: {id}");
         spawnPlayer(id);
     }
 
     private void onPeerDisconnected(long id)
     {
-        try
+        Node spawnNode = GetNodeOrNull(SpawnPath);
+        Node player = spawnNode?.GetNodeOrNull(id.ToString());
+        if (player != null)
         {
-            Node spawnNode = GetNode(SpawnPath);
-            Node player = spawnNode.GetNode(id.ToString());
             player.QueueFree();
-        }
-        catch
-        {
-            GD.Print(System.String.Format("failed to free player: {0}", id));
         }
     }
 
     private void spawnPlayer(long id)
     {
-        try
+        if (SpawnPoints.Count == 0) { return; }
+        Vector3 spawnPosition = SpawnPoints.PickRandom().GlobalPosition;
+
+        var spawnData = new Godot.Collections.Dictionary
         {
-            Node spawnNode = GetNodeOrNull(SpawnPath);
-            Node playerInstance = PlayerPrefab.Instantiate();
-            playerInstance.Name = id.ToString();
-            playerInstance.TreeEntered += () => onPlayerInstanceTreeEntered(id);
-            spawnNode.CallDeferred(MethodName.AddChild, playerInstance);
-        }
-        catch
-        {
-            GD.Print(System.String.Format("failed to spawn player: {0}", id));
-        }
+            ["peer_id"] = (int)id,
+            ["position"] = spawnPosition
+        };
+
+        Spawn(spawnData);
     }
 
-    private void onPlayerInstanceTreeEntered(long id)
+    private Node CustomSpawn(Godot.Collections.Dictionary data)
     {
-        
-        Rpc(MethodName.initSpawnedPlayer, id);
-    }
-
-
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
-    private void initSpawnedPlayer(long id)
-    {
-        initSpawnedPlayerAsync(id);
-    }
-
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
-    private async Task<Error> initSpawnedPlayerAsync(long id)
-    {
-        await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
-
-        if (SpawnPoints.Count == 0)
+        if (!data.ContainsKey("peer_id") || !data.ContainsKey("position"))
         {
-            return Error.Failed;
+            return null;
         }
 
-        Node spawnNode = GetNodeOrNull(SpawnPath);
-        if (!IsInstanceValid(spawnNode)) { return Error.Failed; }
+        int peerId = (int)data["peer_id"];
+        Vector3 position = (Vector3)data["position"];
 
-        Node3D playerNode = spawnNode.GetNodeOrNull<Node3D>(id.ToString());
-        if (!IsInstanceValid(playerNode)) { return Error.Failed; }
-        
-        playerNode.GlobalPosition = SpawnPoints.PickRandom().GlobalPosition;
+        Node playerInstance = PlayerPrefab.Instantiate();
+        playerInstance.Name = peerId.ToString();
+        playerInstance.SetMultiplayerAuthority(peerId);
 
-        return Error.Ok;
+        playerInstance.TreeEntered += () => InitSpawnedPlayer(peerId, position);
+
+        return playerInstance;
     }
-    
+
+    //[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
+    private void InitSpawnedPlayer(long id, Vector3 pos)
+    {
+        Node spawnNode = GetNodeOrNull(SpawnPath); if (spawnNode == null) { return; }
+        Node3D playerNode = spawnNode.GetNodeOrNull<Node3D>(id.ToString()); if (playerNode == null) { return; }
+        playerNode.GlobalPosition = pos;
+    }
 }

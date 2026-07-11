@@ -17,10 +17,21 @@ sky_material = SubResource("ProceduralSkyMaterial_hk5hr")
 [sub_resource type="Environment" id="Environment_sx3cy"]
 background_mode = 2
 sky = SubResource("Sky_fnvcv")
+ambient_light_source = 3
+ambient_light_sky_contribution = 0.1
+reflected_light_source = 2
+ssr_enabled = true
+ssao_enabled = true
+ssil_enabled = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_td0jm"]
 albedo_texture = ExtResource("1_3t7mg")
 uv1_triplanar = true
+
+[sub_resource type="PrismMesh" id="PrismMesh_sx3cy"]
+lightmap_size_hint = Vector2i(14, 21)
+left_to_right = 1.0
+size = Vector3(5, 5, 1)
 
 [node name="World" type="Node3D" unique_id=337665220]
 
@@ -30,13 +41,17 @@ uv1_triplanar = true
 environment = SubResource("Environment_sx3cy")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Env" unique_id=1731723846]
-transform = Transform3D(0.33271265, 0.9430283, 0, -0.8857334, 0.3124983, 0.3432508, 0.3236952, -0.114203885, 0.9392438, 0, 0, 0)
+transform = Transform3D(0.33271268, 0.9430283, -2.4868292e-08, 0.7940382, -0.280147, 0.53946376, 0.50872946, -0.17948648, -0.8420088, 0, 0, 0)
 shadow_enabled = true
 
 [node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=324904736]
 use_collision = true
 size = Vector3(100, 1, 100)
 material = SubResource("StandardMaterial3D_td0jm")
+
+[node name="CSGMesh3D" type="CSGMesh3D" parent="CSGBox3D" unique_id=1542087533]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 0)
+mesh = SubResource("PrismMesh_sx3cy")
 
 [node name="CustomMultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1418993291 node_paths=PackedStringArray("SpawnPoints")]
 _spawnable_scenes = PackedStringArray("uid://ogoa6gjeikh")
@@ -49,6 +64,7 @@ metadata/_custom_type_script = "uid://cw25rb8q2jrio"
 [node name="Players" type="Node3D" parent="." unique_id=638171573]
 
 [node name="SpawnPoints" type="Node3D" parent="." unique_id=814938123]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.693434, 0)
 
 [node name="1" type="Marker3D" parent="SpawnPoints" unique_id=529493698]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 0)
