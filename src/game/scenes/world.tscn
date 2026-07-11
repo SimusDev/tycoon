@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ddbu03jcwhfia"]
 
-[ext_resource type="Texture2D" uid="uid://cive6gr2g1pah" path="res://icon.svg" id="1_3t7mg"]
+[ext_resource type="Texture2D" uid="uid://kjt1cet87n64" path="res://textures/grass/grass1.png" id="1_5xa05"]
+[ext_resource type="Texture2D" uid="uid://cu10btgd4flps" path="res://textures/grass/grass1_normal.png" id="2_gc3ob"]
 [ext_resource type="Script" uid="uid://cw25rb8q2jrio" path="res://src/game/scripts/CustomMultiplayerSpawner.cs" id="2_x5be6"]
 [ext_resource type="PackedScene" uid="uid://ogoa6gjeikh" path="res://src/game/player/player.tscn" id="3_5xa05"]
 [ext_resource type="Script" uid="uid://dnm325f2wvmcu" path="res://src/game/scripts/level/Level3D.cs" id="3_wo64a"]
@@ -25,7 +26,10 @@ ssao_enabled = true
 ssil_enabled = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_td0jm"]
-albedo_texture = ExtResource("1_3t7mg")
+albedo_texture = ExtResource("1_5xa05")
+normal_enabled = true
+normal_texture = ExtResource("2_gc3ob")
+uv1_scale = Vector3(0.6, 0.6, 0.6)
 uv1_triplanar = true
 
 [sub_resource type="PrismMesh" id="PrismMesh_sx3cy"]
@@ -46,7 +50,7 @@ shadow_enabled = true
 
 [node name="CSGBox3D" type="CSGBox3D" parent="." unique_id=324904736]
 use_collision = true
-size = Vector3(100, 1, 100)
+size = Vector3(1000, 1, 1000)
 material = SubResource("StandardMaterial3D_td0jm")
 
 [node name="CSGMesh3D" type="CSGMesh3D" parent="CSGBox3D" unique_id=1542087533]

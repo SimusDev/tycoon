@@ -57,6 +57,23 @@ func _on_button_pressed(btn_name: StringName) -> void:
 [sub_resource type="LabelSettings" id="LabelSettings_akcrd"]
 font_size = 45
 
+[sub_resource type="GDScript" id="GDScript_rnjdm"]
+script/source = "extends LineEdit
+
+var player_data: PlayerData
+
+func _ready() -> void:
+	player_data = PlayerData.GetOrCreate()
+	text = player_data.nickname
+	text_changed.connect(_save)
+
+func _save(new_text: String) -> void:
+	if new_text.is_empty():
+		return
+	
+	player_data.nickname = new_text
+"
+
 [node name="Mainmenu" type="Control" unique_id=268212786]
 layout_mode = 3
 anchors_preset = 15
@@ -97,6 +114,13 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 metadata/_edit_use_anchors_ = true
+
+[node name="Nickname" type="LineEdit" parent="VBoxContainer" unique_id=1151098438]
+layout_mode = 2
+text = "player"
+placeholder_text = "nickname"
+alignment = 1
+script = SubResource("GDScript_rnjdm")
 
 [node name="Adress" type="LineEdit" parent="VBoxContainer" unique_id=398219680]
 layout_mode = 2
