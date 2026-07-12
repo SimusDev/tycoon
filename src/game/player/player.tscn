@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
+[ext_resource type="Script" uid="uid://dw5slsckmsybw" path="res://src/game/scripts/PlayerNickname.cs" id="7_uigmc"]
 
 [sub_resource type="GDScript" id="GDScript_0r077"]
 script/source = "extends Node3D
@@ -285,5 +286,10 @@ shape = SubResource("CapsuleShape3D_0r077")
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=1397088945]
 replication_config = SubResource("SceneReplicationConfig_aymqg")
+
+[node name="PlayerNickname" type="Label3D" parent="." unique_id=1157951051]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
+script = ExtResource("7_uigmc")
+metadata/_custom_type_script = "uid://dw5slsckmsybw"
 
 [editable path="Visuals/humanZov"]

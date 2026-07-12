@@ -5,10 +5,8 @@ using System;
 [GlobalClass]
 public partial class CustomMultiplayerSpawner : MultiplayerSpawner
 {
-    [Export]
-    public PackedScene PlayerPrefab;
-    [Export]
-    public Godot.Collections.Array<Node3D> SpawnPoints;
+    [Export] public PackedScene PlayerPrefab;
+    [Export] public Godot.Collections.Array<Node3D> SpawnPoints;
 
     public override void _Ready()
     {

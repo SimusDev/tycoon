@@ -44,9 +44,6 @@ func _ready() -> void:
 		error_message(\"No connection to server\", Color.YELLOW)
 
 func _on_play_pressed() -> void:
-	if !GameServer.IsUserLoggedIn(login.text):
-		error_message(\"No Login nonono\", Color.RED)
-		return;
 	if multiplayer.multiplayer_peer:
 		get_tree().change_scene_to_file(\"res://src/game/scenes/world.tscn\")
 	else:

@@ -1,65 +1,27 @@
 using Godot;
 
-// [GlobalClass]
-// public partial class PlayerNickname : Label3D
-// {
-//     private PlayerData _playerData;
-//     [Export] public PlayerData PlayerData
-//     { 
-//         get => _playerData;
-//         set
-//         {
-//             if (_playerData != value)
-//             {
-//                 _playerData = value;
-
-//             }
-//         }
-//     }
-
-//     PlayerNickname()
-//     {
-//         Billboard = BaseMaterial3D.BillboardModeEnum.Enabled;
-//     } 
+[GlobalClass]
+public partial class PlayerNickname : Label3D
+{
+    private long _peerId;
+    private bool _dataRequested = false;
     
-
-
-//     public override void _Ready()
-//     {
-//         bool is_auth = IsMultiplayerAuthority();
-//         if (is_auth)
-//         {
-//             PlayerData = PlayerData.GetOrCreate();
-//             Hide();
-//         }
-
-//         else
-//         {
-//             RequestReceive();
-//         }
-//     }
-
-//     private void RequestReceive()
-//     {
-//         RpcId(GetMultiplayerAuthority(),
-//             MethodName.Send
-//         );
-//     }
+    public PlayerNickname()
+    {
+        Billboard = BaseMaterial3D.BillboardModeEnum.Enabled;
+    }
     
-//     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-//     private void Send()
-//     {
-//         RpcId(Multiplayer.GetRemoteSenderId(),
-//             MethodName.Receive,
-//             PlayerData.NetworkSerialize()
-//         );
-//     }
-    
-//     [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
-//     private void Receive(byte[] bytes)
-//     {
-//         PlayerData = PlayerData.NetworkDeserialize(bytes);
+    public override void _Ready()
+    {
+        _peerId = GetMultiplayerAuthority();
+        
+        GameServer.Instance.PlayerNicknameReceived += OnPlayerNicknameReceive;
+        GameServer.Instance.RequestPlayerNickname(_peerId);
+    }
 
-//         Text = PlayerData.nickname;
-//     }
-// }
+    private void OnPlayerNicknameReceive(string nickname)
+    {
+        Text = nickname;
+    }
+
+}

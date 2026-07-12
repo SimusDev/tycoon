@@ -20,6 +20,8 @@ public partial class GameServer : Node
     [Signal] public delegate void PlayerDisconnectedEventHandler(long userId);
     [Signal] public delegate void PlayerConnectedEventHandler(long userId);
 
+    [Signal] public delegate void PlayerNicknameReceivedEventHandler(string nickname);
+
     public override void _Ready()
     {
         if (_instance != null)
@@ -55,6 +57,34 @@ public partial class GameServer : Node
         }
     }
 
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    public void RequestPlayerNickname(long peerId)
+    {
+        long senderId = Multiplayer.GetRemoteSenderId();
+        
+        string nickname = GetPlayerNickname(peerId);
+        
+        RpcId(senderId, MethodName.ReceivePlayerNickname, nickname);
+    }
+
+    private string GetPlayerNickname(long peerId)
+    {
+        if (_peerToUserId.TryGetValue(peerId, out long userId))
+        {
+            if (_usersById.TryGetValue(userId, out ServerPlayerData userData))
+            {
+                return userData.nickname ?? $"Player {peerId}";
+            }
+        }
+        return $"Player {peerId}";
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
+    private void ReceivePlayerNickname(string nickname)
+    {
+        EmitSignal(SignalName.PlayerNicknameReceived, nickname);
+    }
 
     private void OnPeerDisconnected(long peerId)
     {        
