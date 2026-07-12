@@ -1,0 +1,307 @@
+[gd_scene format=3 uid="uid://qggeqasojmbl"]
+
+[ext_resource type="Script" uid="uid://b8xcs6pjh8mu5" path="res://src/game/scenes/server/hiden_line.gd" id="1_qyy0y"]
+[ext_resource type="Script" uid="uid://dcctyhg8w1pcc" path="res://src/game/scenes/server/player_data_value.gd" id="2_58aw4"]
+
+[sub_resource type="GDScript" id="GDScript_sx3cy"]
+script/source = "extends Control
+
+@onready var title: Label = $Title
+@onready var hello_message: Label = $Title/HelloMessage
+
+@onready var nickname: LineEdit = $VBoxContainer/Nickname
+@onready var login: LineEdit = $VBoxContainer/HBoxContainer/Login
+@onready var password: LineEdit = $VBoxContainer/HBoxContainer/Password
+
+@onready var btn_container: HBoxContainer = $VBoxContainer/BtnContainer
+
+@onready var container: VBoxContainer = $VBoxContainer
+@onready var error_label: Label = $VBoxContainer/ErrorLabel
+
+@onready var login_btn: Button = $VBoxContainer/BtnContainer/Login
+@onready var register_btn: Button = $VBoxContainer/BtnContainer/Register
+
+@onready var login_line: HBoxContainer = $Panel/VBoxContainer2/LoginLine
+@onready var password_line: HBoxContainer = $Panel/VBoxContainer2/PasswordLine
+
+@onready var play_button: Button = $VBoxContainer/PlayButton
+
+
+var current_user_data:Dictionary = {  }
+
+func _ready() -> void:
+	GameServer.LoginError.connect(_on_login_error)
+	GameServer.RegisterError.connect(_on_register_error)
+	GameServer.UserDataReceived.connect(_on_user_data_received)
+	
+	play_button.pressed.connect(_on_play_pressed)
+	
+	for b in btn_container.get_children():
+		if b is Button:
+			b.pressed.connect(_on_btn_pressed.bind(b.name))
+
+func _on_play_pressed() -> void:
+	if multiplayer.multiplayer_peer:
+		get_tree().change_scene_to_file(\"res://src/game/scenes/world.tscn\")
+
+func _on_user_data_received(data: Dictionary) -> void:
+	current_user_data = data as Dictionary
+	if !current_user_data:
+		return
+	
+	var login_line_edit = login_line.get(\"line\") as LineEdit
+	if login_line_edit:
+		login_line_edit.text = data.get(\"login\", \"<Error>\")
+	
+	var password_line_edit = password_line.get(\"line\") as LineEdit
+	if password_line_edit:
+		password_line_edit.text = data.get(\"password\", \"<Error>\")
+	
+	
+
+func error_message(text: String, color: Color = Color.RED) -> void:
+	error_label.text = text
+	error_label.label_settings.font_color = color
+
+func _on_login_error(error: String) -> void:
+	login_btn.disabled = false
+	if error == \"Ok\":
+		error_message(\"Login: %s\" % error, Color.GREEN)
+		GameServer.RequestUserData(login.text, password.text)
+	else:
+		error_message(\"Login: %s\" % error, Color.RED)
+
+func _on_register_error(error: String) -> void:
+	register_btn.disabled = false
+	if error == \"Ok\":
+		error_message(\"Register: %s\" % error, Color.GREEN)
+	else:
+		error_message(\"Register: %s\" % error, Color.RED)
+
+func _on_btn_pressed(btn_name: StringName) -> void:
+	match btn_name:
+		&\"Login\":
+			login_btn.disabled = true
+			GameServer.RequestLogin(login.text, password.text)
+		&\"Register\":
+			register_btn.disabled = true
+			GameServer.RequestRegister(login.text, password.text)
+"
+
+[sub_resource type="LabelSettings" id="LabelSettings_ounb2"]
+font_size = 45
+
+[sub_resource type="LabelSettings" id="LabelSettings_qyy0y"]
+font_size = 32
+font_color = Color(0.8560673, 0.8560673, 0.85606724, 1)
+
+[sub_resource type="LabelSettings" id="LabelSettings_sx3cy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ounb2"]
+content_margin_left = 0.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.038397167, 0.038397167, 0.03839716, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qyy0y"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_color = Color(0, 0, 0, 0.6)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_58aw4"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 0.69803923)
+
+[node name="server" type="Control" unique_id=426047682]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = SubResource("GDScript_sx3cy")
+
+[node name="BG_COLOR" type="ColorRect" parent="." unique_id=149150011]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
+[node name="Title" type="Label" parent="." unique_id=1166185864]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.0069444445
+anchor_top = 0.012345679
+anchor_right = 0.9930556
+anchor_bottom = 0.083333336
+text = "ServerName"
+label_settings = SubResource("LabelSettings_ounb2")
+horizontal_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="HelloMessage" type="Label" parent="Title" unique_id=529563538]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.006944444
+anchor_top = 1.4695653
+anchor_right = 0.9930556
+anchor_bottom = 3.4260871
+text = "HelloMessage"
+label_settings = SubResource("LabelSettings_qyy0y")
+horizontal_alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1145831422]
+layout_mode = 0
+anchor_left = 0.35
+anchor_top = 0.26666668
+anchor_right = 0.65
+anchor_bottom = 0.8888889
+offset_top = -1.5258789e-05
+alignment = 1
+metadata/_edit_use_anchors_ = true
+
+[node name="Nickname" type="LineEdit" parent="VBoxContainer" unique_id=1070246963]
+layout_mode = 2
+placeholder_text = "nickname"
+alignment = 1
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=1112005676]
+layout_mode = 2
+
+[node name="Login" type="LineEdit" parent="VBoxContainer/HBoxContainer" unique_id=214328713]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "login"
+alignment = 1
+
+[node name="Password" type="LineEdit" parent="VBoxContainer/HBoxContainer" unique_id=1883105508]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "password"
+alignment = 1
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer" unique_id=698929725]
+custom_minimum_size = Vector2(0, 4)
+layout_mode = 2
+color = Color(0.033853278, 0.033853278, 0.033853274, 1)
+
+[node name="BtnContainer" type="HBoxContainer" parent="VBoxContainer" unique_id=462104945]
+layout_mode = 2
+
+[node name="Register" type="Button" parent="VBoxContainer/BtnContainer" unique_id=404595344]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Register"
+
+[node name="Login" type="Button" parent="VBoxContainer/BtnContainer" unique_id=2056115086]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Login"
+
+[node name="ErrorLabel" type="Label" parent="VBoxContainer" unique_id=28693031]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_sx3cy")
+horizontal_alignment = 1
+
+[node name="PlayButton" type="Button" parent="VBoxContainer" unique_id=1558495731]
+layout_mode = 2
+text = "Play
+"
+
+[node name="Panel" type="Panel" parent="." unique_id=487321808]
+layout_mode = 0
+anchor_left = 0.0125
+anchor_top = 0.62222224
+anchor_right = 0.2125
+anchor_bottom = 0.9777778
+offset_top = -3.0517578e-05
+theme_override_styles/panel = SubResource("StyleBoxFlat_ounb2")
+metadata/_edit_use_anchors_ = true
+
+[node name="VBoxContainer2" type="VBoxContainer" parent="Panel" unique_id=395193636]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AccountLabel" type="Label" parent="Panel/VBoxContainer2" unique_id=1465113216]
+layout_mode = 2
+text = "Account"
+horizontal_alignment = 1
+
+[node name="Nickname" type="LineEdit" parent="Panel/VBoxContainer2" unique_id=288860723]
+layout_mode = 2
+theme_override_colors/font_uneditable_color = Color(1, 1, 1, 0.8666667)
+theme_override_styles/normal = SubResource("StyleBoxFlat_qyy0y")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_58aw4")
+text = "nickname"
+alignment = 1
+editable = false
+
+[node name="LoginLine" type="HBoxContainer" parent="Panel/VBoxContainer2" unique_id=444290434 node_paths=PackedStringArray("line", "btn")]
+layout_mode = 2
+script = ExtResource("1_qyy0y")
+line = NodePath("Login")
+btn = NodePath("Button")
+
+[node name="Login" type="LineEdit" parent="Panel/VBoxContainer2/LoginLine" unique_id=1656413774]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_uneditable_color = Color(1, 1, 1, 0.8666667)
+theme_override_styles/normal = SubResource("StyleBoxFlat_qyy0y")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_58aw4")
+text = "login"
+alignment = 1
+editable = false
+script = ExtResource("2_58aw4")
+
+[node name="Button" type="Button" parent="Panel/VBoxContainer2/LoginLine" unique_id=372253266]
+layout_mode = 2
+text = "o_o"
+
+[node name="PasswordLine" type="HBoxContainer" parent="Panel/VBoxContainer2" unique_id=2110401074 node_paths=PackedStringArray("line", "btn")]
+layout_mode = 2
+script = ExtResource("1_qyy0y")
+line = NodePath("Password")
+btn = NodePath("Button")
+
+[node name="Password" type="LineEdit" parent="Panel/VBoxContainer2/PasswordLine" unique_id=2116123853]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_uneditable_color = Color(1, 1, 1, 0.8666667)
+theme_override_styles/normal = SubResource("StyleBoxFlat_qyy0y")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_58aw4")
+text = "password"
+alignment = 1
+editable = false
+secret_character = "*"
+
+[node name="Button" type="Button" parent="Panel/VBoxContainer2/PasswordLine" unique_id=310685216]
+layout_mode = 2
+text = "o_o"

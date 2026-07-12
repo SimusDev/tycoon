@@ -18,6 +18,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 GameNetwork="*uid://dtncqi53jcbr4"
+GameServer="*uid://ca6stfyq2pb8y"
 
 [display]
 

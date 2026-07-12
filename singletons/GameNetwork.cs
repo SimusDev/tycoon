@@ -147,6 +147,4 @@ public partial class GameNetwork : Node
         _writer.Write(data);
         _optimizedSend.MultiplayerSendBytes(_writerStream.ToArray(), peer, mode, channel);
     }
-
-
 }

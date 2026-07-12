@@ -6,6 +6,8 @@ script/source = "extends Control
 @onready var adress: LineEdit = $VBoxContainer/Adress
 @onready var button_container: HBoxContainer = $VBoxContainer/ButtonContainer
 
+@onready var error_label: Label = $VBoxContainer/Error
+
 func _ready() -> void:
 	GameNetwork.OnNetworkReady.connect(_on_network_ready)
 	
@@ -14,7 +16,7 @@ func _ready() -> void:
 			c.pressed.connect(_on_button_pressed.bind(c.name))
 
 func _on_network_ready() -> void:
-	get_tree().change_scene_to_file.call_deferred(\"res://src/game/scenes/world.tscn\")
+	get_tree().change_scene_to_file.call_deferred(\"res://src/game/scenes/server/server.tscn\")
 
 func _on_button_pressed(btn_name: StringName) -> void:
 	match btn_name:
@@ -57,22 +59,8 @@ func _on_button_pressed(btn_name: StringName) -> void:
 [sub_resource type="LabelSettings" id="LabelSettings_akcrd"]
 font_size = 45
 
-[sub_resource type="GDScript" id="GDScript_rnjdm"]
-script/source = "extends LineEdit
-
-var player_data: PlayerData
-
-func _ready() -> void:
-	player_data = PlayerData.GetOrCreate()
-	text = player_data.nickname
-	text_changed.connect(_save)
-
-func _save(new_text: String) -> void:
-	if new_text.is_empty():
-		return
-	
-	player_data.nickname = new_text
-"
+[sub_resource type="LabelSettings" id="LabelSettings_sx3cy"]
+font_color = Color(1, 0, 0, 1)
 
 [node name="Mainmenu" type="Control" unique_id=268212786]
 layout_mode = 3
@@ -115,12 +103,11 @@ grow_vertical = 2
 alignment = 1
 metadata/_edit_use_anchors_ = true
 
-[node name="Nickname" type="LineEdit" parent="VBoxContainer" unique_id=1151098438]
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer" unique_id=43970781]
+visible = false
+custom_minimum_size = Vector2(0, 2)
 layout_mode = 2
-text = "player"
-placeholder_text = "nickname"
-alignment = 1
-script = SubResource("GDScript_rnjdm")
+color = Color(0.09239707, 0.09239706, 0.09239706, 1)
 
 [node name="Adress" type="LineEdit" parent="VBoxContainer" unique_id=398219680]
 layout_mode = 2
@@ -140,3 +127,8 @@ text = "Host"
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Connect"
+
+[node name="Error" type="Label" parent="VBoxContainer" unique_id=1341325980]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_sx3cy")
+horizontal_alignment = 1
