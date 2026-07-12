@@ -26,38 +26,58 @@ script/source = "extends Control
 
 @onready var play_button: Button = $VBoxContainer/PlayButton
 
-
-var current_user_data:Dictionary = {  }
+var current_user_data: Dictionary = {}
 
 func _ready() -> void:
 	GameServer.LoginError.connect(_on_login_error)
 	GameServer.RegisterError.connect(_on_register_error)
 	GameServer.UserDataReceived.connect(_on_user_data_received)
+	GameServer.PlayerDisconnected.connect(_on_player_disconnected)
 	
 	play_button.pressed.connect(_on_play_pressed)
 	
 	for b in btn_container.get_children():
 		if b is Button:
 			b.pressed.connect(_on_btn_pressed.bind(b.name))
+	
+	if not multiplayer.multiplayer_peer:
+		error_message(\"No connection to server\", Color.YELLOW)
 
 func _on_play_pressed() -> void:
+	if !GameServer.IsUserLoggedIn(login.text):
+		error_message(\"No Login nonono\", Color.RED)
+		return;
 	if multiplayer.multiplayer_peer:
 		get_tree().change_scene_to_file(\"res://src/game/scenes/world.tscn\")
+	else:
+		error_message(\"Not connected to server\", Color.RED)
 
 func _on_user_data_received(data: Dictionary) -> void:
 	current_user_data = data as Dictionary
-	if !current_user_data:
+	if not current_user_data:
 		return
 	
-	var login_line_edit = login_line.get(\"line\") as LineEdit
-	if login_line_edit:
-		login_line_edit.text = data.get(\"login\", \"<Error>\")
+	if data.has(\"error\") and data[\"error\"] != \"Ok\":
+		error_message(\"Error loading data: %s\" % data[\"error\"], Color.RED)
+		return
 	
-	var password_line_edit = password_line.get(\"line\") as LineEdit
-	if password_line_edit:
-		password_line_edit.text = data.get(\"password\", \"<Error>\")
+	if data.has(\"login\"):
+		login.text = data[\"login\"]
 	
+	if data.has(\"password\"):
+		password.text = data[\"password\"]
 	
+	if data.has(\"nickname\"):
+		nickname.text = data[\"nickname\"]
+	
+	if data.has(\"nickname\"):
+		hello_message.text = \"Hello, %s!\" % data[\"nickname\"]
+	
+	error_message(\"User data loaded successfully\", Color.GREEN)
+
+func _on_player_disconnected(user_id: int) -> void:
+	error_message(\"Disconnected from server\", Color.RED)
+	play_button.disabled = true
 
 func error_message(text: String, color: Color = Color.RED) -> void:
 	error_label.text = text
@@ -81,11 +101,29 @@ func _on_register_error(error: String) -> void:
 func _on_btn_pressed(btn_name: StringName) -> void:
 	match btn_name:
 		&\"Login\":
+			if login.text.is_empty() or password.text.is_empty():
+				error_message(\"Please enter login and password\", Color.YELLOW)
+				return
 			login_btn.disabled = true
 			GameServer.RequestLogin(login.text, password.text)
 		&\"Register\":
+			if login.text.is_empty() or password.text.is_empty():
+				error_message(\"Please enter login and password\", Color.YELLOW)
+				return
+			if len(login.text) < 3:
+				error_message(\"Login must be at least 3 characters\", Color.YELLOW)
+				return
+			if len(password.text) < 6:
+				error_message(\"Password must be at least 6 characters\", Color.YELLOW)
+				return
 			register_btn.disabled = true
 			GameServer.RequestRegister(login.text, password.text)
+
+
+func disconnect_from_server() -> void:
+	if multiplayer.multiplayer_peer:
+		multiplayer.multiplayer_peer.close()
+		multiplayer.multiplayer_peer = null
 "
 
 [sub_resource type="LabelSettings" id="LabelSettings_ounb2"]
