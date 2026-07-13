@@ -6,10 +6,10 @@ public partial class NetNode : Node
 
 	public override void _Ready()
 	{
-        GameNetwork.Instance.OnNetworkReady += OnNetworkReady;
-        GameNetwork.Instance.OnNetworkDisconnected += OnNetworkDisconnected;
+        GDNet.Instance.OnNetworkReady += OnNetworkReady;
+        GDNet.Instance.OnNetworkDisconnected += OnNetworkDisconnected;
 
-        if (GameNetwork.Instance.IsConnectedToServer)
+        if (GDNet.Instance.IsConnectedToServer())
         {
             OnNetworkReady();
         }

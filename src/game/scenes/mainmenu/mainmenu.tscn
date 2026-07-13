@@ -9,7 +9,7 @@ script/source = "extends Control
 @onready var error_label: Label = $VBoxContainer/Error
 
 func _ready() -> void:
-	GameNetwork.OnNetworkReady.connect(_on_network_ready)
+	GDNet.OnNetworkReady.connect(_on_network_ready)
 	
 	for c in button_container.get_children():
 		if c is Button:

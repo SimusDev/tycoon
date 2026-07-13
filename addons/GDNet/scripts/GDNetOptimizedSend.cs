@@ -1,3 +1,4 @@
+using GDNetUtils;
 using Godot;
 using System;
 using System.Collections.Concurrent;
@@ -11,6 +12,7 @@ public partial class GDNetOptimizedSend : Node
 {
 	private SceneMultiplayer _api;
 
+	private ChunkedList<QueuedPacket> _pendingChunkedPacketsQueue = new(256);
 	private ConcurrentQueue<QueuedPacket> _pendingPacketsQueue = new();
 	private ConcurrentQueue<ReceivedPacket> _pendingReceivedPacketsQueue = new();
 
@@ -73,16 +75,16 @@ public partial class GDNetOptimizedSend : Node
             var unbatch = unbatchResults[i];
             if (unbatch == null || unbatch.Count == 0) continue;
 
-            foreach (var packetData in unbatch)
-            {
-				EmitSignal(SignalName.MultiplayerPeerPacket, packets[i].SenderId, packetData);
-            }
+			for (int j = 0; i + j < unbatch.Count; j++)
+                EmitSignal(SignalName.MultiplayerPeerPacket, packets[i].SenderId, unbatch[j]);
+
         }
+
     }
 
 	private List<byte[]> TryUnbatchRawPackets(byte[] bytes)
 	{
-		NetBuffer buffer = new();
+		GDNetBuffer buffer = new();
 		buffer.SetBytes(bytes);
 		List<byte[]> result = new();
 		while(buffer.AvailableBytes > 0)
@@ -303,7 +305,7 @@ public partial class GDNetOptimizedSend : Node
 		public long TargetPeer;
 		public MultiplayerPeer.TransferModeEnum Mode;
 		public int Channel;
-		public NetBuffer Buffer;
+		public GDNetBuffer Buffer;
 	}
 
 	public void MultiplayerSendBytes(byte[] data, int id, MultiplayerPeer.TransferModeEnum mode, int channel)

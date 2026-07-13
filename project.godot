@@ -17,7 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
-GameNetwork="*uid://dtncqi53jcbr4"
+GDNet="*uid://dbr3vod01qpcy"
 GameServer="*uid://ca6stfyq2pb8y"
 
 [display]
@@ -30,6 +30,10 @@ window/stretch/aspect="expand"
 [dotnet]
 
 project/assembly_name="Tycoon"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/GDNet/plugin.cfg")
 
 [gui]
 

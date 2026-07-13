@@ -12,7 +12,7 @@ public partial class NetNodeFreeNodesIfServer : NetNode
 
     protected override void OnNetworkReady()
     {
-        if (GameNetwork.Instance.IsServer)
+        if (GDNet.isServer)
         {
             foreach (var node in Targets)
             {

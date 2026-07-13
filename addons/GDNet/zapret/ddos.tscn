@@ -1,0 +1,63 @@
+[gd_scene format=3 uid="uid://23l10rjr3frc"]
+
+[ext_resource type="Script" uid="uid://bnlcmdcn3gstu" path="res://addons/GDNet/zapret/ddos.gd" id="1_wuuv2"]
+
+[node name="Ddos" type="Node" unique_id=851885516]
+script = ExtResource("1_wuuv2")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1211692366]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -328.0
+offset_top = -184.5
+offset_right = 328.0
+offset_bottom = 184.5
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="_StatusLabel" type="Label" parent="VBoxContainer" unique_id=619746139]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Thread Count"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="LineEditIp" type="LineEdit" parent="VBoxContainer" unique_id=269598071]
+layout_mode = 2
+placeholder_text = "IP"
+alignment = 1
+
+[node name="LineEdiPort" type="LineEdit" parent="VBoxContainer" unique_id=144688686]
+layout_mode = 2
+placeholder_text = "PORT"
+alignment = 1
+
+[node name="_ConnectButton" type="Button" parent="VBoxContainer" unique_id=955454238]
+layout_mode = 2
+text = "Connect"
+
+[node name="_PacketCountLabel" type="Label" parent="VBoxContainer" unique_id=326872097]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "PacketCount"
+
+[node name="_HSliderPacketCount" type="HSlider" parent="VBoxContainer" unique_id=1037675888]
+layout_mode = 2
+max_value = 5000.0
+rounded = true
+
+[node name="_TaskCount" type="Label" parent="VBoxContainer" unique_id=706660009]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Thread Count"
+
+[node name="_HSliderTaskCount" type="HSlider" parent="VBoxContainer" unique_id=927039306]
+layout_mode = 2
+max_value = 0.0
+rounded = true
+
+[connection signal="pressed" from="VBoxContainer/_ConnectButton" to="." method="_on__connect_button_pressed"]

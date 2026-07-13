@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://bbto1bfupnb76"]
+
+[ext_resource type="Script" uid="uid://s4y2f0yfhknx" path="res://addons/GDNet/tests/rpc_test.gd" id="1_is67r"]
+[ext_resource type="Script" uid="uid://b7insak4nr6f" path="res://addons/GDNet/scripts/GDNetOptimizedSend.cs" id="2_bwvw2"]
+[ext_resource type="Script" uid="uid://oj48j470by41" path="res://addons/GDNet/tests/GDNetRpcBenchmark.cs" id="3_bwvw2"]
+
+[node name="rpc_test" type="Node" unique_id=655833036]
+script = ExtResource("1_is67r")
+
+[node name="GDNetOptimizedSend" type="Node" parent="." unique_id=1689072976]
+script = ExtResource("2_bwvw2")
+metadata/_custom_type_script = "uid://b7insak4nr6f"
+
+[node name="Server" type="Button" parent="." unique_id=1131354662]
+offset_left = 481.0
+offset_top = 29.0
+offset_right = 1127.0
+offset_bottom = 74.0
+text = "Server"
+
+[node name="Client" type="Button" parent="." unique_id=217032024]
+offset_left = 481.0
+offset_top = 79.0
+offset_right = 1127.0
+offset_bottom = 124.0
+text = "Client"
+
+[node name="Button" type="Button" parent="." unique_id=1236039403]
+offset_left = 80.0
+offset_top = 123.0
+offset_right = 384.0
+offset_bottom = 178.0
+text = "SEND"
+
+[node name="GDNetRpcBenchmark" type="Node" parent="." unique_id=860008789]
+script = ExtResource("3_bwvw2")
+_SendRate = 9999999
+Count = 1000
+Args = [Vector3(0, 0, 0), Vector3(0, 0, 0), Vector3(0, 0, 0)]
+metadata/_custom_type_script = "uid://oj48j470by41"
+
+[connection signal="pressed" from="Server" to="." method="_on_server_pressed"]
+[connection signal="pressed" from="Client" to="." method="_on_client_pressed"]
+[connection signal="pressed" from="Button" to="." method="_on_button_pressed"]
