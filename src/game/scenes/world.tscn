@@ -62,8 +62,8 @@ script = ExtResource("1_v2tld")
 
 [node name="GameManager" type="Node" parent="." unique_id=888102529 node_paths=PackedStringArray("player_spawner")]
 script = SubResource("GDScript_fnvcv")
-player_prefab = ExtResource("3_5xa05")
 player_spawner = NodePath("../NetPlayerSpawner")
+player_prefab = ExtResource("3_5xa05")
 
 [node name="NetPlayerSpawner" type="Node" parent="." unique_id=1419983064 node_paths=PackedStringArray("spawnPoints", "spawnNode")]
 script = ExtResource("2_sty11")

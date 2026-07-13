@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 [GlobalClass, Icon("")]
@@ -233,7 +234,7 @@ public partial class GDNetBuffer : RefCounted
 
 	public sbyte ReadInt8()
 	{
-		Assert(ReadType() == DataType.Int8, $"Expected Int8, got {ReadType()}");
+		ReadType();
 		return _stream.Get8();
 	}
 
@@ -246,7 +247,7 @@ public partial class GDNetBuffer : RefCounted
 
 	public short ReadInt16()
 	{
-		Assert(ReadType() == DataType.Int16, $"Expected Int16, got {ReadType()}");
+		ReadType();
 		return _stream.Get16();
 	}
 
@@ -259,7 +260,7 @@ public partial class GDNetBuffer : RefCounted
 
 	public int ReadInt32()
 	{
-		Assert(ReadType() == DataType.Int32, $"Expected Int32, got {ReadType()}");
+		ReadType();
 		return _stream.Get32();
 	}
 
@@ -273,7 +274,6 @@ public partial class GDNetBuffer : RefCounted
 	public long ReadInt64()
 	{
 		DataType type = ReadType();
-		Assert(type == DataType.Int64, $"Expected Int64, got {type}");
 		return _stream.Get64();
 	}
 
@@ -293,10 +293,11 @@ public partial class GDNetBuffer : RefCounted
 
 	public long ReadInt()
 	{
-		DataType type = ReadType();
-		_stream.Seek(_stream.GetPosition() - 1);
+        DataType type = ReadType();            
 
-		switch (type)
+        _stream.Seek(_stream.GetPosition() - 1);
+
+        switch (type)
 		{
 			case DataType.Int8:
 				return ReadInt8();
@@ -529,10 +530,7 @@ public partial class GDNetBuffer : RefCounted
 		{
 			case DataType.Resource:
 				long hashId = ReadInt64();
-				GD.Print(hashId);
-				string idPath = ResourceUid.GetIdPath(hashId);
-				GD.Print(idPath);
-				return GD.Load<Resource>(idPath);
+				return GD.Load<Resource>(ResourceUid.GetIdPath(hashId));
 
 			case DataType.FullObject:
 				return (Resource)ReadFullObject();
