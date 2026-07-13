@@ -16,7 +16,7 @@ public partial class GDNetVarSync : GDNetCommunicator
 
 	internal enum PacketType : byte
 	{
-		SyncAll,
+		SyncAllRequest,
 		SyncAllReceive,
 		SyncReceive
 	}
@@ -36,14 +36,23 @@ public partial class GDNetVarSync : GDNetCommunicator
 		BindVar(obj, name);
 	}
 
-	public void SyncAllVars()
+	public void SyncAllVars(MultiplayerPeer.TransferModeEnum mode = MultiplayerPeer.TransferModeEnum.Reliable, int channel = 0)
 	{
 		if (GDNet.isServer || _cfgRegistry.Count == 0)
 			return;
 
-
-
+		Mode = mode;
+		Channel = channel;
+		_stream.SetLength(0);
+		_stream.Position = 0;
+		_stream.WriteByte((byte)PacketType.SyncAllRequest);
+		SendToServer(_stream.ToArray());
 	}
+
+    public override void ReceivedBytes(long peerId, byte[] data)
+    {
+		
+    }
 
 	public void BindVar(GodotObject obj, string name)
 	{
@@ -65,25 +74,6 @@ public partial class GDNetVarSync : GDNetCommunicator
 		Channel = cfg["channel"].AsInt32();
 	}
 
-	public void BindOwnerAsNode(Node node)
-	{
-		if (node.IsInsideTree())
-			SynchronizeNodeNetworkID(node);
 
-		node.TreeEntered += () => OwnerNodeSynchronizeID(node);
-		node.Renamed += () => OwnerNodeSynchronizeID(node);
-	}
 
-	private void OwnerNodeSynchronizeID(Node node)
-	{
-		if (node == null)
-			return;
-
-		SynchronizeNodeNetworkID(node);
-	}
-
-	public void BindOwnerAsResource(Resource resource)
-	{
-		SynchronizeResourceNetworkID(resource);
-	}
 }

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 [GlobalClass]
-public partial class GDNetRpc : GDNetCommunicator, IDisposable
+public partial class GDNetRpc : GDNetCommunicator
 {
 	public GDNetBuffer Buffer = new();
 
@@ -17,10 +17,6 @@ public partial class GDNetRpc : GDNetCommunicator, IDisposable
 	private System.Collections.Generic.Dictionary<string, Dictionary<string, Variant>> _cfgRegistry = new();
 
 	private ushort _nextRpcID = 0;
-
-	private MemoryStream _stream;
-	private BinaryWriter _writer;
-	private BinaryReader _reader;
 
 	public int Authority = GDNet.ServerID;
 	private int _remoteSender = 0;
@@ -45,21 +41,6 @@ public partial class GDNetRpc : GDNetCommunicator, IDisposable
 	public bool IsAuthority()
 	{
 		return Authority == GDNet.uniqueID;
-	}
-
-	public GDNetRpc()
-	{
-		_stream = new MemoryStream();
-		_writer = new BinaryWriter(_stream);
-		_reader = new BinaryReader(_stream);
-	}
-
-	protected override void Dispose(bool disposing)
-	{
-		_writer?.Dispose();
-		_reader?.Dispose();
-		_stream?.Dispose();
-		base.Dispose(disposing);
 	}
 
 	protected override string GetHashSalt()
@@ -331,29 +312,4 @@ public partial class GDNetRpc : GDNetCommunicator, IDisposable
 			override_cfg["channel"] = 0;
 
 	}
-
-	public void BindOwnerAsNode(Node node)
-	{
-		if (node.IsInsideTree())
-			SynchronizeNodeNetworkID(node);
-
-		node.TreeEntered += () => OwnerNodeSynchronizeID(node);
-		node.Renamed += () => OwnerNodeSynchronizeID(node);
-
-	}
-
-	private void OwnerNodeSynchronizeID(Node node)
-	{
-		if (node == null)
-			return;
-
-		SynchronizeNodeNetworkID(node);
-	}
-
-	public void BindOwnerAsResource(Resource resource)
-	{
-		SynchronizeResourceNetworkID(resource);
-	}
-
-
 }

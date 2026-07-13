@@ -1,9 +1,11 @@
 using Godot;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 [GlobalClass]
-public partial class GDNetCommunicator : RefCounted
+public partial class GDNetCommunicator : RefCounted, IDisposable
 {
 
 	private ulong _networkID = 0;
@@ -17,7 +19,27 @@ public partial class GDNetCommunicator : RefCounted
 	protected int[] Observers;
 	protected bool _observersEnabled = false;
 
-	public int[] GetObservers()
+    protected MemoryStream _stream;
+    protected BinaryWriter _writer;
+    protected BinaryReader _reader;
+
+    public GDNetCommunicator()
+    {
+        _stream = new MemoryStream();
+        _writer = new BinaryWriter(_stream);
+        _reader = new BinaryReader(_stream);
+        SetNetworkID(_networkID);
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        _writer?.Dispose();
+        _reader?.Dispose();
+        _stream?.Dispose();
+        base.Dispose(disposing);
+    }
+
+    public int[] GetObservers()
 	{  return Observers; }
 
 	public void SetObservers(int[] observers)
@@ -106,11 +128,6 @@ public partial class GDNetCommunicator : RefCounted
         SetNetworkID(GDNet.HashString64(salt));
     }
 
-    public GDNetCommunicator()
-	{
-		SetNetworkID(_networkID);
-	}
-
 	public void SetNetworkID(ulong id)
 	{
 		_registry.Remove(_networkID);
@@ -166,4 +183,27 @@ public partial class GDNetCommunicator : RefCounted
 			CleanUp();
 		}
     }
+
+    private void OwnerNodeSynchronizeID(Node node)
+    {
+        if (node == null)
+            return;
+
+        SynchronizeNodeNetworkID(node);
+    }
+
+    public void BindOwnerAsResource(Resource resource)
+    {
+        SynchronizeResourceNetworkID(resource);
+    }
+
+    public void BindOwnerAsNode(Node node)
+    {
+        if (node.IsInsideTree())
+            SynchronizeNodeNetworkID(node);
+
+        node.TreeEntered += () => OwnerNodeSynchronizeID(node);
+        node.Renamed += () => OwnerNodeSynchronizeID(node);
+    }
+
 }

@@ -22,6 +22,7 @@ public partial class NetPlayerSpawner : NetSceneReplicator
     private void Spawn(string prefabPath)
     {
         Node node = GD.Load<PackedScene>(prefabPath)?.Instantiate();
+        spawnNode?.SetMultiplayerAuthority(Mulpaper.GetRemoteSenderId());
         spawnNode?.AddChild(node);
         
         if (node is Node3D)

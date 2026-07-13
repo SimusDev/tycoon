@@ -74,61 +74,32 @@ public partial class NetSceneReplicator : Node
     #region Serialize/Deserialize
     private byte[] SerializeNode(Node node)
     {
-        _buffer.Clear();
+        Godot.Collections.Dictionary data = new();
+
         string name = (string)node.Name;
-        name = name.ValidateNodeName();
-        
-        
-        _buffer.WriteString(node.SceneFilePath);
-        _buffer.WriteString(name);
-        _buffer.WriteInt(node.GetMultiplayerAuthority());
+        node.Name = name.ValidateNodeName();
 
-        if (node is Node3D)
-        {
-            _buffer.WriteString("Node3D");
-            _buffer.WriteVector3((node as Node3D).Position);
-            _buffer.WriteVector3((node as Node3D).Rotation);
-            _buffer.WriteVector3((node as Node3D).Scale);
-        }
-        else if (node is Node2D)
-        {
-            _buffer.WriteString("Node2D");
-            _buffer.WriteVector2((node as Node2D).Position);
-            _buffer.WriteFloat((node as Node2D).Rotation);
-            _buffer.WriteVector2((node as Node2D).Scale);
-        }
-        else
-        {
-            _buffer.WriteString("Node");
-        }
+        data["filepath"] = node.SceneFilePath;
+        data["name"] = node.Name;
+        data["auth"] = node.GetMultiplayerAuthority();
 
-        return _buffer.GetBytes();
+        if (node is Node3D || node is Node2D)
+            data["transform"] = node.Get("transform");
+
+        return GD.VarToBytes(data);
     }
 
     private Node DeserializeNode(byte[] bytes)
     {
-        _buffer.SetBytes(bytes);
-        _buffer.Seek(0);
+        Godot.Collections.Dictionary data = (Godot.Collections.Dictionary)GD.BytesToVar(bytes);
 
-        Node node = GD.Load<PackedScene>(_buffer.ReadString()).Instantiate<Node>();
-        node.Name =_buffer.ReadString();
-        node.SetMultiplayerAuthority((int)_buffer.ReadInt());
-        
-        string nodeType = _buffer.ReadString();
-        switch (nodeType) {
-            case "Node3D":
-                (node as Node3D).Position = _buffer.ReadVector3();
-                (node as Node3D).Rotation = _buffer.ReadVector3();
-                (node as Node3D).Scale = _buffer.ReadVector3();
-                break;
-            case "Node2D":
-                (node as Node2D).Position = _buffer.ReadVector2();
-                (node as Node2D).Rotation = _buffer.ReadFloat();
-                (node as Node2D).Scale = _buffer.ReadVector2();
-                break;
-            case "Node":
-                break;
-        }
+        Node node = GD.Load<PackedScene>(data["filepath"].AsString()).Instantiate();
+
+        node.Name = data["name"].AsString();
+        node.SetMultiplayerAuthority(data["auth"].AsInt32());
+
+        if (data.TryGetValue("transform", out var transform))
+            node.Set("transform", transform);
 
         return node;
     }

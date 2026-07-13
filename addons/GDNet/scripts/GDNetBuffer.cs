@@ -29,13 +29,7 @@ public partial class GDNetBuffer : RefCounted
 		ByteArrayU16,
 		ByteArrayU32,
 		ArraySimple,
-		ArrayComplex,
-		ArrayStart,
-		ArrayEnd,
-		DictVar,
-		DictBuffer,
-		DictStart,
-		DictEnd,
+		DictSimple,
 		Resource,
 		FullObject,
 		Custom,
@@ -86,7 +80,8 @@ public partial class GDNetBuffer : RefCounted
 			[Variant.Type.Float] = v => WriteFloat(v.As<float>()),
 			[Variant.Type.PackedByteArray] = v => WriteBytes(v.As<byte[]>()),
 			[Variant.Type.Array] = v => WriteArraySimple(v.As<Godot.Collections.Array>()),
-			[Variant.Type.Object] = v => WriteObjectAuto(v.As<GodotObject>())
+			[Variant.Type.Dictionary] = v => WriteDictionarySimple(v.As<Godot.Collections.Dictionary>()),
+            [Variant.Type.Object] = v => WriteObjectAuto(v.As<GodotObject>())
 		};
 
 		_readMethods = new Dictionary<DataType, Func<Variant>>
@@ -110,7 +105,6 @@ public partial class GDNetBuffer : RefCounted
 			[DataType.ByteArrayU16] = () => ReadBytes(),
 			[DataType.ByteArrayU32] = () => ReadBytes(),
 			[DataType.ArraySimple] = () => ReadArraySimple(),
-			[DataType.ArrayComplex] = () => ReadArrayComplex(),
 			[DataType.Resource] = () => ReadResource(),
 			[DataType.FullObject] = () => ReadFullObject(),
 			[DataType.Custom] = () => ReadCustomObject(),
@@ -278,7 +272,8 @@ public partial class GDNetBuffer : RefCounted
 
 	public long ReadInt64()
 	{
-		Assert(ReadType() == DataType.Int64, $"Expected Int64, got {ReadType()}");
+		DataType type = ReadType();
+		Assert(type == DataType.Int64, $"Expected Int64, got {type}");
 		return _stream.Get64();
 	}
 
@@ -301,9 +296,19 @@ public partial class GDNetBuffer : RefCounted
 		DataType type = ReadType();
 		_stream.Seek(_stream.GetPosition() - 1);
 
-		return _readMethods.TryGetValue(type, out Func<Variant> method)
-			? method().As<long>()
-			: 0;
+		switch (type)
+		{
+			case DataType.Int8:
+				return ReadInt8();
+			case DataType.Int16:
+				return ReadInt16();
+			case DataType.Int32:
+				return ReadInt32();
+			case DataType.Int64:
+				return ReadInt64();
+		}
+
+		return 0;
 	}
 
 	public GDNetBuffer WriteUInt64(ulong value)
@@ -367,14 +372,14 @@ public partial class GDNetBuffer : RefCounted
 	public GDNetBuffer WriteString(string value)
 	{
 		WriteType(DataType.String);
-		WriteBytes(Encoding.UTF8.GetBytes(value));
+		_stream.PutString(value);
 		return this;
 	}
 
 	public string ReadString()
 	{
-		Assert(ReadType() == DataType.String, $"Expected String, got {ReadType()}");
-		return Encoding.UTF8.GetString(ReadBytes());
+		ReadType();
+		return _stream.GetString();
 	}
 
 	public GDNetBuffer WriteVector3(Vector3 value)
@@ -447,90 +452,20 @@ public partial class GDNetBuffer : RefCounted
 		return _stream.GetVar().As<Godot.Collections.Array>();
 	}
 
-	public GDNetBuffer WriteArrayComplex(Godot.Collections.Array array)
+    public GDNetBuffer WriteDictionarySimple(Godot.Collections.Dictionary dict)
+    {
+        WriteType(DataType.DictSimple);
+        _stream.PutVar(dict);
+        return this;
+    }
+
+	public Godot.Collections.Dictionary ReadDictionarySimple()
 	{
-		WriteType(DataType.ArrayComplex);
-
-		var buffer = new GDNetBuffer();
-		buffer.WriteInt(array.Count);
-		WriteArrayComplexInternal(buffer, array);
-
-		WriteBytes(buffer.GetBytes());
-		return this;
+		DataType type = ReadType();
+		return (Godot.Collections.Dictionary)_stream.GetVar();
 	}
 
-	private void WriteArrayComplexInternal(GDNetBuffer buffer, Godot.Collections.Array array)
-	{
-		foreach (Variant value in array)
-		{
-			switch (value.VariantType)
-			{
-				case Variant.Type.Array:
-					buffer.Write((byte)DataType.ArrayStart);
-					WriteArrayComplexInternal(buffer, value.As<Godot.Collections.Array>());
-					buffer.Write((byte)DataType.ArrayEnd);
-					break;
-
-				case Variant.Type.Dictionary:
-					buffer.Write((byte)DataType.DictStart);
-					buffer.Write((byte)DataType.DictEnd);
-					break;
-
-				default:
-					buffer.Write(value);
-					break;
-			}
-		}
-	}
-
-	public Godot.Collections.Array ReadArrayComplex()
-	{
-		Assert(ReadType() == DataType.ArrayComplex, $"Expected ArrayComplex, got {ReadType()}");
-
-		var buffer = new GDNetBuffer();
-		buffer.SetBytes(ReadBytes());
-
-		int count = (int)buffer.ReadInt();
-		var result = new Godot.Collections.Array();
-
-		for (int i = 0; i < count; i++)
-		{
-			result.Add(ReadArrayElement(buffer));
-		}
-
-		return result;
-	}
-
-	private Variant ReadArrayElement(GDNetBuffer buffer)
-	{
-		Variant value = buffer.Read();
-
-		if (value.VariantType == Variant.Type.Int && value.As<int>() == (int)DataType.ArrayStart)
-		{
-			var subArray = new Godot.Collections.Array();
-
-			while (true)
-			{
-				Variant element = ReadArrayElement(buffer);
-
-				if (element.VariantType == Variant.Type.Int && element.As<int>() == (int)DataType.ArrayEnd)
-					break;
-
-				subArray.Add(element);
-			}
-
-			return subArray;
-		}
-
-		if (value.VariantType == Variant.Type.Int && value.As<int>() == (int)DataType.DictStart)
-		{
-			return new Godot.Collections.Dictionary();
-		}
-
-		return value;
-	}
-
-	public GDNetBuffer WriteObjectAuto(GodotObject obj)
+    public GDNetBuffer WriteObjectAuto(GodotObject obj)
 	{
 		if (!IsInstanceValid(obj))
 		{
@@ -565,40 +500,49 @@ public partial class GDNetBuffer : RefCounted
 		return GDNet.Instance.GetNode(ReadString());
 	}
 
-	public GDNetBuffer WriteResource(Resource resource)
-	{
-		long hashId = -1;
+    public GDNetBuffer WriteResource(Resource resource)
+    {
+        long hashId = -1;
 
-		if (!string.IsNullOrEmpty(resource.ResourcePath))
+        if (resource.ResourcePath != "")
+        {
+            string uid = ResourceUid.PathToUid(resource.ResourcePath);
+            hashId = ResourceUid.TextToId(uid);
+        }
+
+        if (hashId == -1)
+        {
+            return WriteFullObject(resource);
+        }
+
+        WriteType(DataType.Resource);
+        WriteInt64(hashId);
+
+        return this;
+    }
+
+    public Resource ReadResource()
+    {
+        DataType type = ReadType();
+
+		switch (type)
 		{
-			string uid = ResourceUid.PathToUid(resource.ResourcePath);
-			hashId = ResourceUid.TextToId(uid);
+			case DataType.Resource:
+				long hashId = ReadInt64();
+				GD.Print(hashId);
+				string idPath = ResourceUid.GetIdPath(hashId);
+				GD.Print(idPath);
+				return GD.Load<Resource>(idPath);
+
+			case DataType.FullObject:
+				return (Resource)ReadFullObject();
+				
 		}
 
-		if (hashId == -1)
-		{
-			return WriteFullObject(resource);
-		}
+		return null;
+    }
 
-		WriteType(DataType.Resource);
-		WriteInt(hashId);
-
-		return this;
-	}
-
-	public Resource ReadResource()
-	{
-		DataType type = ReadType();
-
-		return type switch
-		{
-			DataType.Resource => GD.Load(ResourceUid.GetIdPath(ReadInt())),
-			DataType.FullObject => (Resource)ReadFullObject(),
-			_ => null
-		};
-	}
-
-	public GDNetBuffer WriteFullObject(GodotObject obj)
+    public GDNetBuffer WriteFullObject(GodotObject obj)
 	{
 		WriteType(DataType.FullObject);
 
