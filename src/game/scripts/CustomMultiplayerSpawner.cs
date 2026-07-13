@@ -12,33 +12,33 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
     {
         SpawnFunction = new Callable(this, MethodName.CustomSpawn);
 
-        if (Multiplayer.IsServer())
-        {
-            Multiplayer.PeerConnected += onPeerConnected;
-            spawnPlayer(1);
-        }
+        Multiplayer.PeerDisconnected += OnPeerDisconnected;
 
-        Multiplayer.PeerDisconnected += onPeerDisconnected;
+        //RequestSpawn();
+
     }
 
-    private void onPeerConnected(long id)
+    
+    public void RequestSpawn()
     {
-        GD.Print($"peer connected: {id}");
-        spawnPlayer(id);
+        RpcId(GetMultiplayerAuthority(), MethodName.SpawnPlayer, -1);
     }
 
-    private void onPeerDisconnected(long id)
+    private void OnPeerDisconnected(long id)
     {
         Node spawnNode = GetNodeOrNull(SpawnPath);
         Node player = spawnNode?.GetNodeOrNull(id.ToString());
-        if (player != null)
-        {
-            player.QueueFree();
-        }
-    }
 
-    private void spawnPlayer(long id)
+        player?.QueueFree();   
+    }
+    
+    
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    private void SpawnPlayer(long id = -1)
     {
+        if (id == -1) { id = Multiplayer.GetRemoteSenderId(); }
+        
+
         if (SpawnPoints.Count == 0) { return; }
         Vector3 spawnPosition = SpawnPoints.PickRandom().GlobalPosition;
 
@@ -57,6 +57,8 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
         {
             return null;
         }
+
+        if (!IsMultiplayerAuthority()) { GD.Print(12); }
 
         int peerId = (int)data["peer_id"];
         Vector3 position = (Vector3)data["position"];

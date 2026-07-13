@@ -80,7 +80,7 @@ public partial class GameServer : Node
         return $"Player {peerId}";
     }
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = true)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
     private void ReceivePlayerNickname(string nickname)
     {
         EmitSignal(SignalName.PlayerNicknameReceived, nickname);

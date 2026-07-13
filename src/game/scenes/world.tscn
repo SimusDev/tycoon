@@ -2,8 +2,21 @@
 
 [ext_resource type="Texture2D" uid="uid://kjt1cet87n64" path="res://textures/grass/grass1.png" id="1_5xa05"]
 [ext_resource type="Texture2D" uid="uid://cu10btgd4flps" path="res://textures/grass/grass1_normal.png" id="2_gc3ob"]
-[ext_resource type="Script" uid="uid://cw25rb8q2jrio" path="res://src/game/scripts/CustomMultiplayerSpawner.cs" id="2_x5be6"]
+[ext_resource type="Script" uid="uid://cmx5x8g8wntox" path="res://src/game/network/NetPlayerSpawner.cs" id="2_sty11"]
 [ext_resource type="PackedScene" uid="uid://ogoa6gjeikh" path="res://src/game/player/player.tscn" id="3_5xa05"]
+[ext_resource type="Texture2D" uid="uid://dgwjpc7ldm22v" path="res://textures/bandage/worn-mummy-bandage-texture-loose-600nw-2529485055.webp" id="3_sty11"]
+[ext_resource type="Texture2D" uid="uid://dl0i78w1kq82h" path="res://textures/bandage/worn-mummy-bandage-texture-loose-600nw-2529485055_normal.png" id="4_v2tld"]
+
+[sub_resource type="GDScript" id="GDScript_fnvcv"]
+script/source = "extends Node
+
+@export var player_spawner:NetPlayerSpawner
+@export var player_prefab:PackedScene
+
+func _ready() -> void:
+	if player_spawner:
+		player_spawner.RequestSpawn(player_prefab.resource_path)
+"
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hk5hr"]
 sky_top_color = Color(0.35389316, 0.4476372, 0.6316345, 1)
@@ -31,12 +44,30 @@ normal_texture = ExtResource("2_gc3ob")
 uv1_scale = Vector3(0.6, 0.6, 0.6)
 uv1_triplanar = true
 
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_5xa05"]
+albedo_texture = ExtResource("3_sty11")
+normal_enabled = true
+normal_texture = ExtResource("4_v2tld")
+uv1_triplanar = true
+
 [sub_resource type="PrismMesh" id="PrismMesh_sx3cy"]
 lightmap_size_hint = Vector2i(14, 21)
+material = SubResource("StandardMaterial3D_5xa05")
 left_to_right = 1.0
 size = Vector3(5, 5, 1)
 
 [node name="World" type="Node3D" unique_id=337665220]
+
+[node name="GameManager" type="Node" parent="." unique_id=888102529 node_paths=PackedStringArray("player_spawner")]
+script = SubResource("GDScript_fnvcv")
+player_spawner = NodePath("../NetPlayerSpawner")
+player_prefab = ExtResource("3_5xa05")
+
+[node name="NetPlayerSpawner" type="Node" parent="." unique_id=1419983064 node_paths=PackedStringArray("spawnPoints", "spawnNode")]
+script = ExtResource("2_sty11")
+spawnPoints = [NodePath("../SpawnPoints/1"), NodePath("../SpawnPoints/2"), NodePath("../SpawnPoints/3"), NodePath("../SpawnPoints/4"), NodePath("../SpawnPoints/5")]
+spawnNode = NodePath("../Players")
+metadata/_custom_type_script = "uid://cmx5x8g8wntox"
 
 [node name="Env" type="Node3D" parent="." unique_id=756303682]
 
@@ -55,14 +86,6 @@ material = SubResource("StandardMaterial3D_td0jm")
 [node name="CSGMesh3D" type="CSGMesh3D" parent="CSGBox3D" unique_id=1542087533]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 0)
 mesh = SubResource("PrismMesh_sx3cy")
-
-[node name="CustomMultiplayerSpawner" type="MultiplayerSpawner" parent="." unique_id=1418993291 node_paths=PackedStringArray("SpawnPoints")]
-_spawnable_scenes = PackedStringArray("uid://ogoa6gjeikh")
-spawn_path = NodePath("../Players")
-script = ExtResource("2_x5be6")
-PlayerPrefab = ExtResource("3_5xa05")
-SpawnPoints = [NodePath("../SpawnPoints/1"), NodePath("../SpawnPoints/2"), NodePath("../SpawnPoints/3"), NodePath("../SpawnPoints/4"), NodePath("../SpawnPoints/5")]
-metadata/_custom_type_script = "uid://cw25rb8q2jrio"
 
 [node name="Players" type="Node3D" parent="." unique_id=638171573]
 
