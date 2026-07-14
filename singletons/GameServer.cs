@@ -58,13 +58,18 @@ public partial class GameServer : Node
     }
 
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
     public void RequestPlayerNickname(long peerId)
     {
         long senderId = Multiplayer.GetRemoteSenderId();
         
         string nickname = GetPlayerNickname(peerId);
         
+        if (IsMultiplayerAuthority())
+        {
+            ReceivePlayerNickname(nickname);
+            return;
+        }
         RpcId(senderId, MethodName.ReceivePlayerNickname, nickname);
     }
 
@@ -80,7 +85,7 @@ public partial class GameServer : Node
         return $"Player {peerId}";
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = true, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
     private void ReceivePlayerNickname(string nickname)
     {
         EmitSignal(SignalName.PlayerNicknameReceived, nickname);

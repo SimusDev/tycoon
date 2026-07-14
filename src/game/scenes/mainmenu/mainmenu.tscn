@@ -15,7 +15,7 @@ func _ready() -> void:
 		if c is Button:
 			c.pressed.connect(_on_button_pressed.bind(c.name))
 	
-	_buffer_test()
+	#_buffer_test()
 
 var buffer: GDNetBufferO = GDNetBufferO.new()
 

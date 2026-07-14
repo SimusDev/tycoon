@@ -8,6 +8,13 @@
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
 [ext_resource type="Script" uid="uid://dw5slsckmsybw" path="res://src/game/scripts/PlayerNickname.cs" id="7_uigmc"]
 
+[sub_resource type="GDScript" id="GDScript_v2tld"]
+script/source = "extends CharacterBody3D
+
+func _ready() -> void:
+	print(get_multiplayer_authority())
+"
+
 [sub_resource type="GDScript" id="GDScript_0r077"]
 script/source = "extends Node3D
 
@@ -45,6 +52,7 @@ func _on_state_enter(state_name: String) -> void:
 height = 2.7138672
 
 [node name="Player" type="CharacterBody3D" unique_id=1518439692]
+script = SubResource("GDScript_v2tld")
 
 [node name="PlayerHead" type="Node3D" parent="." unique_id=1122001657 node_paths=PackedStringArray("Player", "HeadCamera")]
 transform = Transform3D(1, 0, 0, 0, 0.9999995, 0, 0, 0, 0.9999995, 0, 1.5, 0)

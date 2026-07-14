@@ -15,6 +15,13 @@ script/source = "extends Node
 @export var player_prefab:PackedScene
 
 func _ready() -> void:
+	if GDNet.IsConnectedToServer():
+		_network_ready()
+		return
+	
+	GDNet.OnNetworkReady.connect(_network_ready)
+
+func _network_ready() -> void:
 	if player_spawner:
 		player_spawner.RequestSpawn(player_prefab.resource_path)
 "
