@@ -4,7 +4,6 @@ using Godot;
 public partial class PlayerNickname : Label3D
 {
     private long _peerId;
-    private bool _dataRequested = false;
     
     public PlayerNickname()
     {
@@ -12,6 +11,12 @@ public partial class PlayerNickname : Label3D
     }
     
     public override void _Ready()
+    {
+        GDNet.Instance.OnNetworkReady += OnNetworkReady;
+        if (GDNet.Instance.IsConnectedToServer()) { OnNetworkReady(); }
+    }
+
+    public void OnNetworkReady()
     {
         _peerId = GetMultiplayerAuthority();
         

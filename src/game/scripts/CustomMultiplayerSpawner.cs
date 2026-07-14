@@ -58,7 +58,6 @@ public partial class CustomMultiplayerSpawner : MultiplayerSpawner
             return null;
         }
 
-        if (!IsMultiplayerAuthority()) { GD.Print(12); }
 
         int peerId = (int)data["peer_id"];
         Vector3 position = (Vector3)data["position"];

@@ -6,6 +6,7 @@ public partial class NetSceneReplicator : Node
     [Export] protected Node spawnNode;
     private GDNetBuffer _buffer = new();
 
+    private bool _isSynchronized = false;
     public MultiplayerApi Mulpaper => Multiplayer;
 
     public override void _Ready()
@@ -57,9 +58,10 @@ public partial class NetSceneReplicator : Node
         RpcId(GetMultiplayerAuthority(), MethodName.Send);
     }
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void Send()
     {
+        GD.Print("Replication Requested ");
         long senderId = Mulpaper.GetRemoteSenderId();
     
         foreach (Node node in spawnNode.GetChildren())
@@ -68,11 +70,13 @@ public partial class NetSceneReplicator : Node
             
             RpcId(senderId, MethodName.SpawnFromBytes, SerializeNode(node));    
         }
+
+        _isSynchronized = true;
     }
 
 
     #region Serialize/Deserialize
-    private byte[] SerializeNode(Node node)
+    protected virtual byte[] SerializeNode(Node node)
     {
         Godot.Collections.Dictionary data = new();
 
@@ -89,7 +93,7 @@ public partial class NetSceneReplicator : Node
         return GD.VarToBytes(data);
     }
 
-    private Node DeserializeNode(byte[] bytes)
+    protected virtual Node DeserializeNode(byte[] bytes)
     {
         Godot.Collections.Dictionary data = (Godot.Collections.Dictionary)GD.BytesToVar(bytes);
 
@@ -107,14 +111,14 @@ public partial class NetSceneReplicator : Node
     #endregion
 
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false)]
     private void SpawnFromBytes(byte[] bytes)
     {
         Node node = DeserializeNode(bytes);
         spawnNode.AddChild(node);
     }
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, TransferMode = MultiplayerPeer.TransferModeEnum.Reliable)]
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false)]
     private void DespawnFromName(string name)
     {
         Node node = spawnNode.GetNode(name);

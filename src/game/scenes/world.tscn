@@ -11,19 +11,31 @@
 [sub_resource type="GDScript" id="GDScript_fnvcv"]
 script/source = "extends Node
 
-@export var player_spawner:NetPlayerSpawner
-@export var player_prefab:PackedScene
+@export var player_spawner: NetPlayerSpawner
+@export var player_prefab: PackedScene
+
+@export var spawn_btn: Button
+
+@export_group(\"Info\")
+@export var is_server:bool = false
+
+#func _ready() -> void:
+	#is_server = multiplayer.is_server()
+	#
+	#GDNet.OnNetworkReady.connect(_network_ready)
+	#if GDNet.IsConnectedToServer(): _network_ready()
+#
+#func _network_ready() -> void:
+	#if player_spawner:
+		#player_spawner.RequestSpawn(player_prefab.resource_path)
 
 func _ready() -> void:
-	if GDNet.IsConnectedToServer():
-		_network_ready()
-		return
-	
-	GDNet.OnNetworkReady.connect(_network_ready)
+	spawn_btn.pressed.connect(on_spawn_btn_pressed)
 
-func _network_ready() -> void:
-	if player_spawner:
-		player_spawner.RequestSpawn(player_prefab.resource_path)
+func on_spawn_btn_pressed() -> void:
+	if !GDNet.IsConnectedToServer(): await GDNet.OnNetworkReady
+	player_spawner.RequestSpawn(player_prefab.resource_path)
+	spawn_btn.hide()
 "
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_hk5hr"]
@@ -67,10 +79,26 @@ size = Vector3(5, 5, 1)
 [node name="World" type="Node3D" unique_id=337665220]
 script = ExtResource("1_v2tld")
 
-[node name="GameManager" type="Node" parent="." unique_id=888102529 node_paths=PackedStringArray("player_spawner")]
+[node name="GameManager" type="Node" parent="." unique_id=888102529 node_paths=PackedStringArray("player_spawner", "spawn_btn")]
 script = SubResource("GDScript_fnvcv")
 player_spawner = NodePath("../NetPlayerSpawner")
 player_prefab = ExtResource("3_5xa05")
+spawn_btn = NodePath("Ui/Button")
+
+[node name="Ui" type="Control" parent="GameManager" unique_id=2069696297]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Button" type="Button" parent="GameManager/Ui" unique_id=2006716210]
+layout_mode = 0
+offset_right = 137.0
+offset_bottom = 137.0
+text = "spawned"
 
 [node name="NetPlayerSpawner" type="Node" parent="." unique_id=1419983064 node_paths=PackedStringArray("spawnPoints", "spawnNode")]
 script = ExtResource("2_sty11")

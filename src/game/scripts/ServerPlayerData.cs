@@ -68,7 +68,6 @@ public partial class ServerPlayerData : Resource
         }
         
         ResourceSaver.Save(this, savePath);
-        GD.Print("Saved sex");
     }
 
     public byte[] NetworkSerialize()

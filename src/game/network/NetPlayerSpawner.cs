@@ -1,4 +1,3 @@
-using System.Numerics;
 using Godot;
 using Godot.Collections;
 
@@ -8,9 +7,11 @@ using Godot.Collections;
 public partial class NetPlayerSpawner : NetSceneReplicator
 {
     [Export] private Array<Node3D> spawnPoints = [];
+    
+    
     public void RequestSpawn(string prefabPath)
     {
-        if (Mulpaper.IsServer())
+        if (IsMultiplayerAuthority())
         {
             Spawn(prefabPath);
             return;
@@ -18,11 +19,25 @@ public partial class NetPlayerSpawner : NetSceneReplicator
         RpcId(GetMultiplayerAuthority(), MethodName.Spawn, prefabPath);
     }
     
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void Spawn(string prefabPath)
     {
+        GD.Print("Requested Spawn");
+        int senderId = Mulpaper.GetRemoteSenderId();
+        if (senderId == 0) { senderId = GetMultiplayerAuthority(); }
+
+        if (spawnNode.GetNodeOrNull(senderId.ToString()) != null)
+            { return; }
+
         Node node = GD.Load<PackedScene>(prefabPath)?.Instantiate();
-        spawnNode?.SetMultiplayerAuthority(Mulpaper.GetRemoteSenderId());
+        if (node == null)
+        {
+            GD.Print("Failed to spawn player. ", senderId);
+            return;
+        }
+
+        node.Name = senderId.ToString();
+        node?.SetMultiplayerAuthority(senderId);
         spawnNode?.AddChild(node);
         
         if (node is Node3D)
