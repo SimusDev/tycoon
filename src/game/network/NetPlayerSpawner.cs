@@ -22,7 +22,6 @@ public partial class NetPlayerSpawner : NetSceneReplicator
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void Spawn(string prefabPath)
     {
-        GD.Print("Requested Spawn");
         int senderId = Mulpaper.GetRemoteSenderId();
         if (senderId == 0) { senderId = GetMultiplayerAuthority(); }
 

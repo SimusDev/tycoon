@@ -61,7 +61,6 @@ public partial class NetSceneReplicator : Node
     [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
     private void Send()
     {
-        GD.Print("Replication Requested ");
         long senderId = Mulpaper.GetRemoteSenderId();
     
         foreach (Node node in spawnNode.GetChildren())
@@ -71,7 +70,7 @@ public partial class NetSceneReplicator : Node
             RpcId(senderId, MethodName.SpawnFromBytes, SerializeNode(node));    
         }
 
-        _isSynchronized = true;
+        
     }
 
 

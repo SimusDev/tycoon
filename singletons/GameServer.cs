@@ -57,20 +57,28 @@ public partial class GameServer : Node
         }
     }
 
-
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
     public void RequestPlayerNickname(long peerId)
     {
-        long senderId = Multiplayer.GetRemoteSenderId();
-        
-        string nickname = GetPlayerNickname(peerId);
-        
         if (IsMultiplayerAuthority())
         {
-            ReceivePlayerNickname(nickname);
+            ReceivePlayerNickname(GetPlayerNickname(peerId));
             return;
         }
-        RpcId(senderId, MethodName.ReceivePlayerNickname, nickname);
+        
+        RpcId(GetMultiplayerAuthority(), MethodName.SendPlayerNickname, peerId);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
+    private void SendPlayerNickname(long peerId)
+    {
+        long senderId = Multiplayer.GetRemoteSenderId();
+        RpcId(senderId, MethodName.ReceivePlayerNickname, GetPlayerNickname(peerId));
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false)]
+    private void ReceivePlayerNickname(string nickname)
+    {
+        EmitSignal(SignalName.PlayerNicknameReceived, nickname);
     }
 
     private string GetPlayerNickname(long peerId)
@@ -84,13 +92,6 @@ public partial class GameServer : Node
         }
         return $"Player {peerId}";
     }
-
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer)]
-    private void ReceivePlayerNickname(string nickname)
-    {
-        EmitSignal(SignalName.PlayerNicknameReceived, nickname);
-    }
-
     private void OnPeerDisconnected(long peerId)
     {        
         if (_peerToUserId.TryGetValue(peerId, out long userId))

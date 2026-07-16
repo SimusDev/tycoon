@@ -291,6 +291,5 @@ metadata/_custom_type_script = "uid://dw5slsckmsybw"
 
 [node name="MultiplayerSynchronizer" type="MultiplayerSynchronizer" parent="." unique_id=977521864]
 replication_config = SubResource("SceneReplicationConfig_uigmc")
-visibility_update_mode = 1
 
 [editable path="Visuals/humanZov"]

@@ -12,20 +12,16 @@ public partial class PlayerNickname : Label3D
     
     public override void _Ready()
     {
-        GDNet.Instance.OnNetworkReady += OnNetworkReady;
-        if (GDNet.Instance.IsConnectedToServer()) { OnNetworkReady(); }
-    }
-
-    public void OnNetworkReady()
-    {
         _peerId = GetMultiplayerAuthority();
         
-        GameServer.Instance.PlayerNicknameReceived += OnPlayerNicknameReceive;
+        GameServer.Instance.PlayerNicknameReceived += OnPlayerNicknameReceived;
         GameServer.Instance.RequestPlayerNickname(_peerId);
     }
 
-    private void OnPlayerNicknameReceive(string nickname)
+
+    private void OnPlayerNicknameReceived(string nickname)
     {
+        GameServer.Instance.PlayerNicknameReceived -= OnPlayerNicknameReceived;
         Text = nickname;
     }
 
