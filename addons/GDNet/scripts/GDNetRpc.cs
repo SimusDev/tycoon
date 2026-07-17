@@ -1,10 +1,7 @@
 using Godot;
 using Godot.Collections;
 using System;
-using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 
 [GlobalClass]
 public partial class GDNetRpc : GDNetCommunicator
@@ -50,35 +47,35 @@ public partial class GDNetRpc : GDNetCommunicator
 		return "RPC";
 	}
 
-	public void Invoke(string method, params Variant[] args)
+	public void Invoke(string method, params object[] args)
 	{
 		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, args);
 	}
-	public void InvokeOn(int id, string method, params Variant[] args)
+	public void InvokeOn(int id, string method, params object[] args)
 	{
 		InvokeByTypeInternal(id, method, RpcType.Target, args);
 	}
 
-	public void InvokeOnServer(string method, params Variant[] args)
+	public void InvokeOnServer(string method, params object[] args)
 	{
 		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.OnServer, args);
 	}
 
-	public void Invoke(string method, Godot.Collections.Array args)
-	{
-		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, args.ToArray());
-	}
-	public void InvokeOn(int id, string method, Godot.Collections.Array args)
-	{
-		InvokeByTypeInternal(id, method, RpcType.Target, args.ToArray());
-	}
+    public void Invoke(Delegate method, params object[] args)
+    {
+        InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, args);
+    }
+    public void InvokeOn(int id, Delegate method, params object[] args)
+    {
+        InvokeByTypeInternal(id, method.Method.Name, RpcType.Target, args);
+    }
 
-	public void InvokeOnServer(string method, Godot.Collections.Array args)
-	{
-		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.OnServer, args.ToArray());
-	}
+    public void InvokeOnServer(Delegate method, params object[] args)
+    {
+        InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.OnServer, args);
+    }
 
-	private void InvokeByTypeInternal(int target, string method, RpcType type, Variant[] args)
+    private void InvokeByTypeInternal(int target, string method, RpcType type, object[] args)
 	{
 		if (!_rpcIdRegistry.ContainsKey(method))
 		{
@@ -97,85 +94,67 @@ public partial class GDNetRpc : GDNetCommunicator
 		if (!ValidateWithError(GDNet.uniqueID, Authority, cfg))
 			return;
 
-		_stream.SetLength(0);
-		_stream.Position = 0;
-
-		_writer.Write((byte)type);
+		Buffer.Clear();
+        Buffer.Write((byte)type);
 
 		if (type == RpcType.Target)
 		{
-			_writer.Write(target);
+			Buffer.WriteInt32(target);
 		}
 
-		_writer.Write(_rpcIdRegistry[method]);
-		_writer.Write((byte)args.Length);
+		Buffer.WriteUInt16(_rpcIdRegistry[method]);
+		Buffer.WriteUInt8((byte)args.Length);
 
-		Buffer.Clear();
-
-		foreach (Variant variant in args)
+		foreach (object variant in args)
 		{
 			Buffer.Write(variant);
 		}
-
-		_writer.Write(Buffer.GetBytes());
 
 		UpdateModeAndChannel(cfg);
-		SendToServer(_stream.ToArray());
+		SendToServer(Buffer.GetBytes());
 	}
 
-	private byte[] ServerSerializeRpc(int target, string method, RpcType type, Variant[] args)
+	private byte[] ServerSerializeRpc(int target, string method, RpcType type, object[] args)
 	{
-		_stream.SetLength(0);
-		_stream.Position = 0;
+        Buffer.Clear();
+        Buffer.Write((byte)type);
 
-		_writer.Write((byte)type);
+        if (type == RpcType.Target)
+        {
+            Buffer.WriteInt32(target);
+        }
 
-		if (type == RpcType.Target)
-		{
-			_writer.Write(target);
-		}
+        Buffer.WriteUInt16(_rpcIdRegistry[method]);
+        Buffer.WriteUInt8((byte)args.Length);
 
-		_writer.Write(_rpcIdRegistry[method]);
-		_writer.Write((byte)args.Length);
+        foreach (object variant in args)
+        {
+            Buffer.Write(variant);
+        }
 
-		Buffer.Clear();
-
-		foreach (Variant variant in args)
-		{
-			Buffer.Write(variant);
-		}
-
-		_writer.Write(Buffer.GetBytes());
-
-		return _stream.ToArray();
-	}
+        return Buffer.GetBytes();
+    }
 
 	public override void ReceivedBytes(long peerId, byte[] data)
 	{
-		_stream.SetLength(0);
-		_stream.Position = 0;
-		_stream.Write(data, 0, data.Length);
-		_stream.Position = 0;
+		Buffer.Clear();
+		Buffer.SetBytes(data);
 
-		RpcType type = (RpcType)_reader.ReadByte();
+		RpcType type = (RpcType)Buffer.ReadUInt8();
 		int targetId = -1;
 
 		if (type == RpcType.Target)
 		{
-			targetId = _reader.ReadInt32();
+			targetId = Buffer.ReadInt32();
 		}
 
-		ushort rpcId = _reader.ReadUInt16();
-		byte argsLength = _reader.ReadByte();
+		ushort rpcId = Buffer.ReadUInt16();
+		byte argsLength = Buffer.ReadUInt8();
 
-		Variant[] args = new Variant[argsLength];
+		object[] args = new object[argsLength];
 
 		if (argsLength > 0)
 		{
-			byte[] argsBytes = _reader.ReadBytes((int)(_stream.Length - _stream.Position));
-			Buffer.SetBytes(argsBytes);
-			Buffer.Seek(0);
-
 			for (int i = 0; i < argsLength; i++)
 			{
 				args[i] = Buffer.Read();
@@ -191,7 +170,7 @@ public partial class GDNetRpc : GDNetCommunicator
 		ReceiveFromPeerType(peerId, targetId, method, type, args);
 	}
 
-	private void ReceiveFromPeerType(long peerId, int target, string method, RpcType type, Variant[] args)
+	private void ReceiveFromPeerType(long peerId, int target, string method, RpcType type, object[] args)
 	{
 		bool isClientReceiver = !GDNet.isServer;
 
@@ -246,19 +225,9 @@ public partial class GDNetRpc : GDNetCommunicator
 
 	private Godot.Collections.Array _allocatedGDArgsArray = new();
 
-	private object TryCallMethodLocal(string method, Variant[] args)
+	private void TryCallMethodLocal(string method, object[] args)
 	{
-		if (_methodBinds.TryGetValue(method, out var methodLocal))
-		{
-			_allocatedGDArgsArray.Clear();
-			for (int i = 0; i < args.Length; i++)
-			{
-				_allocatedGDArgsArray.Add(args[i]);
-			}
-				
-			return methodLocal.Target.Callv(method, _allocatedGDArgsArray);
-		}
-		return null;
+
 	}
 
 	public void BindAll(object target)
@@ -283,11 +252,6 @@ public partial class GDNetRpc : GDNetCommunicator
 			_methodInfoBinds[method.Name] = method;
         }
     }
-
-	public void BindMethod(string method, Callable callable)
-	{
-		_methodBinds[method] = callable;
-	}
 
     private bool Validate(long peerId, int authority, Dictionary<string, Variant> cfg)
 	{

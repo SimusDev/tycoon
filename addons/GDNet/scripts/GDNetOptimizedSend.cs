@@ -89,7 +89,7 @@ public partial class GDNetOptimizedSend : Node
 		List<byte[]> result = new();
 		while(buffer.AvailableBytes > 0)
 		{
-            result.Add(buffer.ReadBytes());
+            result.Add(buffer.ReadBytesDynamic());
 		}
 
 		return result;
@@ -137,7 +137,7 @@ public partial class GDNetOptimizedSend : Node
                     localBatches[key] = data;
                 }
 
-                data.Buffer.WriteBytes(packet.Data);
+                data.Buffer.WriteBytesDynamic(packet.Data);
 
                 if (data.Buffer.Size >= MTU)
                 {

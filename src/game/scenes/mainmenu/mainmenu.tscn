@@ -14,17 +14,6 @@ func _ready() -> void:
 	for c in button_container.get_children():
 		if c is Button:
 			c.pressed.connect(_on_button_pressed.bind(c.name))
-	
-	#_buffer_test()
-
-var buffer: GDNetBufferO = GDNetBufferO.new()
-
-func _buffer_test() -> void:
-	buffer.Seek(0)
-	
-	buffer.Seek(0)
-	print(buffer.ReadLong())
-
 
 func _on_network_ready() -> void:
 	get_tree().change_scene_to_file.call_deferred(\"res://src/game/scenes/server/server.tscn\")

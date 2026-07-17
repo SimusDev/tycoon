@@ -2,15 +2,17 @@ using Godot;
 using System;
 
 [GlobalClass]
-public partial class ItemStack : Resource
+public partial class ItemStack : Resource, IGDNetSerializable
 {
-    public byte[] Serialize()
+	public int TestVarSex = 0;
+
+    void IGDNetSerializable.Serialize(GDNetBuffer buffer)
     {
-        return new byte[0];
+        buffer.WriteInt32(TestVarSex);
     }
 
-    public static ItemStack Deserialize()
+    void IGDNetSerializable.Deserialize(GDNetBuffer buffer)
     {
-        return new ItemStack();
+        TestVarSex = buffer.ReadInt32();
     }
 }
