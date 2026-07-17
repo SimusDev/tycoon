@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using Godot.Collections;
 
@@ -5,8 +6,12 @@ using Godot.Collections;
 public partial class ItemStack : Resource
 {
     [Export] public ItemData ItemData;
-    [Export] public uint Count = 1;
-    public uint SkinId = 0;
+    [Export] public ushort Count = 1;
+    public ushort SkinId = 0;
+
+    
+    
+    private static GDNetBuffer _buffer = new();
 
     public static ItemStack CreateFrom(Node node)
     {
@@ -26,30 +31,26 @@ public partial class ItemStack : Resource
 
     public byte[] Serialize()
     {
-        var data = new Dictionary
-        {
-            ["count"] = Count,
-            ["skin_id"] = SkinId
-        };
+        _buffer.Clear();
+        
+        _buffer.WriteUInt16(Count);
+        _buffer.WriteUInt16(SkinId);
 
-        if (ItemData != null)
-        {
-            data["item_data_uid"] = ResourceUid.PathToUid(ItemData.ResourcePath);
-        }
+        _buffer.WriteResource(ItemData);
 
-        return GD.VarToBytes(data);
+        return _buffer.GetBytes();
     }
 
     public static ItemStack Deserialize(byte[] bytes)
     {
-        Dictionary data = GD.BytesToVar(bytes).AsGodotDictionary();
-        if (data == null) return null;
+        _buffer.Clear();
+        _buffer.SetBytes(bytes);
 
         return new()
         {
-            ItemData = GD.Load<ItemData>(data?["item_data_uid"].AsString()),
-            Count = data["count"].AsUInt32(),
-            SkinId = data["skin_id"].AsUInt32()
+            ItemData = _buffer.ReadResource<ItemData>(),
+            Count = _buffer.ReadUInt16(),
+            SkinId = _buffer.ReadUInt16()
         };
     }
 }
