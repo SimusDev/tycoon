@@ -6,7 +6,7 @@ using Godot.Collections;
 public partial class Inventory : Node
 {
 	private GDNetStream _stream = new();
-    private List<InventorySlot> _slots;
+	private List<InventorySlot> _slots;
 
 	public override void _Ready()
 	{
@@ -25,4 +25,5 @@ public partial class Inventory : Node
 	{
 
 	}
+}
 
