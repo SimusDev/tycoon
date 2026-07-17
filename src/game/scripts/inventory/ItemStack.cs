@@ -6,10 +6,12 @@ public partial class ItemStack : Resource
 {
     public byte[] Serialize()
     {
-        return new byte[0];
+        return [];
     }
+    
+    
 
-    public static ItemStack Deserialize()
+    public static ItemStack Deserialize(byte[] bytes)
     {
         return new ItemStack();
     }

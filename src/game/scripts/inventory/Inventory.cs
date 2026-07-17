@@ -1,10 +1,12 @@
+using System.Collections.Generic;
 using Godot;
-using System;
+using Godot.Collections;
 
 [GlobalClass]
 public partial class Inventory : Node
 {
     private GDNetStream _stream = new();
+    private List<InventorySlot> _slots;
 
     public override void _Ready()
     {
@@ -21,7 +23,8 @@ public partial class Inventory : Node
     [Rpc(mode: MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
     private void ReceiveFromSyncer()
     {
-
+        
     }
 
 }
+
