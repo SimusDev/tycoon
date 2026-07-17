@@ -63,7 +63,7 @@ public partial class PlayerHead : Node3D
         return Input.MouseMode == Input.MouseModeEnum.Captured;
     }
 
-    protected void InverseMouseCapture(bool value = true)
+    protected void InverseMouseCapture()
     {
         SetMouseCapture(!IsMouseCaptured());
     }
