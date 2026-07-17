@@ -5,8 +5,10 @@ using Godot.Collections;
 public partial class Inventory : Node
 {
     private GDNetStream _stream = new();
-    private Array<InventorySlot> _slots;
+    [Export] private Array<InventorySlot> _slots = [];
+    private InventorySlot _selectedSlot = null;
     private bool _isSynchronized = false;
+    public bool IsSynchronized() => _isSynchronized;
 
     public InventorySlot GetSlot(int idx)
     {
@@ -14,19 +16,35 @@ public partial class Inventory : Node
         return _slots[idx];
     }
 
-    public void AddSlot(InventorySlot slot)
+    #region AddSlot
+    private void AddSlot(InventorySlot slot)
     {
         if (_slots.Contains(slot)) return;
         _slots.Add(slot);
     }
 
-    public void RemoveSlot(InventorySlot slot)
+    private void AddSlot(byte[] bytes)
+    {
+        InventorySlot slot = (InventorySlot)(GodotObject)GD.BytesToVar(bytes);
+        if (slot == null) return;
+
+        AddSlot(slot);
+    }
+
+    public void RequestAddSlot(InventorySlot slot)
+    {
+        
+    }
+
+    #endregion
+
+    private void RemoveSlot(InventorySlot slot)
     {
         if (!_slots.Contains(slot)) return;
         _slots.Remove(slot);
     }
 
-    public void RemoveSlot(int idx)
+    private void RemoveSlot(int idx)
     {
         if (_slots.Count < idx) return;
         _slots.RemoveAt(idx);
@@ -38,28 +56,42 @@ public partial class Inventory : Node
 
     public override void _Ready()
     {
+        SetMultiplayerAuthority(GameServer.ServerId);
+
         if (Multiplayer.IsServer())
         {
             _isSynchronized = true;
         }
         else
         {
-            RpcId(GameServer.ServerId, MethodName.SyncToSender);
-        }
-        
+            RequestSync();
+        }   
     }
 
+    private void RequestSync()
+    {
+        RpcId(GetMultiplayerAuthority(), MethodName.SyncToSender);
+    }
 
 	[Rpc(mode: MultiplayerApi.RpcMode.AnyPeer, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
 	private void SyncToSender()
 	{
-		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer);
+        Dictionary data = [];
+        data["slots"] = _slots;
+
+		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer, GD.VarToBytes(data));
 	}
 
 	[Rpc(mode: MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-	private void ReceiveFromSyncer()
+	private void ReceiveFromSyncer(byte[] bytes)
 	{
+        Dictionary data = GD.BytesToVar(bytes).AsGodotDictionary();
+        if (data == null) return;
 
+        _slots = data["slots"].AsGodotArray<InventorySlot>();
+
+        _isSynchronized = true;
+        EmitSignal(SignalName.SlotsSynchronized);
 	}
 }
 

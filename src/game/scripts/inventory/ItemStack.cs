@@ -1,11 +1,12 @@
 using Godot;
-using System;
+using Godot.Collections;
 
 [GlobalClass]
-public partial class ItemStack : Resource, IGDNetSerializable
+public partial class ItemStack : Resource
 {
     [Export] public ItemData ItemData;
-    public uint SkinId;
+    [Export] public uint Count = 1;
+    public uint SkinId = 0;
 
     public static ItemStack CreateFrom(Node node)
     {
@@ -21,15 +22,34 @@ public partial class ItemStack : Resource, IGDNetSerializable
         return null;
     }
 
-    void IGDNetSerializable.Serialize(GDNetBuffer buffer)
+    
+
+    public byte[] Serialize()
     {
-        buffer.WriteResource(ItemData);
-        buffer.WriteUInt32(SkinId);
+        var data = new Dictionary
+        {
+            ["count"] = Count,
+            ["skin_id"] = SkinId
+        };
+
+        if (ItemData != null)
+        {
+            data["item_data_uid"] = ResourceUid.PathToUid(ItemData.ResourcePath);
+        }
+
+        return GD.VarToBytes(data);
     }
 
-    void IGDNetSerializable.Deserialize(GDNetBuffer buffer)
+    public static ItemStack Deserialize(byte[] bytes)
     {
-        ItemData = buffer.ReadResource<ItemData>();
-        SkinId = buffer.ReadUInt32();
+        Dictionary data = GD.BytesToVar(bytes).AsGodotDictionary();
+        if (data == null) return null;
+
+        return new()
+        {
+            ItemData = GD.Load<ItemData>(data?["item_data_uid"].AsString()),
+            Count = data["count"].AsUInt32(),
+            SkinId = data["skin_id"].AsUInt32()
+        };
     }
 }

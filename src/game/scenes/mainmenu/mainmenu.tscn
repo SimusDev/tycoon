@@ -62,6 +62,15 @@ font_size = 45
 [sub_resource type="LabelSettings" id="LabelSettings_sx3cy"]
 font_color = Color(1, 0, 0, 1)
 
+[sub_resource type="GDScript" id="GDScript_sx3cy"]
+script/source = "extends Node
+
+
+func _ready() -> void:
+	var is05al: ItemStack = ItemStack.new();
+	print(is05al.Serialize().size())
+"
+
 [node name="Mainmenu" type="Control" unique_id=268212786]
 layout_mode = 3
 anchors_preset = 15
@@ -132,3 +141,6 @@ text = "Connect"
 layout_mode = 2
 label_settings = SubResource("LabelSettings_sx3cy")
 horizontal_alignment = 1
+
+[node name="Manager" type="Node" parent="." unique_id=420632716]
+script = SubResource("GDScript_sx3cy")
