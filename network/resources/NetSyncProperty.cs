@@ -7,8 +7,6 @@ namespace NetNodeSyncronizerResource
     {
 
         [Export] public string Name;
-        [Export] public MultiplayerPeer.TransferModeEnum TransferMode = MultiplayerPeer.TransferModeEnum.Reliable; 
-    
-
+        [Export] public MultiplayerPeer.TransferModeEnum TransferMode = MultiplayerPeer.TransferModeEnum.Reliable;
     }
 }

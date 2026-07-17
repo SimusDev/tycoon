@@ -8,6 +8,5 @@ namespace NetNodeSyncronizerResource
     {
         [Export] public NodePath TargetNode;
         [Export] public Array<NetSyncProperty> Properties = [];
-        
     }
 }
