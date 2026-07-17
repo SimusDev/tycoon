@@ -52,15 +52,19 @@ public partial class PlayerHead : Node3D
         }
     }
 
-    private void SetMouseCapture(bool value = true)
+    protected void SetMouseCapture(bool value = true)
     {
         if (value) Input.MouseMode = Input.MouseModeEnum.Captured;
         else Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 
-    private void InverseMouseCapture(bool value = true)
+    protected bool IsMouseCaptured()
     {
-        if (Input.MouseMode == Input.MouseModeEnum.Captured) Input.MouseMode = Input.MouseModeEnum.Visible;
-        else Input.MouseMode = Input.MouseModeEnum.Captured;
+        return Input.MouseMode == Input.MouseModeEnum.Captured;
+    }
+
+    protected void InverseMouseCapture(bool value = true)
+    {
+        SetMouseCapture(!IsMouseCaptured());
     }
 }
