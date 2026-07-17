@@ -151,7 +151,7 @@ public partial class GDNetMessageProcessor : Node
 				}
 
 				batch.Buffer.WriteUInt64(data.NetworkID);
-				batch.Buffer.WriteBytes(data.Data);
+				batch.Buffer.WriteBytesDynamic(data.Data);
 
 				if (batch.Buffer.Size >= MTU)
 				{
@@ -265,7 +265,7 @@ public partial class GDNetMessageProcessor : Node
 		while (buffer.AvailableBytes > 0)
 		{
 			ulong netId = buffer.ReadUInt64();
-			byte[] data = buffer.ReadBytes();
+			byte[] data = buffer.ReadBytesDynamic();
 
 			if (!Result.TryGetValue(netId, out var packets))
 			{

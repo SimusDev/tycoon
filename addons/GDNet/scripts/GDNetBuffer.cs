@@ -1,731 +1,331 @@
 using Godot;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
 
-[GlobalClass, Icon("")]
+[GlobalClass]
 public partial class GDNetBuffer : RefCounted
 {
-	#region Enums
+    private GDNetStream _stream = null;
 
-	private enum DataType : byte
-	{
-		Null = 0x01,
-		BoolTrue,
-		BoolFalse,
-		Var,
-		Int8,
-		Int16,
-		Int32,
-		Int64,
-		UInt64,
-		Float,
-		Double,
-		String,
-		Vector2,
-		Vector3,
-		ByteArrayEmpty,
-		ByteArrayU8,
-		ByteArrayU16,
-		ByteArrayU32,
-		ArraySimple,
-		DictSimple,
-		Resource,
-		FullObject,
-		Custom,
-		NodeReference
-	}
-
-	private enum FullObjectType : byte
-	{
-		Object = 0x01,
-		Node,
-		Resource,
-		RefCounted,
-		Other
-	}
-
-	#endregion
-
-	#region Constants
-
-	private const string CustomSerializeMethod = "GDNetSerialize";
-	private const string CustomDeserializeMethod = "GDNetDeserialize";
-
-	#endregion
-
-	#region Fields
-
-	private readonly StreamPeerBuffer _stream = new();
-	private readonly HashSet<string> _blockedWriteMethods = new();
-	private readonly HashSet<string> _blockedReadMethods = new();
-
-	private readonly Dictionary<Variant.Type, Action<Variant>> _writeMethods;
-	private readonly Dictionary<DataType, Func<Variant>> _readMethods;
-
-	#endregion
-
-	#region Constructor
-
-	public GDNetBuffer()
-	{
-		_writeMethods = new Dictionary<Variant.Type, Action<Variant>>
-		{
-			[Variant.Type.Nil] = v => WriteNull(),
-			[Variant.Type.Bool] = v => WriteBool(v.As<bool>()),
-			[Variant.Type.Int] = v => WriteInt(v.As<long>()),
-			[Variant.Type.String] = v => WriteString(v.As<string>()),
-			[Variant.Type.Vector3] = v => WriteVector3(v.As<Vector3>()),
-			[Variant.Type.Vector2] = v => WriteVector2(v.As<Vector2>()),
-			[Variant.Type.Float] = v => WriteFloat(v.As<float>()),
-			[Variant.Type.PackedByteArray] = v => WriteBytes(v.As<byte[]>()),
-			[Variant.Type.Array] = v => WriteArraySimple(v.As<Godot.Collections.Array>()),
-			[Variant.Type.Dictionary] = v => WriteDictionarySimple(v.As<Godot.Collections.Dictionary>()),
-            [Variant.Type.Object] = v => WriteObjectAuto(v.As<GodotObject>())
-		};
-
-		_readMethods = new Dictionary<DataType, Func<Variant>>
-		{
-			[DataType.Null] = () => ReadNull(),
-			[DataType.Int8] = () => ReadInt8(),
-			[DataType.Int16] = () => ReadInt16(),
-			[DataType.Int32] = () => ReadInt32(),
-			[DataType.Int64] = () => ReadInt64(),
-			[DataType.UInt64] = () => ReadUInt64(),
-			[DataType.BoolTrue] = () => ReadBool(),
-			[DataType.BoolFalse] = () => ReadBool(),
-			[DataType.Var] = () => ReadVar(),
-			[DataType.String] = () => ReadString(),
-			[DataType.Vector3] = () => ReadVector3(),
-			[DataType.Vector2] = () => ReadVector2(),
-			[DataType.Float] = () => ReadFloat(),
-			[DataType.Double] = () => ReadFloat(),
-			[DataType.ByteArrayEmpty] = () => ReadBytes(),
-			[DataType.ByteArrayU8] = () => ReadBytes(),
-			[DataType.ByteArrayU16] = () => ReadBytes(),
-			[DataType.ByteArrayU32] = () => ReadBytes(),
-			[DataType.ArraySimple] = () => ReadArraySimple(),
-			[DataType.Resource] = () => ReadResource(),
-			[DataType.FullObject] = () => ReadFullObject(),
-			[DataType.Custom] = () => ReadCustomObject(),
-			[DataType.NodeReference] = () => ReadNodeReference()
-		};
-	}
-
-	#endregion
-
-	#region Public API
-
-	public Godot.Collections.Array ToArray()
-	{
-		var result = new Godot.Collections.Array();
-		int rememberedPosition = Position;
-		Seek(0);
-
-		while (_stream.GetAvailableBytes() > 0)
-		{
-			result.Add(Read());
-		}
-
-		Seek(rememberedPosition);
-		return result;
-	}
-
-	public GDNetBuffer Write(Variant value)
-	{
-		if (_writeMethods.TryGetValue(value.VariantType, out Action<Variant> method))
-		{
-			method(value);
-		}
-		else
-		{
-			WriteVar(value);
-		}
-
-		return this;
-	}
-
-	public Variant Read()
-	{
-		DataType type = ReadType();
-		_stream.Seek(_stream.GetPosition() - 1);
-
-		if (_readMethods.TryGetValue(type, out Func<Variant> method))
-		{
-			return method();
-		}
-
-		GD.PushError($"Unknown type for auto-read: {type}");
-		return default;
-	}
-
-	public GDNetBuffer WriteVar(Variant variant)
-	{
-		WriteType(DataType.Var);
-		_stream.PutVar(variant);
-		return this;
-	}
-
-	public Variant ReadVar()
-	{
-		DataType type = ReadType();
-		Assert(type == DataType.Var, $"Expected Var, got {type}");
-		return _stream.GetVar();
-	}
-
-	public GDNetBuffer SetBytes(byte[] data)
-	{
-		_stream.DataArray = data;
-		return this;
-	}
-
-	public byte[] GetBytes() => _stream.DataArray;
-	public int AvailableBytes => _stream.GetAvailableBytes();
-	public int Position => _stream.GetPosition();
-	public int Size => _stream.GetSize();
-
-	public GDNetBuffer Seek(int position)
-	{
-		_stream.Seek(position);
-		return this;
-	}
-
-	public GDNetBuffer Clear()
-	{
-		_stream.Clear();
-		Seek(0);
-		return this;
-	}
-
-	#endregion
-
-	#region Write Methods
-
-	private void WriteType(DataType type) => _stream.PutU8((byte)type);
-	private DataType ReadType() => (DataType)_stream.GetU8();
-
-	public GDNetBuffer WriteNull()
-	{
-		WriteType(DataType.Null);
-		return this;
-	}
-
-	public Variant ReadNull()
-	{
-		ReadType();
-		return default;
-	}
-
-	public GDNetBuffer WriteBool(bool value)
-	{
-		WriteType(value ? DataType.BoolTrue : DataType.BoolFalse);
-		return this;
-	}
-
-	public bool ReadBool() => ReadType() == DataType.BoolTrue;
-
-	public GDNetBuffer WriteInt8(sbyte value)
-	{
-		WriteType(DataType.Int8);
-		_stream.Put8(value);
-		return this;
-	}
-
-	public sbyte ReadInt8()
-	{
-		ReadType();
-		return _stream.Get8();
-	}
-
-	public GDNetBuffer WriteInt16(short value)
-	{
-		WriteType(DataType.Int16);
-		_stream.Put16(value);
-		return this;
-	}
-
-	public short ReadInt16()
-	{
-		ReadType();
-		return _stream.Get16();
-	}
-
-	public GDNetBuffer WriteInt32(int value)
-	{
-		WriteType(DataType.Int32);
-		_stream.Put32(value);
-		return this;
-	}
-
-	public int ReadInt32()
-	{
-		ReadType();
-		return _stream.Get32();
-	}
-
-	public GDNetBuffer WriteInt64(long value)
-	{
-		WriteType(DataType.Int64);
-		_stream.Put64(value);
-		return this;
-	}
-
-	public long ReadInt64()
-	{
-		DataType type = ReadType();
-		return _stream.Get64();
-	}
-
-	public GDNetBuffer WriteInt(long value)
-	{
-		if (value is >= -128 and <= 127)
-			WriteInt8((sbyte)value);
-		else if (value is >= -32768 and <= 32767)
-			WriteInt16((short)value);
-		else if (value is >= -2147483648 and <= 2147483647)
-			WriteInt32((int)value);
-		else
-			WriteInt64(value);
-
-		return this;
-	}
-
-	public long ReadInt()
-	{
-        DataType type = ReadType();            
-
-        _stream.Seek(_stream.GetPosition() - 1);
-
-        switch (type)
-		{
-			case DataType.Int8:
-				return ReadInt8();
-			case DataType.Int16:
-				return ReadInt16();
-			case DataType.Int32:
-				return ReadInt32();
-			case DataType.Int64:
-				return ReadInt64();
-		}
-
-		return 0;
-	}
-
-	public GDNetBuffer WriteUInt64(ulong value)
-	{
-		WriteType(DataType.UInt64);
-		_stream.PutU64(value);
-		return this;
-	}
-
-	public ulong ReadUInt64()
-	{
-		var type = ReadType();
-		return _stream.GetU64();
-	}
-
-	public GDNetBuffer WriteBytes(byte[] value)
-	{
-		int length = 0;
-		if (value != null)
-			length = value.Length;
-
-		switch (length)
-		{
-			case 0:
-				WriteType(DataType.ByteArrayEmpty);
-				break;
-			case < 255:
-				WriteType(DataType.ByteArrayU8);
-				_stream.PutU8((byte)length);
-				_stream.PutData(value);
-				break;
-			case < 65535:
-				WriteType(DataType.ByteArrayU16);
-				_stream.PutU16((ushort)length);
-				_stream.PutData(value);
-				break;
-			default:
-				WriteType(DataType.ByteArrayU32);
-				_stream.PutU32((uint)length);
-				_stream.PutData(value);
-				break;
-		}
-
-		return this;
-	}
-
-	public byte[] ReadBytes()
-	{
-		DataType type = ReadType();
-
-		return type switch
-		{
-			DataType.ByteArrayEmpty => Array.Empty<byte>(),
-			DataType.ByteArrayU8 => (byte[])_stream.GetData(_stream.GetU8())[1],
-			DataType.ByteArrayU16 => (byte[])_stream.GetData(_stream.GetU16())[1],
-			DataType.ByteArrayU32 => (byte[])_stream.GetData((int)_stream.GetU32())[1],
-			_ => AssertAndReturnEmpty($"Expected ByteArray, got {type}")
-		};
-	}
-
-	public GDNetBuffer WriteString(string value)
-	{
-		WriteType(DataType.String);
-		_stream.PutString(value);
-		return this;
-	}
-
-	public string ReadString()
-	{
-		ReadType();
-		return _stream.GetString();
-	}
-
-	public GDNetBuffer WriteVector3(Vector3 value)
-	{
-		WriteType(DataType.Vector3);
-		_stream.PutFloat(value.X);
-		_stream.PutFloat(value.Y);
-		_stream.PutFloat(value.Z);
-		return this;
-	}
-
-	public Vector3 ReadVector3()
-	{
-		Assert(ReadType() == DataType.Vector3, $"Expected Vector3, got {ReadType()}");
-		return new Vector3(_stream.GetFloat(), _stream.GetFloat(), _stream.GetFloat());
-	}
-
-	public GDNetBuffer WriteVector2(Vector2 value)
-	{
-		WriteType(DataType.Vector2);
-		_stream.PutFloat(value.X);
-		_stream.PutFloat(value.Y);
-		return this;
-	}
-
-	public Vector2 ReadVector2()
-	{
-		Assert(ReadType() == DataType.Vector2, $"Expected Vector2, got {ReadType()}");
-		return new Vector2(_stream.GetFloat(), _stream.GetFloat());
-	}
-
-	public GDNetBuffer WriteFloat(float value)
-	{
-		if (float.IsFinite(value))
-		{
-			WriteType(DataType.Float);
-			_stream.PutFloat(value);
-		}
-		else
-		{
-			WriteType(DataType.Double);
-			_stream.PutDouble(value);
-		}
-
-		return this;
-	}
-
-	public float ReadFloat()
-	{
-		DataType type = ReadType();
-
-		return type switch
-		{
-			DataType.Float => _stream.GetFloat(),
-			DataType.Double => (float)_stream.GetDouble(),
-			_ => AssertAndReturn<float>($"Expected Float or Double, got {type}")
-		};
-	}
-
-	public GDNetBuffer WriteArraySimple(Godot.Collections.Array array)
-	{
-		WriteType(DataType.ArraySimple);
-		_stream.PutVar(array);
-		return this;
-	}
-
-	public Godot.Collections.Array ReadArraySimple()
-	{
-		Assert(ReadType() == DataType.ArraySimple, $"Expected Array, got {ReadType()}");
-		return _stream.GetVar().As<Godot.Collections.Array>();
-	}
-
-    public GDNetBuffer WriteDictionarySimple(Godot.Collections.Dictionary dict)
+    public GDNetBuffer()
     {
-        WriteType(DataType.DictSimple);
-        _stream.PutVar(dict);
-        return this;
+        _stream = new GDNetStream();
+    }
+    internal enum VarType: byte
+    {
+        Null,
+        GodotVar,
+        Object,
+
+        Bool,
+        Int8,
+        Int16,
+        Int32,
+        Int64,
+
+        UInt8,
+        UInt16,
+        UInt32,
+        UInt64,
+
     }
 
-	public Godot.Collections.Dictionary ReadDictionarySimple()
-	{
-		DataType type = ReadType();
-		return (Godot.Collections.Dictionary)_stream.GetVar();
-	}
-
-    public GDNetBuffer WriteObjectAuto(GodotObject obj)
-	{
-		if (!IsInstanceValid(obj))
-		{
-			WriteNull();
-			return this;
-		}
-
-		if (HasCustomSerialization(obj))
-		{
-			WriteCustomObject(obj);
-			return this;
-		}
-
-		return obj switch
-		{
-			Node node when node.IsInsideTree() => WriteNodeReference(node),
-			Resource resource => WriteResource(resource),
-			_ => WriteFullObject(obj)
-		};
-	}
-
-	public GDNetBuffer WriteNodeReference(Node node)
-	{
-		WriteType(DataType.NodeReference);
-		WriteString(node.GetPath().ToString());
-		return this;
-	}
-
-	public Node ReadNodeReference()
-	{
-		Assert(ReadType() == DataType.NodeReference, $"Expected NodeReference, got {ReadType()}");
-		return GDNet.Instance.GetNode(ReadString());
-	}
-
-    public GDNetBuffer WriteResource(Resource resource)
+    internal enum GodotVarType : byte
     {
-        long hashId = -1;
+        Null,
+        Internal,
+        RawBytes,
+        Int,
+        Bool,
+        String,
+    }
 
-        if (resource.ResourcePath != "")
+    private delegate void WriteDelegate(GDNetBuffer buffer, object value);
+    private static readonly System.Collections.Generic.Dictionary<Type, WriteDelegate> _writers = new();
+
+    private delegate object ReadDelegate(GDNetBuffer buffer);
+    private static readonly System.Collections.Generic.Dictionary<VarType, ReadDelegate> _readers = new();
+
+    private delegate void WriteGodotVarDelegate(GDNetBuffer buffer, Variant value);
+    private static readonly System.Collections.Generic.Dictionary<Variant.Type, WriteGodotVarDelegate> _writersGodotVar = new();
+
+    private delegate object ReadGodotVarDelegate(GDNetBuffer buffer);
+    private static readonly System.Collections.Generic.Dictionary<GodotVarType, ReadGodotVarDelegate> _readersGodotVar = new();
+
+    static GDNetBuffer()
+    {
+        _writers[typeof(object)] = (b, v) => { b._WriteVarType(VarType.Object); b.WriteObject(v); };
+        _readers[VarType.Object] = b => b.ReadObject();
+
+        _writers[typeof(Variant)] = (b, v) => { b._WriteVarType(VarType.GodotVar); b.WriteVar((Variant)v); };
+        _readers[VarType.GodotVar] = b => b.ReadVar();
+
+        _writers[typeof(bool)] = (b, v) => { b._WriteVarType(VarType.Bool); b.WriteBool((bool)v); };
+        _readers[VarType.Bool] = b =>  b.ReadBool();
+
+        _writers[typeof(byte)] = (b, v) => { b._WriteVarType(VarType.UInt8); b.WriteUInt8((byte)v); };
+        _readers[VarType.UInt8] = b => b.ReadUInt8();
+
+        _writers[typeof(sbyte)] = (b, v) => { b._WriteVarType(VarType.Int8); b.WriteInt8((sbyte)v); };
+        _readers[VarType.Int8] = b => b.ReadInt8();
+
+        _writers[typeof(short)] = (b, v) => { b._WriteVarType(VarType.Int16); b.WriteInt16((short)v); };
+        _readers[VarType.Int16] = b => b.ReadInt16();
+
+        _writers[typeof(ushort)] = (b, v) => { b._WriteVarType(VarType.UInt16); b.WriteUInt16((ushort)v); };
+        _readers[VarType.UInt16] = b => b.ReadUInt16();
+
+        _writers[typeof(int)] = (b, v) => { b._WriteVarType(VarType.Int32); b.WriteInt32((int)v); };
+        _readers[VarType.Int32] = b => b.ReadInt32();
+
+        _writers[typeof(uint)] = (b, v) => { b._WriteVarType(VarType.UInt32); b.WriteUInt32((uint)v); };
+        _readers[VarType.UInt32] = b => b.ReadUInt32();
+
+        _writers[typeof(long)] = (b, v) => { b._WriteVarType(VarType.Int64); b.WriteInt64((long)v); };
+        _readers[VarType.Int64] = b => b.ReadInt64();
+
+        _writers[typeof(ulong)] = (b, v) => { b._WriteVarType(VarType.UInt64); b.WriteUInt64((ulong)v); };
+        _readers[VarType.UInt64] = b => b.ReadUInt64();
+
+
+        _writersGodotVar[Variant.Type.Int] = (b, v) => { b._WriteGodotVarType(GodotVarType.Int); b.WriteLong((long)v); };
+        _readersGodotVar[GodotVarType.Int] = b =>  b.ReadLong();
+
+        _writersGodotVar[Variant.Type.Bool] = (b, v) => { b._WriteGodotVarType(GodotVarType.Bool); b.WriteBool((bool)v); };
+        _readersGodotVar[GodotVarType.Bool] = b => b.ReadBool();
+
+        _writersGodotVar[Variant.Type.String] = (b, v) => { b._WriteGodotVarType(GodotVarType.String); b.WriteString((string)v); };
+        _readersGodotVar[GodotVarType.String] = b => b.ReadString();
+
+        _writersGodotVar[Variant.Type.PackedByteArray] = (b, v) => { b._WriteGodotVarType(GodotVarType.RawBytes); b.WriteBytesDynamic((byte[])v); };
+        _readersGodotVar[GodotVarType.RawBytes] = b => b.ReadBytesDynamic();
+        _readersGodotVar[GodotVarType.Internal] = b => GD.BytesToVar(b.ReadBytesDynamic());
+    }
+
+    public void Seek(int position) => _stream.Seek(position);
+    public int Position => _stream.Position;
+    public int Length => _stream.Length;
+
+    public int AvailableBytes => Length - Position;
+
+    public int Size => _stream.Length;
+
+    public void Clear() => _stream.Clear();
+
+    protected override void Dispose(bool disposing)
+    {
+        _stream?.Dispose();
+        base.Dispose(disposing);
+    }
+
+    public void SetBytes(byte[] bytes)
+    {
+        _stream.SetBytes(bytes);
+    }
+
+    public byte[] GetBytes()
+    {
+        return _stream.GetBytes();
+    }
+
+    public void WriteByte(byte value) => _stream.WriteByte(value);
+    public byte ReadByte() => _stream.ReadByte();
+    public void WriteBool(bool value) => _stream.WriteBool(value);
+    public bool ReadBool() => _stream.ReadBool();
+    public void WriteInt8(sbyte value) => _stream.WriteInt8(value);
+    public sbyte ReadInt8() => _stream.ReadInt8();
+    public void WriteInt16(short value) => _stream.WriteInt16(value);
+    public short ReadInt16() => _stream.ReadInt16();
+    public void WriteInt32(int value) => _stream.WriteInt32(value);
+    public int ReadInt32() => _stream.ReadInt32();
+    public void WriteInt64(long value) => _stream.WriteInt64(value);
+    public long ReadInt64() => _stream.ReadInt64();
+    public void WriteUInt8(byte value) => _stream.WriteUInt8(value);
+    public byte ReadUInt8() => _stream.ReadUInt8();
+    public void WriteUInt16(ushort value) => _stream.WriteUInt16(value);
+    public ushort ReadUInt16() => _stream.ReadUInt16();
+    public void WriteUInt32(uint value) => _stream.WriteUInt32(value);
+    public uint ReadUInt32() => _stream.ReadUInt32();
+    public void WriteUInt64(ulong value) => _stream.WriteUInt64(value);
+    public ulong ReadUInt64() => _stream.ReadUInt64();
+    public void WriteString(string value) => _stream.WriteString(value);
+    public string ReadString() => _stream.ReadString();
+
+    public void WriteFullNodeRef(Node node)
+    {
+        WriteString(node.GetPath().ToString());
+    }
+
+    public Node ReadFullNodeRef()
+    {
+        return GDNet.Instance.GetNode(ReadString());
+    }
+
+    public void WriteLong(long value)
+    {
+        ulong zigzag = (ulong)((value << 1) ^ (value >> 63));
+
+        while (zigzag >= 0x80)
         {
-            string uid = ResourceUid.PathToUid(resource.ResourcePath);
-            hashId = ResourceUid.TextToId(uid);
+            WriteByte((byte)(zigzag | 0x80));
+            zigzag >>= 7;
+        }
+        WriteByte((byte)zigzag);
+    }
+
+    public long ReadLong()
+    {
+        ulong result = 0;
+        int shift = 0;
+        byte b;
+
+        do
+        {
+            b = ReadByte();
+            result |= (ulong)(b & 0x7F) << shift;
+            shift += 7;
+
+            if (shift > 63)
+                throw new InvalidOperationException("VLQ too long!");
+
+        } while ((b & 0x80) != 0);
+
+        return (long)((result >> 1) ^ (ulong)(-(long)(result & 1)));
+    }
+
+    public void WriteBytes(byte[] bytes) => _stream.WriteBytes(bytes);
+    public byte[] ReadBytes(int count) => _stream.ReadBytes(count);
+
+    public void WriteBytesDynamic(byte[] bytes)
+    {
+        WriteLong(bytes.Length);
+        _stream.WriteBytes(bytes);
+    }
+
+    public byte[] ReadBytesDynamic()
+    {
+        return _stream.ReadBytes((int)ReadLong());
+    }
+
+    private void _WriteVarType(VarType type)
+    {
+        _stream.WriteByte((byte)type);
+    }
+
+    private VarType _ReadVarType()
+    {
+        return (VarType)_stream.ReadByte();
+    }
+
+    private void _WriteGodotVarType(GodotVarType type)
+    {
+        _stream.WriteByte((byte)type);
+    }
+
+    private GodotVarType _ReadGodotVarType()
+    {
+        return (GodotVarType)_stream.ReadByte();
+    }
+
+    public void Write(object value)
+    {
+        if (value == null)
+        {
+            _WriteVarType(VarType.Null);
+            return;
         }
 
-        if (hashId == -1)
+        if (_writers.TryGetValue(value.GetType(), out var writer))
         {
-            return WriteFullObject(resource);
+            writer(this, value);
         }
 
-        WriteType(DataType.Resource);
-        WriteInt64(hashId);
+        else
+        {
+            _WriteVarType(VarType.Null);
+            GD.PushError($"Unsupported type: {value.GetType()}");
+        }
 
-        return this;
+    }
+
+    private void WriteObject(object value)
+    {
+
+    }
+
+    private object ReadObject()
+    {
+        return null;
+    }
+
+    public void WriteResource(Resource resource)
+    {
+        long hash = ResourceUid.TextToId(ResourceUid.PathToUid(resource.ResourcePath));
+        WriteInt64(hash);
     }
 
     public Resource ReadResource()
     {
-        DataType type = ReadType();
-
-		switch (type)
-		{
-			case DataType.Resource:
-				long hashId = ReadInt64();
-				return GD.Load<Resource>(ResourceUid.GetIdPath(hashId));
-
-			case DataType.FullObject:
-				return (Resource)ReadFullObject();
-				
-		}
-
-		return null;
+        string id = ResourceUid.IdToText(ReadInt64());
+        return GD.Load(id);
     }
 
-    public GDNetBuffer WriteFullObject(GodotObject obj)
-	{
-		WriteType(DataType.FullObject);
+    public void WriteSerializable(IGDNetSerializable value)
+    {
+        WriteString(value.GetType().FullName);
+        value.Serialize(this);
+    }
 
-		FullObjectType type = obj switch
-		{
-			Node => FullObjectType.Node,
-			Resource => FullObjectType.Resource,
-			RefCounted => FullObjectType.RefCounted,
-			GodotObject => FullObjectType.Object,
-			_ => FullObjectType.Other
-		};
+    public T ReadSerializable<T>() where T : IGDNetSerializable
+    {
+        Type type = Type.GetType(ReadString());
+        var obj = (IGDNetSerializable)Activator.CreateInstance(type);
+        obj.Deserialize(this);
+        return (T)obj;
+    }
 
-		_stream.PutU8((byte)type);
+    public T ReadResource<T>() where T: Resource
+    {
+        string id = ResourceUid.IdToText(ReadInt64());
+        return (T)GD.Load(id);
+    }
 
-		if (type == FullObjectType.Other)
-		{
-			WriteString(obj.GetClass());
-		}
+    public object Read()
+    {
+        VarType type = _ReadVarType();
 
-		bool hasScript = obj.GetScript().VariantType != Variant.Type.Nil;
-		WriteBool(hasScript);
+        if (_readers.TryGetValue(type, out var reader))
+        {
+            return reader(this);
+        }
 
-		if (hasScript)
-		{
-			WriteResource((Resource)obj.GetScript());
-		}
+        GD.PushError($"Unknown VarType: {type}");
+        return null;
+    }
 
-		return this;
-	}
+    public void WriteVar(Variant value)
+    {
+        if (_writersGodotVar.TryGetValue(value.VariantType, out var writer))
+        {
+            writer(this, value);
+        }
+        else
+        {
+            _WriteGodotVarType(GodotVarType.Internal);
+            WriteBytesDynamic(GD.VarToBytes(value));
+        }
+    }
 
-	public GodotObject ReadFullObject()
-	{
-		Assert(ReadType() == DataType.FullObject, $"Expected FullObject, got {ReadType()}");
+    public Variant ReadVar()
+    {
+        GodotVarType type = _ReadGodotVarType();
 
-		FullObjectType type = (FullObjectType)_stream.GetU8();
+        if (_readersGodotVar.TryGetValue(type, out var reader))
+        {
+            return (Variant)reader(this);
+        }
 
-		GodotObject obj = type switch
-		{
-			FullObjectType.Object => new GodotObject(),
-			FullObjectType.Node => new Node(),
-			FullObjectType.Resource => new Resource(),
-			FullObjectType.RefCounted => new RefCounted(),
-			FullObjectType.Other => (GodotObject)ClassDB.Instantiate(ReadString()),
-			_ => null
-		};
+        GD.PushError($"Unknown VarType: {type}");
+        return new Variant();
+    }
 
-		if (ReadBool())
-		{
-			obj.SetScript(ReadResource());
-		}
-
-		return obj;
-	}
-
-	public GDNetBuffer WriteCustomObject(GodotObject obj)
-	{
-		WriteType(DataType.Custom);
-		WriteResource((Resource)obj.GetScript());
-
-		byte[] bytes = new byte[0];
-		obj.Call(CustomSerializeMethod, bytes);
-
-		WriteBytes(bytes);
-		return this;
-	}
-
-	public GodotObject ReadCustomObject()
-	{
-		Assert(ReadType() == DataType.Custom, $"Expected Custom, got {ReadType()}");
-
-		Resource script = ReadResource();
-		byte[] bytes = ReadBytes();
-
-		return (GodotObject)script.Call(CustomDeserializeMethod, bytes);
-	}
-
-	#endregion
-
-	#region Blocking Methods
-
-	public GDNetBuffer BlockWriteMethod(string methodName)
-	{
-		_blockedWriteMethods.Add(methodName.ToSnakeCase());
-		return this;
-	}
-
-	public GDNetBuffer UnblockWriteMethod(string methodName)
-	{
-		_blockedWriteMethods.Remove(methodName.ToSnakeCase());
-		return this;
-	}
-
-	public GDNetBuffer BlockReadMethod(string methodName)
-	{
-		_blockedReadMethods.Add(methodName.ToSnakeCase());
-		return this;
-	}
-
-	public GDNetBuffer UnblockReadMethod(string methodName)
-	{
-		_blockedReadMethods.Remove(methodName.ToSnakeCase());
-		return this;
-	}
-
-	public GDNetBuffer BlockWriteMethods()
-	{
-		foreach (var pair in _writeMethods)
-		{
-			BlockWriteMethod(pair.Value.Method.Name);
-		}
-		return this;
-	}
-
-	public GDNetBuffer UnblockWriteMethods()
-	{
-		foreach (var pair in _writeMethods)
-		{
-			UnblockWriteMethod(pair.Value.Method.Name);
-		}
-		return this;
-	}
-
-	public GDNetBuffer BlockReadMethods()
-	{
-		foreach (var pair in _readMethods)
-		{
-			BlockReadMethod(pair.Value.Method.Name);
-		}
-		return this;
-	}
-
-	public GDNetBuffer UnblockReadMethods()
-	{
-		foreach (var pair in _readMethods)
-		{
-			UnblockReadMethod(pair.Value.Method.Name);
-		}
-		return this;
-	}
-
-	public GDNetBuffer ClearBlockers()
-	{
-		_blockedWriteMethods.Clear();
-		_blockedReadMethods.Clear();
-		return this;
-	}
-
-	public GDNetBuffer ClearReadBlockers()
-	{
-		_blockedReadMethods.Clear();
-		return this;
-	}
-
-	public GDNetBuffer ClearWriteBlockers()
-	{
-		_blockedWriteMethods.Clear();
-		return this;
-	}
-
-	#endregion
-
-	#region Private Helpers
-
-	private bool HasCustomSerialization(GodotObject obj) =>
-		obj.HasMethod(CustomSerializeMethod) && obj.HasMethod(CustomDeserializeMethod);
-
-	private void Assert(bool condition, string message)
-	{
-		if (!condition)
-		{
-			GD.PushError(message);
-		}
-	}
-
-	private byte[] AssertAndReturnEmpty(string message)
-	{
-		Assert(false, message);
-		return Array.Empty<byte>();
-	}
-
-	private T AssertAndReturn<T>(string message)
-	{
-		Assert(false, message);
-		return default;
-	}
-
-	#endregion
 }

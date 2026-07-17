@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ddbu03jcwhfia"]
 
 [ext_resource type="Texture2D" uid="uid://kjt1cet87n64" path="res://textures/grass/grass1.png" id="1_5xa05"]
-[ext_resource type="Script" uid="uid://bwxsv3p0he31d" path="res://src/game/scenes/world.gd" id="1_v2tld"]
+[ext_resource type="Script" uid="uid://b31kgv7w1s3tf" path="res://src/game/GameWorld.cs" id="1_v2tld"]
 [ext_resource type="Texture2D" uid="uid://cu10btgd4flps" path="res://textures/grass/grass1_normal.png" id="2_gc3ob"]
 [ext_resource type="Script" uid="uid://cmx5x8g8wntox" path="res://src/game/network/NetPlayerSpawner.cs" id="2_sty11"]
 [ext_resource type="PackedScene" uid="uid://ogoa6gjeikh" path="res://src/game/player/player.tscn" id="3_5xa05"]

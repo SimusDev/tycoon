@@ -49,17 +49,17 @@ public partial class Inventory : Node
         
     }
 
-    [Rpc(mode: MultiplayerApi.RpcMode.AnyPeer, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void SyncToSender()
-    {
-        RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer);
-    }
 
-    [Rpc(mode: MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void ReceiveFromSyncer()
-    {
-        
-    }
+	[Rpc(mode: MultiplayerApi.RpcMode.AnyPeer, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void SyncToSender()
+	{
+		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer);
+	}
 
+	[Rpc(mode: MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void ReceiveFromSyncer()
+	{
+
+	}
 }
 
