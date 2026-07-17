@@ -1,8 +1,11 @@
 [gd_scene format=3 uid="uid://ogoa6gjeikh"]
 
 [ext_resource type="Script" uid="uid://cergfw7flr4fn" path="res://src/game/scripts/character/CharacterMovement.cs" id="1_3sks1"]
+[ext_resource type="Script" uid="uid://dl1aia5nkwjn6" path="res://src/game/scripts/inventory/Inventory.cs" id="1_26fnn"]
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
+[ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
+[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="3_dr81t"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
@@ -10,6 +13,15 @@
 [ext_resource type="Script" uid="uid://h3fspgjlyyjc" path="res://network/NetNodeSynchronizer.cs" id="8_yxoci"]
 [ext_resource type="Script" uid="uid://csi3ql3vlyeu3" path="res://network/resources/NetSyncData.cs" id="9_g7k81"]
 [ext_resource type="Script" uid="uid://kmw3wwhoyb60" path="res://network/resources/NetSyncProperty.cs" id="9_t8tym"]
+
+[sub_resource type="Resource" id="Resource_fnvcv"]
+script = ExtResource("3_dr81t")
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
+[sub_resource type="Resource" id="Resource_sx3cy"]
+script = ExtResource("2_viwye")
+_itemStack = SubResource("Resource_fnvcv")
+metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [sub_resource type="GDScript" id="GDScript_0r077"]
 script/source = "extends Node3D
@@ -90,6 +102,21 @@ metadata/_custom_type_script = "uid://csi3ql3vlyeu3"
 
 [node name="Player" type="CharacterBody3D" unique_id=1518439692]
 
+[node name="Inventory" type="Node" parent="." unique_id=423074224]
+script = ExtResource("1_26fnn")
+_slots = Array[ExtResource("2_viwye")]([SubResource("Resource_sx3cy")])
+metadata/_custom_type_script = "uid://dl1aia5nkwjn6"
+
+[node name="StateMachine" type="Node" parent="." unique_id=1463452377]
+script = ExtResource("1_sp1u7")
+onReadyState = "Idle"
+metadata/_custom_type_script = "uid://uwx7o3qw48xq"
+
+[node name="CharacterMovement" type="Node" parent="." unique_id=138591935 node_paths=PackedStringArray("StateMachine")]
+script = ExtResource("1_3sks1")
+StateMachine = NodePath("../StateMachine")
+metadata/_custom_type_script = "uid://cergfw7flr4fn"
+
 [node name="PlayerHead" type="Node3D" parent="." unique_id=1122001657 node_paths=PackedStringArray("Player", "HeadCamera")]
 transform = Transform3D(1, 0, 0, 0, 0.9999995, 0, 0, 0, 0.9999995, 0, 1.5, 0)
 script = ExtResource("2_yr2hd")
@@ -101,16 +128,6 @@ metadata/_custom_type_script = "uid://c46eu7wy7s7ck"
 
 [node name="la" type="Marker3D" parent="PlayerHead" unique_id=1850751389]
 transform = Transform3D(1, 0, 0, 0, 0.9999996, 0, 0, 0, 0.9999996, 0, -0.1649338, -2.8567257)
-
-[node name="StateMachine" type="Node" parent="." unique_id=1463452377]
-script = ExtResource("1_sp1u7")
-onReadyState = "Idle"
-metadata/_custom_type_script = "uid://uwx7o3qw48xq"
-
-[node name="CharacterMovement" type="Node" parent="." unique_id=138591935 node_paths=PackedStringArray("StateMachine")]
-script = ExtResource("1_3sks1")
-StateMachine = NodePath("../StateMachine")
-metadata/_custom_type_script = "uid://cergfw7flr4fn"
 
 [node name="Visuals" type="Node3D" parent="." unique_id=1317231076]
 

@@ -6,7 +6,7 @@ public partial class ItemData : Resource
 {
     [Export] public string Id = "ItemData";
     [Export] public string[] Tags;
-    [Export] public ViewModel Viewmodel = null;
+    [Export] public ViewModel ViewModel = null;
     [Export] public ItemStackConfig ItemStackConfig = new();
     [Export] public Dictionary Data = [];
 

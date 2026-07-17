@@ -1,8 +1,17 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://ga210emhdoom"]
 
 [ext_resource type="Script" uid="uid://b4j1febdbudcn" path="res://src/game/scripts/item_data/ItemData.cs" id="1_1w4xv"]
+[ext_resource type="Script" uid="uid://twdjpnho6g1l" path="res://src/game/scripts/inventory/ItemStackConfig.cs" id="1_tea0p"]
+[ext_resource type="Script" uid="uid://n6vtpfu7uk4c" path="res://src/game/scripts/item_data/PrefabViewModel.cs" id="2_8rdpo"]
+
+[sub_resource type="Resource" id="Resource_fb2q8"]
+script = ExtResource("1_tea0p")
+
+[sub_resource type="Resource" id="Resource_tlltx"]
+script = ExtResource("2_8rdpo")
+metadata/_custom_type_script = "uid://n6vtpfu7uk4c"
 
 [resource]
 script = ExtResource("1_1w4xv")
-Data = null
+Viewmodel = SubResource("Resource_tlltx")
 metadata/_custom_type_script = "uid://b4j1febdbudcn"
