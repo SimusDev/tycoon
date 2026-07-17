@@ -1,6 +1,7 @@
 using Godot;
 using System;
 
+[GlobalClass]
 public partial class Inventory : Node
 {
     private GDNetStream _stream = new();
