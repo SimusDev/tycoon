@@ -3,6 +3,7 @@ using Godot.Collections;
 using System;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 [GlobalClass]
@@ -11,8 +12,9 @@ public partial class GDNetRpc : GDNetCommunicator
 	public GDNetBuffer Buffer = new();
 
 	private System.Collections.Generic.Dictionary<string, Callable> _methodBinds = new();
+	private System.Collections.Generic.Dictionary<string, MethodInfo> _methodInfoBinds = new();
 
-	private System.Collections.Generic.Dictionary<string, ushort> _rpcIdRegistry = new();
+    private System.Collections.Generic.Dictionary<string, ushort> _rpcIdRegistry = new();
 	private System.Collections.Generic.Dictionary<ushort, string> _rpcNameRegistry = new();
 	private System.Collections.Generic.Dictionary<string, Dictionary<string, Variant>> _cfgRegistry = new();
 
@@ -259,12 +261,35 @@ public partial class GDNetRpc : GDNetCommunicator
 		return null;
 	}
 
+	public void BindAll(object target)
+	{
+        var type = target.GetType();
+        var methods = type.GetMethods(
+            BindingFlags.Public |
+            BindingFlags.NonPublic |
+            BindingFlags.Instance
+        );
+
+        foreach (var method in methods)
+        {
+            var attr = method.GetCustomAttribute<GDNetRpcAttribute>();
+            if (attr == null) continue;
+
+			Dictionary<string, Variant> cfg = new();
+			cfg["channel"] = attr.Channel;
+			cfg["mode"] = GDNetRpcAttribute.ModeToString(attr.Mode);
+			cfg["permission"] = GDNetRpcAttribute.PermissionToString(attr.Permission);
+			Register(method.Name, cfg);
+			_methodInfoBinds[method.Name] = method;
+        }
+    }
+
 	public void BindMethod(string method, Callable callable)
 	{
 		_methodBinds[method] = callable;
 	}
 
-	private bool Validate(long peerId, int authority, Dictionary<string, Variant> cfg)
+    private bool Validate(long peerId, int authority, Dictionary<string, Variant> cfg)
 	{
 		switch (cfg["permission"].As<string>())
 		{

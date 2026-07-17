@@ -12,6 +12,27 @@ public class GDNetRpcAttribute : Attribute
     {
         Permission = permission;
     }
+    public static string ModeToString(Mode mode)
+    {
+        return mode switch
+        {
+            Mode.Reliable => "reliable",
+            Mode.Unreliable => "unreliable",
+            Mode.UnreliableOrdered => "unreliable_ordered",
+            _ => "",
+        };
+    }
+
+    public static string PermissionToString(Permission permission)
+    {
+        return permission switch
+        {
+            Permission.Any => "any",
+            Permission.Authority => "authority",
+            Permission.Server => "server",
+            _ => "",
+        };
+    }
 }
 
 public enum Permission
@@ -27,5 +48,6 @@ public enum Mode
     Unreliable,
     UnreliableOrdered,
 }
+
 
 
