@@ -259,14 +259,30 @@ public partial class GDNetBuffer : RefCounted
 
     public void WriteResource(Resource resource)
     {
+        if (resource == null)
+        {
+            WriteBool(false);
+            return;
+        }
+
         long hash = ResourceUid.TextToId(ResourceUid.PathToUid(resource.ResourcePath));
         WriteInt64(hash);
     }
 
     public Resource ReadResource()
     {
+        bool isNull = ReadBool();
+        if (isNull)
+            return null;
+
         string id = ResourceUid.IdToText(ReadInt64());
         return GD.Load(id);
+    }
+
+    public T ReadResource<T>() where T : Resource
+    {
+        string id = ResourceUid.IdToText(ReadInt64());
+        return (T)GD.Load(id);
     }
 
     public void WriteSerializable(IGDNetSerializable value)
@@ -281,12 +297,6 @@ public partial class GDNetBuffer : RefCounted
         var obj = (IGDNetSerializable)Activator.CreateInstance(type);
         obj.Deserialize(this);
         return (T)obj;
-    }
-
-    public T ReadResource<T>() where T: Resource
-    {
-        string id = ResourceUid.IdToText(ReadInt64());
-        return (T)GD.Load(id);
     }
 
     public object Read()

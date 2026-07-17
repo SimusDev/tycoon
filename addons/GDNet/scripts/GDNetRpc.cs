@@ -1,7 +1,9 @@
 using Godot;
 using Godot.Collections;
 using System;
+using System.Linq;
 using System.Reflection;
+using System.Buffers;
 
 [GlobalClass]
 public partial class GDNetRpc : GDNetCommunicator
@@ -9,7 +11,7 @@ public partial class GDNetRpc : GDNetCommunicator
 	public GDNetBuffer Buffer = new();
 
 	private System.Collections.Generic.Dictionary<string, Callable> _methodBinds = new();
-	private System.Collections.Generic.Dictionary<string, MethodInfo> _methodInfoBinds = new();
+	private System.Collections.Generic.Dictionary<string, Delegate> _delegateBinds = new();
 
     private System.Collections.Generic.Dictionary<string, ushort> _rpcIdRegistry = new();
 	private System.Collections.Generic.Dictionary<ushort, string> _rpcNameRegistry = new();
@@ -19,6 +21,12 @@ public partial class GDNetRpc : GDNetCommunicator
 
 	public int Authority = GDNet.ServerID;
 	private int _remoteSender = 0;
+
+	public GDNetRpc()
+	{
+
+	}
+
 	public int GetRemoteSender()
 	{
 		return _remoteSender;
@@ -86,7 +94,7 @@ public partial class GDNetRpc : GDNetCommunicator
 		
 		if (GDNet.isServer)
 		{
-			ReceiveFromPeerType(GDNet.uniqueID, target, method, type, args);
+            ReceivedRpcPacketLocally(GDNet.ServerID, target, GDNet.ServerID, method, type, args);
 			return;
 		}
 
@@ -95,14 +103,14 @@ public partial class GDNetRpc : GDNetCommunicator
 			return;
 
 		Buffer.Clear();
-        Buffer.Write((byte)type);
+        Buffer.WriteByte((byte)type);
 
 		if (type == RpcType.Target)
 		{
 			Buffer.WriteInt32(target);
 		}
 
-		Buffer.WriteUInt16(_rpcIdRegistry[method]);
+		Buffer.WriteLong(_rpcIdRegistry[method]);
 		Buffer.WriteUInt8((byte)args.Length);
 
 		foreach (object variant in args)
@@ -114,52 +122,31 @@ public partial class GDNetRpc : GDNetCommunicator
 		SendToServer(Buffer.GetBytes());
 	}
 
-	private byte[] ServerSerializeRpc(int target, string method, RpcType type, object[] args)
-	{
-        Buffer.Clear();
-        Buffer.Write((byte)type);
-
-        if (type == RpcType.Target)
-        {
-            Buffer.WriteInt32(target);
-        }
-
-        Buffer.WriteUInt16(_rpcIdRegistry[method]);
-        Buffer.WriteUInt8((byte)args.Length);
-
-        foreach (object variant in args)
-        {
-            Buffer.Write(variant);
-        }
-
-        return Buffer.GetBytes();
+    private void ReceivedRpcPacketLocally(int fromPeer, int target, int sender, string method, RpcType type, object[] args)
+    {
+		bool isServer = GDNet.isServer;
     }
 
-	public override void ReceivedBytes(long peerId, byte[] data)
+    public override void ReceivedBytes(long peerId, byte[] data)
 	{
-		Buffer.Clear();
-		Buffer.SetBytes(data);
+        bool isServer = GDNet.isServer;
 
-		RpcType type = (RpcType)Buffer.ReadUInt8();
+        Buffer.SetBytes(data);
+		Buffer.Seek(0);
+
+		RpcType type = (RpcType)Buffer.ReadByte();
 		int targetId = -1;
+        int senderId = GDNet.ServerID;
 
-		if (type == RpcType.Target)
+		if (isServer)
 		{
-			targetId = Buffer.ReadInt32();
+			if (type == RpcType.Target)
+                targetId = (int)Buffer.ReadLong();
 		}
-
-		ushort rpcId = Buffer.ReadUInt16();
-		byte argsLength = Buffer.ReadUInt8();
-
-		object[] args = new object[argsLength];
-
-		if (argsLength > 0)
-		{
-			for (int i = 0; i < argsLength; i++)
-			{
-				args[i] = Buffer.Read();
-			}
-		}
+		else
+			senderId = (int)Buffer.ReadLong();
+		
+		ushort rpcId = (ushort)Buffer.ReadLong();
 
 		if (!_rpcNameRegistry.TryGetValue(rpcId, out string method))
 		{
@@ -167,71 +154,43 @@ public partial class GDNetRpc : GDNetCommunicator
 			return;
 		}
 
-		ReceiveFromPeerType(peerId, targetId, method, type, args);
-	}
+		byte argsLength = Buffer.ReadUInt8();
 
-	private void ReceiveFromPeerType(long peerId, int target, string method, RpcType type, object[] args)
-	{
-		bool isClientReceiver = !GDNet.isServer;
+        object[] args = ArrayPool<object>.Shared.Rent(argsLength);
 
-		Dictionary<string, Variant> cfg = _cfgRegistry[method];
-		if (!ValidateWithError(peerId, Authority, cfg))
-			return;
+        try
+        {
+            for (byte i = 0; i < argsLength; i++)
+            {
+                args[i] = Buffer.Read();
+            }
 
-		if (type == RpcType.OnServer)
-		{
-			type = RpcType.Target;
-			target = GDNet.ServerID;
-		}
+            ReceivedRpcPacketLocally((int)peerId, targetId, senderId, method, type, args);
+        }
 
-		_remoteSender = (int)peerId;
+        finally
+        {
+            ArrayPool<object>.Shared.Return(args, clearArray: true);
+        }
 
-		switch (type)
-		{
-			case RpcType.All:
-				TryCallMethodLocal(method, args);
 
-				if (isClientReceiver || (_observersEnabled && Observers.Length == 0))	
-					break;
-
-				UpdateModeAndChannel(cfg);
-				SendToAll(ServerSerializeRpc((int)peerId, method, type, args));
-
-				break;
-
-			case RpcType.Target:
-				if (target == GDNet.uniqueID)
-				{
-					TryCallMethodLocal(method, args);
-					break;
-				}
-
-				if (!isClientReceiver)
-				{
-					UpdateModeAndChannel(cfg);
-					SendTo(target, ServerSerializeRpc((int)peerId, method, type, args));
-				}
-
-				break;
-
-			case RpcType.Async:
-
-				break;
-			
-		}
-
-		_remoteSender = 0;
-	}
-
-	private Godot.Collections.Array _allocatedGDArgsArray = new();
+    }
 
 	private void TryCallMethodLocal(string method, object[] args)
 	{
-
+		if (_delegateBinds.TryGetValue(method, out var @delegate))
+		{
+			@delegate.DynamicInvoke(args);
+		}
 	}
 
-	public void BindAll(object target)
+	public void BindDelegate(string rpcMethod, Delegate @delegate)
 	{
+		_delegateBinds[rpcMethod] = @delegate;
+	}
+
+    public void BindAll(object target)
+    {
         var type = target.GetType();
         var methods = type.GetMethods(
             BindingFlags.Public |
@@ -244,15 +203,35 @@ public partial class GDNetRpc : GDNetCommunicator
             var attr = method.GetCustomAttribute<GDNetRpcAttribute>();
             if (attr == null) continue;
 
-			Dictionary<string, Variant> cfg = new();
-			cfg["channel"] = attr.Channel;
-			cfg["mode"] = GDNetRpcAttribute.ModeToString(attr.Mode);
-			cfg["permission"] = GDNetRpcAttribute.PermissionToString(attr.Permission);
-			Register(method.Name, cfg);
-			_methodInfoBinds[method.Name] = method;
+            var paramTypes = method.GetParameters().Select(p => p.ParameterType).ToArray();
+
+            Type delegateType;
+            if (method.ReturnType == typeof(void))
+            {
+                delegateType = paramTypes.Length == 0
+                    ? typeof(Action)
+                    : System.Linq.Expressions.Expression.GetDelegateType(
+                        paramTypes.Concat(new[] { typeof(void) }).ToArray()
+                    );
+            }
+            else
+            {
+                var types = paramTypes.Concat(new[] { method.ReturnType }).ToArray();
+                delegateType = System.Linq.Expressions.Expression.GetDelegateType(types);
+            }
+
+            var @delegate = method.CreateDelegate(delegateType, target);
+
+            Register(method.Name, new Dictionary<string, Variant>
+            {
+                ["channel"] = attr.Channel,
+                ["mode"] = GDNetRpcAttribute.ModeToString(attr.Mode),
+                ["permission"] = GDNetRpcAttribute.PermissionToString(attr.Permission)
+            });
+
+            BindDelegate(method.Name, @delegate);
         }
     }
-
     private bool Validate(long peerId, int authority, Dictionary<string, Variant> cfg)
 	{
 		switch (cfg["permission"].As<string>())

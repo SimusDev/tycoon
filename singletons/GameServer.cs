@@ -38,6 +38,8 @@ public partial class GameServer : Node
             QueueFree();
             return;
         }
+
+        GDNet.Instance.Setup();
         
         _instance = this;
         ProcessMode = ProcessModeEnum.Always;
