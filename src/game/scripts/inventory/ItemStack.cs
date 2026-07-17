@@ -4,15 +4,20 @@ using System;
 [GlobalClass]
 public partial class ItemStack : Resource
 {
-    public byte[] Serialize()
-    {
-        return [];
-    }
-    
-    
+    [Export] public ItemData ItemData;
+    public uint SkinId;
 
-    public static ItemStack Deserialize(byte[] bytes)
+    public static ItemStack CreateFrom(Node node)
     {
-        return new ItemStack();
+        ItemData itemData = ItemData.FindIn(node);
+        if (itemData != null)
+        {
+            ItemStack itemStack = new()
+            {
+                ItemData = itemData
+            };
+            return itemStack;
+        }
+        return null;
     }
 }
