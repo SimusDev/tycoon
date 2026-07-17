@@ -14,7 +14,9 @@ public partial class GDNetBufferO : RefCounted
     {
         Null,
         GodotVar,
+        Object,
 
+        Bool,
         Int8,
         Int16,
         Int32,
@@ -24,6 +26,62 @@ public partial class GDNetBufferO : RefCounted
         UInt16,
         UInt32,
         UInt64,
+
+    }
+
+    internal enum GodotVarType : byte
+    {
+        Null,
+    }
+
+    private delegate void WriteDelegate(GDNetBufferO buffer, object value);
+    private static readonly System.Collections.Generic.Dictionary<Type, WriteDelegate> _writers = new();
+
+    private delegate object ReadDelegate(GDNetBufferO buffer);
+    private static readonly System.Collections.Generic.Dictionary<VarType, ReadDelegate> _readers = new();
+
+    private delegate void WriteGodotVarDelegate(GDNetBufferO buffer, Variant value);
+    private static readonly System.Collections.Generic.Dictionary<Variant.Type, WriteGodotVarDelegate> _writersGodotVar = new();
+
+    private delegate object ReadGodotVarDelegate(GDNetBufferO buffer);
+    private static readonly System.Collections.Generic.Dictionary<GodotVarType, ReadGodotVarDelegate> _readersGodotVar = new();
+
+    static GDNetBufferO()
+    {
+        _writers[typeof(object)] = (b, v) => { b._WriteVarType(VarType.Object); b.WriteObject(v); };
+        _readers[VarType.Object] = b => b.ReadObject();
+
+        _writers[typeof(Variant)] = (b, v) => { b._WriteVarType(VarType.GodotVar); b.WriteVar((Variant)v); };
+        _readers[VarType.GodotVar] = b => b.ReadVar();
+
+        _writers[typeof(bool)] = (b, v) => { b._WriteVarType(VarType.Bool); b.WriteBool((bool)v); };
+        _readers[VarType.Bool] = b =>  b.ReadBool();
+
+        _writers[typeof(byte)] = (b, v) => { b._WriteVarType(VarType.UInt8); b.WriteUInt8((byte)v); };
+        _readers[VarType.UInt8] = b => b.ReadUInt8();
+
+        _writers[typeof(sbyte)] = (b, v) => { b._WriteVarType(VarType.Int8); b.WriteInt8((sbyte)v); };
+        _readers[VarType.Int8] = b => b.ReadInt8();
+
+        _writers[typeof(short)] = (b, v) => { b._WriteVarType(VarType.Int16); b.WriteInt16((short)v); };
+        _readers[VarType.Int16] = b => b.ReadInt16();
+
+        _writers[typeof(ushort)] = (b, v) => { b._WriteVarType(VarType.UInt16); b.WriteUInt16((ushort)v); };
+        _readers[VarType.UInt16] = b => b.ReadUInt16();
+
+        _writers[typeof(int)] = (b, v) => { b._WriteVarType(VarType.Int32); b.WriteInt32((int)v); };
+        _readers[VarType.Int32] = b => b.ReadInt32();
+
+        _writers[typeof(uint)] = (b, v) => { b._WriteVarType(VarType.UInt32); b.WriteUInt32((uint)v); };
+        _readers[VarType.UInt32] = b => b.ReadUInt32();
+
+        _writers[typeof(long)] = (b, v) => { b._WriteVarType(VarType.Int64); b.WriteInt64((long)v); };
+        _readers[VarType.Int64] = b => b.ReadInt64();
+
+        _writers[typeof(ulong)] = (b, v) => { b._WriteVarType(VarType.UInt64); b.WriteUInt64((ulong)v); };
+        _readers[VarType.UInt64] = b => b.ReadUInt64();
+
+
 
     }
 
@@ -138,6 +196,16 @@ public partial class GDNetBufferO : RefCounted
         return (VarType)_stream.ReadByte();
     }
 
+    private void _WriteGodotVarType(GodotVarType type)
+    {
+        _stream.WriteByte((byte)type);
+    }
+
+    private GodotVarType _ReadGodotVarType()
+    {
+        return (GodotVarType)_stream.ReadByte();
+    }
+
     public void Write(object value)
     {
         if (value == null)
@@ -146,66 +214,65 @@ public partial class GDNetBufferO : RefCounted
             return;
         }
 
-        TypeCode type = Type.GetTypeCode(value.GetType());
-
-        switch (type)
+        if (_writers.TryGetValue(value.GetType(), out var writer))
         {
-            case TypeCode.Object:
-                if (value is Variant)
-                {
-                    _WriteVarType(VarType.GodotVar);
-                    WriteVar((Variant)value);
-                }
-                else
-                {
-                    _WriteVarType(VarType.Null);
-                }
-
-                break;
-            case TypeCode.SByte:
-                _WriteVarType(VarType.Int8);
-                WriteInt8((sbyte)value);
-                break;
-            case TypeCode.Byte:
-                _WriteVarType(VarType.UInt8);
-                WriteUInt8((byte)value);
-                break;
-            case TypeCode.Int16:
-                _WriteVarType(VarType.Int16);
-                WriteInt16((short)value);
-                break;
-            case TypeCode.UInt16:
-                _WriteVarType(VarType.UInt16);
-                WriteUInt16((ushort)value);
-                break;
-           
+            writer(this, value);
         }
 
+        else
+        {
+            _WriteVarType(VarType.Null);
+            GD.PushError($"Unsupported type: {value.GetType()}");
+        }
+
+    }
+
+    private void WriteObject(object value)
+    {
+
+    }
+
+    private object ReadObject()
+    {
+        return null;
     }
 
     public object Read()
     {
         VarType type = _ReadVarType();
+
+        if (_readers.TryGetValue(type, out var reader))
+        {
+            return reader(this);
+        }
+
+        GD.PushError($"Unknown VarType: {type}");
         return null;
     }
 
-    public void WriteObject(object value)
+    public void WriteVar(Variant value)
     {
-
-    }
-
-    public object ReadObject()
-    {
-        return null;
-    }
-
-    public void WriteVar(Variant variant)
-    {
-
+        if (_writersGodotVar.TryGetValue(value.VariantType, out var writer))
+        {
+            writer(this, value);
+        }
+        else
+        {
+            _WriteGodotVarType(GodotVarType.Null);
+            GD.PushError($"Unsupported type: {value.VariantType}");
+        }
     }
 
     public Variant ReadVar()
     {
+        GodotVarType type = _ReadGodotVarType();
+
+        if (_readersGodotVar.TryGetValue(type, out var reader))
+        {
+            return (Variant)reader(this);
+        }
+
+        GD.PushError($"Unknown VarType: {type}");
         return new Variant();
     }
 

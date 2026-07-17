@@ -23,6 +23,7 @@ public partial class NetNodeSynchronizer : Node
     // ============ ОПТИМИЗАЦИЯ 3: БАТЧИНГ ============
     private readonly List<SyncPacket> _syncBatch = new();
     private readonly GDNetStream _stream = new();
+    private readonly GDNetStream _receiveStream = new();
 
     public override void _Ready()
     {
@@ -136,17 +137,17 @@ public partial class NetNodeSynchronizer : Node
     [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = 7, TransferMode = MultiplayerPeer.TransferModeEnum.Unreliable)]
     private void UpdateNodePropertiesBatch(byte[] data)
     {
-        var stream = new GDNetStream();
-        stream.SetBytes(data);
+        _receiveStream.SetBytes(data);
+        _receiveStream.Seek(0);
 
-        int count = stream.ReadInt32();
+        int count = _receiveStream.ReadInt32();
 
         for (int i = 0; i < count; i++)
         {
-            var path = stream.ReadString();
-            var property = stream.ReadString();
-            byte[] valueBytes = stream.ReadBytes(stream.ReadUInt16());
-            var mode = (MultiplayerPeer.TransferModeEnum)stream.ReadByte();
+            var path = _receiveStream.ReadString();
+            var property = _receiveStream.ReadString();
+            byte[] valueBytes = _receiveStream.ReadBytes(_receiveStream.ReadUInt16());
+            var mode = (MultiplayerPeer.TransferModeEnum)_receiveStream.ReadByte();
 
             UpdateNodeProperty(path, property, GD.BytesToVar(valueBytes), mode);
         }

@@ -57,7 +57,7 @@ public partial class GDNet : Node
 	public const string HashIDSalt = "GDNetHash";
 	public const string HashIDSaltResource = "GDNetHashResource";
 
-	private ulong _NextNetworkID = 0;
+	private long _NextNetworkID = 0;
 
 	private ConcurrentDictionary<ulong, ulong> _ObjectsByHashID = new();
 	private ConcurrentDictionary<ulong, ulong> _HashIDByObjects = new();
@@ -76,27 +76,10 @@ public partial class GDNet : Node
 	{
 		return uniqueID;
 	}
-
-	public void SetObjectHashID(GodotObject obj, ulong id)
-	{
-		_ObjectsByHashID[obj.GetInstanceId()] = id;
-		_HashIDByObjects[id] = obj.GetInstanceId();
-	}
-
-	public ulong GetObjectHashID(GodotObject obj)
-	{
-		return _ObjectsByHashID.GetValueOrDefault<ulong, ulong>(obj.GetInstanceId(), 0);
-	}
-
-	public GodotObject GetObjectByHashID(ulong id)
-	{
-		return InstanceFromId(_ObjectsByHashID.GetValueOrDefault<ulong, ulong>(id, 0));
-	}
-
-	public void AssignNetworkID(GodotObject obj)
+	public long GenerateNetworkID()
 	{
 		_NextNetworkID++;
-
+		return _NextNetworkID;
 	}
 
 	public static ulong HashString64(string input)

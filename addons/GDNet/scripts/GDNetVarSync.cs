@@ -49,10 +49,10 @@ public partial class GDNetVarSync : GDNetCommunicator
 		SendToServer(_stream.ToArray());
 	}
 
-    public override void ReceivedBytes(long peerId, byte[] data)
-    {
+	public override void ReceivedBytes(long peerId, byte[] data)
+	{
 		
-    }
+	}
 
 	public void BindVar(GodotObject obj, string name)
 	{

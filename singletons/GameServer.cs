@@ -6,10 +6,14 @@ public partial class GameServer : Node
 {
     private static GameServer _instance;
     public static GameServer Instance => _instance;
-    
-    enum NetTransferChannels
+
+    public const int ServerId = 1;
+
+    public enum TransferChannels: int
     {
-        
+        Default,
+        Inventory,
+        ItemStack,
     }
 
     private Dictionary<long, ServerPlayerData> _usersById = [];
