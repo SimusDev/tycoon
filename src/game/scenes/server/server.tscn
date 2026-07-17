@@ -264,6 +264,7 @@ text = "Play
 "
 
 [node name="Panel" type="Panel" parent="." unique_id=487321808]
+visible = false
 layout_mode = 0
 anchor_left = 0.0125
 anchor_top = 0.62222224

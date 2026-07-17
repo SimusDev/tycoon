@@ -20,12 +20,18 @@ public partial class PlayerHead : Node3D
         if (!isAuthority) return;
 
         if (IsInstanceValid(HeadCamera)) HeadCamera.MakeCurrent();
-        setMouseCaptureMode();
+        SetMouseCapture();
 
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
+        if (Input.IsActionJustPressed("ui_cancel"))
+        {
+            InverseMouseCapture();
+            return;
+        }
+
         if (@event is InputEventMouseMotion mouseMotion)
         {
             Vector2 relative = mouseMotion.Relative * (1.0f * SENSITIVITY_NORMALIZE_VALUE);
@@ -46,10 +52,19 @@ public partial class PlayerHead : Node3D
         }
     }
 
-    private void setMouseCaptureMode()
+    protected void SetMouseCapture(bool value = true)
     {
-        Input.MouseMode = Input.MouseModeEnum.Captured;
+        if (value) Input.MouseMode = Input.MouseModeEnum.Captured;
+        else Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 
+    protected bool IsMouseCaptured()
+    {
+        return Input.MouseMode == Input.MouseModeEnum.Captured;
+    }
 
+    protected void InverseMouseCapture()
+    {
+        SetMouseCapture(!IsMouseCaptured());
+    }
 }
