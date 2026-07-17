@@ -7,6 +7,11 @@ public partial class GameServer : Node
     private static GameServer _instance;
     public static GameServer Instance => _instance;
     
+    enum NetTransferChannels
+    {
+        
+    }
+
     private Dictionary<long, ServerPlayerData> _usersById = [];
     private Dictionary<long, long> _peerToUserId = [];
     private Dictionary<long, long> _userIdToPeer = [];
