@@ -8,9 +8,6 @@ public partial class ItemStack : Resource
     [Export] public ItemData ItemData;
     [Export] public ushort Count = 1;
     public ushort SkinId = 0;
-
-    
-    
     private static GDNetBuffer _buffer = new();
 
     public static ItemStack CreateFrom(Node node)

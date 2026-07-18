@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using Godot;
 using Godot.Collections;
 
@@ -6,6 +7,8 @@ public partial class Inventory : Node
 {
     private GDNetStream _stream = new();
     [Export] private Array<InventorySlot> _slots = [];
+    public Array<InventorySlot> Slots => _slots;
+
     private InventorySlot _selectedSlot = null;
     private bool _isSynchronized = false;
     public bool IsSynchronized() => _isSynchronized;
@@ -16,39 +19,69 @@ public partial class Inventory : Node
         return _slots[idx];
     }
 
-    #region AddSlot
-    private void AddSlot(InventorySlot slot)
+    // public InventorySlot GetSlot(string[] tags)
+    // {
+        
+    // }
+
+    #region Server: AddSlot/ReceiveSlot
+    public void AddSlot(InventorySlot slot)
+    {
+        if (!IsMultiplayerAuthority()) return;
+        ReceiveSlot(slot);
+        Rpc(MethodName.ReceiveSlot, slot.Serialize());
+    }
+    
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+    private void ReceiveSlot(byte[] bytes)
+    {
+        ReceiveSlot(InventorySlot.Deserialize(bytes));
+    }
+
+    private void ReceiveSlot(InventorySlot slot)
     {
         if (_slots.Contains(slot)) return;
         _slots.Add(slot);
     }
-
-    private void AddSlot(byte[] bytes)
-    {
-        InventorySlot slot = (InventorySlot)(GodotObject)GD.BytesToVar(bytes);
-        if (slot == null) return;
-
-        AddSlot(slot);
-    }
-
-    public void RequestAddSlot(InventorySlot slot)
-    {
-        
-    }
-
     #endregion
 
-    private void RemoveSlot(InventorySlot slot)
+
+    #region Server: RemoveSlot
+    public void RemoveSlot(InventorySlot slot)
+    {
+        if (!IsMultiplayerAuthority()) return;
+
+        RemoveSlotRpc(slot);
+        Rpc(MethodName.RemoveSlotRpc, slot.Serialize());
+    }
+
+    public void RemoveSlot(int idx)
+    {
+        if (!IsMultiplayerAuthority()) return;
+
+        RemoveSlotRpc(idx);
+        Rpc(MethodName.RemoveSlotRpc, idx);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+    private void RemoveSlotRpc(byte[] bytes)
+    {
+        RemoveSlotRpc(InventorySlot.Deserialize(bytes));
+    }
+
+    private void RemoveSlotRpc(InventorySlot slot)
     {
         if (!_slots.Contains(slot)) return;
         _slots.Remove(slot);
     }
 
-    private void RemoveSlot(int idx)
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+    private void RemoveSlotRpc(int idx)
     {
         if (_slots.Count < idx) return;
         _slots.RemoveAt(idx);
     }
+    #endregion
 
     [Signal] public delegate void SlotsSynchronizedEventHandler(int idx);
     [Signal] public delegate void SlotSelectedEventHandler(int idx);
@@ -58,7 +91,7 @@ public partial class Inventory : Node
     {
         SetMultiplayerAuthority(GameServer.ServerId);
 
-        if (Multiplayer.IsServer())
+        if (IsMultiplayerAuthority())
         {
             _isSynchronized = true;
         }
