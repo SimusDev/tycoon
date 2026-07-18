@@ -1,0 +1,18 @@
+[gd_scene format=3 uid="uid://qr1rj1wvfcbq"]
+
+[ext_resource type="Texture2D" uid="uid://cuumkxwarkm3b" path="res://src/game/item_data/jirobas/jirobas.png" id="1_y3yka"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fnvcv"]
+albedo_texture = ExtResource("1_y3yka")
+uv1_scale = Vector3(2.5, 2.5, 2.5)
+uv1_offset = Vector3(-0.5, -0.5, 0.5)
+uv1_triplanar = true
+
+[sub_resource type="BoxMesh" id="BoxMesh_modip"]
+material = SubResource("StandardMaterial3D_fnvcv")
+size = Vector3(0.4, 0.4, 0.4)
+
+[node name="Entity" type="Node3D" unique_id=1466464576]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1477390463]
+mesh = SubResource("BoxMesh_modip")

@@ -3,14 +3,9 @@ using Godot;
 [GlobalClass]
 public partial class PrefabViewModel : ViewModel
 {
-    [Export] public PackedScene World;
     [Export] public PackedScene Entity;
     [Export] public PackedScene Local;
-
-    public override PackedScene GetWorldView()
-    {
-        return World;
-    }
+    [Export] public PackedScene World;
 
     public override PackedScene GetEntityView()
     {
@@ -20,6 +15,11 @@ public partial class PrefabViewModel : ViewModel
     public override PackedScene GetLocalView()
     {
         return Local;
+    }
+    
+    public override PackedScene GetWorldView()
+    {
+        return World;
     }
 
 }
