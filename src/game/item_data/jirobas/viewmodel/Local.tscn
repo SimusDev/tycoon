@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dykl0orhbcstg"]
 
 [ext_resource type="Texture2D" uid="uid://cuumkxwarkm3b" path="res://src/game/item_data/jirobas/jirobas.png" id="1_7uk1s"]
+[ext_resource type="Script" uid="uid://cqaqwkjs2gbqa" path="res://src/game/scripts/ClientSideNode3D.cs" id="2_rs5co"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_fnvcv"]
 albedo_texture = ExtResource("1_7uk1s")
@@ -14,6 +15,11 @@ size = Vector3(0.4, 0.4, 0.4)
 
 [node name="Local" type="Node3D" unique_id=770368378]
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1939845322]
+[node name="ClientSideNode3D" type="Node3D" parent="." unique_id=1260406039]
+script = ExtResource("2_rs5co")
+metadata/_custom_type_script = "uid://cqaqwkjs2gbqa"
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ClientSideNode3D" unique_id=1939845322]
 transform = Transform3D(1, 0, 0, 0, 0.9953962, 0.09584575, 0, -0.09584575, 0.9953962, 0.381, -0.39, -0.585)
+cast_shadow = 0
 mesh = SubResource("BoxMesh_rs5co")

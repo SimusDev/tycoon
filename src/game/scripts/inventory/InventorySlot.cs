@@ -5,6 +5,7 @@ using System;
 public partial class InventorySlot : Resource
 {
     [Export] private ItemStack _itemStack = null;
+    public ItemStack ItemStack => _itemStack;
     private static GDNetBuffer _buffer = new();
     
     public bool CanStackWith(ItemStack itemStack)

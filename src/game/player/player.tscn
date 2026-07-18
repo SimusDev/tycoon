@@ -6,9 +6,11 @@
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
 [ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="3_dr81t"]
+[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/item_data/jirobas/jirobas.tres" id="3_viwye"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
+[ext_resource type="Script" uid="uid://dtlbmw8nhq7ar" path="res://src/game/scripts/inventory/ViewModelRoot.cs" id="7_dr81t"]
 [ext_resource type="Script" uid="uid://dw5slsckmsybw" path="res://src/game/scripts/PlayerNickname.cs" id="7_uigmc"]
 [ext_resource type="Script" uid="uid://h3fspgjlyyjc" path="res://network/NetNodeSynchronizer.cs" id="8_yxoci"]
 [ext_resource type="Script" uid="uid://csi3ql3vlyeu3" path="res://network/resources/NetSyncData.cs" id="9_g7k81"]
@@ -16,6 +18,7 @@
 
 [sub_resource type="Resource" id="Resource_fnvcv"]
 script = ExtResource("3_dr81t")
+ItemData = ExtResource("3_viwye")
 metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
 
 [sub_resource type="Resource" id="Resource_sx3cy"]
@@ -128,6 +131,12 @@ metadata/_custom_type_script = "uid://c46eu7wy7s7ck"
 
 [node name="la" type="Marker3D" parent="PlayerHead" unique_id=1850751389]
 transform = Transform3D(1, 0, 0, 0, 0.9999996, 0, 0, 0, 0.9999996, 0, -0.1649338, -2.8567257)
+
+[node name="ViewModelRoot" type="Node3D" parent="PlayerHead" unique_id=1805454155 node_paths=PackedStringArray("inventory")]
+transform = Transform3D(1, 0, 0, 0, 1.0000005, 0, 0, 0, 1.0000005, 0, 0, 0)
+script = ExtResource("7_dr81t")
+inventory = NodePath("../../Inventory")
+metadata/_custom_type_script = "uid://dtlbmw8nhq7ar"
 
 [node name="Visuals" type="Node3D" parent="." unique_id=1317231076]
 
@@ -281,29 +290,29 @@ bones/57/scale = Vector3(0.9999998, 1.0000002, 1)
 bones/58/position = Vector3(-4.061672e-10, 0.0011471364, 1.9427657e-11)
 bones/58/rotation = Quaternion(-0.005499929, -0.00033947095, 0.0046414738, 0.999974)
 bones/58/scale = Vector3(1.0000001, 1.0000001, 0.9999998)
-bones/60/position = Vector3(0, 0.0029489307, -0.008223965)
+bones/60/position = Vector3(0, 0.0022852628, -0.009897055)
 bones/61/position = Vector3(0, 0.0046097725, -1.525879e-10)
 bones/61/rotation = Quaternion(-0.41708142, -0.010017957, -0.021822326, 0.9085519)
 bones/62/position = Vector3(-6.1364074e-11, 0.015821889, 9.568596e-10)
-bones/62/rotation = Quaternion(-0.00438805, 0.004100493, -0.7744126, 0.6326526)
+bones/62/rotation = Quaternion(-0.006843669, -2.0972437e-05, -0.021948678, 0.99973565)
 bones/62/scale = Vector3(1, 1.0000001, 0.99999994)
 bones/63/position = Vector3(5.050345e-11, 0.016062133, -7.161832e-11)
-bones/63/rotation = Quaternion(0.0025692966, 0.0013488444, 0.52096677, 0.8535721)
+bones/63/rotation = Quaternion(0.0005503679, -0.00074417784, 0.7220405, 0.69185024)
 bones/63/scale = Vector3(1, 0.9999998, 1.0000001)
 bones/64/position = Vector3(-5.2789177e-09, 0.0024039655, 3.2614078e-10)
-bones/64/rotation = Quaternion(-0.00060679973, -3.3564906e-09, 0.058167104, 0.99830675)
+bones/64/rotation = Quaternion(-0.00031280905, -3.8471626e-09, 0.02998516, 0.99955034)
 bones/64/scale = Vector3(0.99999994, 1.0000001, 0.99999994)
-bones/66/position = Vector3(0, 0.0029489307, -0.008223965)
+bones/66/position = Vector3(0, 0.0022852628, -0.009897055)
 bones/67/position = Vector3(0, 0.0046097725, -1.525879e-10)
 bones/67/rotation = Quaternion(-0.41708142, 0.010017957, 0.021822326, 0.9085519)
 bones/68/position = Vector3(6.1364074e-11, 0.015821889, 9.568596e-10)
-bones/68/rotation = Quaternion(-0.0068424596, 0.00028648073, -0.027169904, 0.99960744)
+bones/68/rotation = Quaternion(-0.0051600593, -0.0034948, 0.6653715, 0.74648654)
 bones/68/scale = Vector3(1, 1.0000001, 0.99999994)
 bones/69/position = Vector3(-5.050345e-11, 0.016062133, -7.161832e-11)
-bones/69/rotation = Quaternion(0.0005925429, 0.0007013302, -0.7183642, 0.6956667)
+bones/69/rotation = Quaternion(0.0011221016, 0.00016035116, -0.67036015, 0.7420351)
 bones/69/scale = Vector3(1, 0.9999998, 1.0000001)
 bones/70/position = Vector3(5.2789177e-09, 0.0024039655, 3.2614078e-10)
-bones/70/rotation = Quaternion(-0.00012822138, 3.4815462e-09, -0.012291389, 0.99992454)
+bones/70/rotation = Quaternion(-0.00083154853, 2.1736926e-09, -0.07971108, 0.9968177)
 bones/70/scale = Vector3(0.99999994, 1.0000001, 0.99999994)
 
 [node name="LookAtModifier3D" type="LookAtModifier3D" parent="Visuals/humanZov/Armature/Skeleton3D" index="1" unique_id=1275510016]
@@ -324,7 +333,7 @@ secondary_negative_damp_threshold = 1.0
 
 [node name="AnimationPlayer" parent="Visuals/humanZov" index="1" unique_id=1040534006]
 libraries/animation = ExtResource("6_0r077")
-autoplay = &"Idle"
+autoplay = &"animation/Idle"
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1171993644]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.3569336, 0)

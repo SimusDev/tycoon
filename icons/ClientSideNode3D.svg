@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64">
+  <!-- Фоновое свечение (как у иконок Godot) -->
+  <circle cx="32" cy="32" r="30" fill="#4a6a8a" opacity="0.15"/>
+  
+  <!-- Внешнее кольцо - стиль Godot -->
+  <circle cx="32" cy="32" r="26" fill="none" stroke="#478cbf" stroke-width="2" opacity="0.4"/>
+  
+  <!-- Основной круг - фирменный синий Godot -->
+  <circle cx="32" cy="32" r="18" fill="#1a2a3a" stroke="#478cbf" stroke-width="2.5"/>
+  
+  <!-- Внутренний градиентный круг -->
+  <circle cx="32" cy="32" r="12" fill="#2a4055" stroke="#5a9fd4" stroke-width="1.5"/>
+  
+  <!-- Ядро - как у узлов Godot -->
+  <circle cx="32" cy="32" r="5" fill="#6ab0e6"/>
+  
+  <!-- Центральная точка -->
+  <circle cx="32" cy="32" r="2" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- Соединительные линии в стиле Godot -->
+  <line x1="32" y1="6" x2="32" y2="14" stroke="#478cbf" stroke-width="2" opacity="0.7"/>
+  <line x1="32" y1="50" x2="32" y2="58" stroke="#478cbf" stroke-width="2" opacity="0.7"/>
+  <line x1="6" y1="32" x2="14" y2="32" stroke="#478cbf" stroke-width="2" opacity="0.7"/>
+  <line x1="50" y1="32" x2="58" y2="32" stroke="#478cbf" stroke-width="2" opacity="0.7"/>
+  
+  <!-- Диагональные линии -->
+  <line x1="12" y1="12" x2="18" y2="18" stroke="#478cbf" stroke-width="1.5" opacity="0.5"/>
+  <line x1="52" y1="12" x2="46" y2="18" stroke="#478cbf" stroke-width="1.5" opacity="0.5"/>
+  <line x1="12" y1="52" x2="18" y2="46" stroke="#478cbf" stroke-width="1.5" opacity="0.5"/>
+  <line x1="52" y1="52" x2="46" y2="46" stroke="#478cbf" stroke-width="1.5" opacity="0.5"/>
+  
+  <!-- Точки подключений в стиле Godot -->
+  <circle cx="32" cy="4" r="2.5" fill="#6ab0e6" stroke="#478cbf" stroke-width="0.8"/>
+  <circle cx="32" cy="60" r="2.5" fill="#6ab0e6" stroke="#478cbf" stroke-width="0.8"/>
+  <circle cx="4" cy="32" r="2.5" fill="#6ab0e6" stroke="#478cbf" stroke-width="0.8"/>
+  <circle cx="60" cy="32" r="2.5" fill="#6ab0e6" stroke="#478cbf" stroke-width="0.8"/>
+</svg>

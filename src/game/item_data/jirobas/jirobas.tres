@@ -8,7 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://dykl0orhbcstg" path="res://src/game/item_data/jirobas/viewmodel/Local.tscn" id="4_hj825"]
 [ext_resource type="PackedScene" uid="uid://bfkbhhgj02lt5" path="res://src/game/item_data/jirobas/viewmodel/World.tscn" id="5_2r7rb"]
 
-[sub_resource type="Resource" id="Resource_qi1b5"]
+[sub_resource type="Resource" id="Resource_62oya"]
 script = ExtResource("2_t8fqn")
 
 [sub_resource type="Resource" id="Resource_33ijn"]

@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using Godot;
 using Godot.Collections;
 
@@ -6,18 +5,28 @@ using Godot.Collections;
 public partial class Inventory : Node
 {
     private GDNetStream _stream = new();
+    //[Export] public GodotObject InventoryOwner = null;
     [Export] private Array<InventorySlot> _slots = [];
     public Array<InventorySlot> Slots => _slots;
 
-    private InventorySlot _selectedSlot = null;
+    private short _selectedSlotIdx = 0;
+    public short SelectedSlotIdx => _selectedSlotIdx;
     private bool _isSynchronized = false;
     public bool IsSynchronized() => _isSynchronized;
 
-    public InventorySlot GetSlot(int idx)
+
+
+    public InventorySlot GetSlot(short idx)
     {
-        if (_slots.Count < idx) return null; 
+        if (_slots.Count < idx || idx < 0) return null; 
         return _slots[idx];
     }
+
+    public InventorySlot GetSelectedSlot()
+    {
+        return GetSlot(_selectedSlotIdx);
+    }
+    
 
     // public InventorySlot GetSlot(string[] tags)
     // {
@@ -83,9 +92,34 @@ public partial class Inventory : Node
     }
     #endregion
 
-    [Signal] public delegate void SlotsSynchronizedEventHandler(int idx);
-    [Signal] public delegate void SlotSelectedEventHandler(int idx);
-    [Signal] public delegate void SlotDeselectedEventHandler(int idx);
+    #region Slot Selecting/Deselecting
+    public void RequestSelectSlot(short idx)
+    {
+        RpcId(GetMultiplayerAuthority(), MethodName.SelectSlot, idx);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+    private void SelectSlot(short idx)
+    {
+        if (_slots.Count < idx) return;
+        if (idx == _selectedSlotIdx) idx = -1;
+
+        ReceiveSelectedSlotIdx(idx);
+        Rpc(MethodName.ReceiveSelectedSlotIdx, idx);
+    }
+
+    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+    private void ReceiveSelectedSlotIdx(short idx)
+    {
+        _selectedSlotIdx = idx;
+        EmitSignal(SignalName.SlotSelected, idx);
+    }
+
+    #endregion
+
+    [Signal] public delegate void SynchronizedEventHandler();
+    [Signal] public delegate void SlotSelectedEventHandler(short idx);
+    //[Signal] public delegate void SlotDeselectedEventHandler(short idx);
 
     public override void _Ready()
     {
@@ -111,6 +145,7 @@ public partial class Inventory : Node
 	{
         Dictionary data = [];
         data["slots"] = _slots;
+        data["selected_slot_idx"] = _selectedSlotIdx;
 
 		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer, GD.VarToBytes(data));
 	}
@@ -122,9 +157,10 @@ public partial class Inventory : Node
         if (data == null) return;
 
         _slots = data["slots"].AsGodotArray<InventorySlot>();
+        _selectedSlotIdx = data["selected_slot_dx"].AsInt16();
 
         _isSynchronized = true;
-        EmitSignal(SignalName.SlotsSynchronized);
+        EmitSignal(SignalName.Synchronized);
 	}
 }
 
