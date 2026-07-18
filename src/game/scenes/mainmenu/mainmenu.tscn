@@ -76,7 +76,18 @@ func _ready() -> void:
 		\"res://src/game/item_data\",
 	], true)
 	
-	#print(\"scan successful: %sms\" % [Time.get_ticks_msec() - start_time])
+	
+	## testing
+	if false:
+		var item_data: ItemData = ItemDataRegistry.get_by_id(\"jirobas\")
+		if item_data:
+			var world_view_instance: Node = item_data.ViewModel.InstantiateWorldView()
+			if world_view_instance:
+				add_child(world_view_instance)
+			print(world_view_instance)
+	
+	if false:
+		print(\"scan successful: %sms\" % [Time.get_ticks_msec() - start_time])
 "
 
 [node name="Mainmenu" type="Control" unique_id=268212786]

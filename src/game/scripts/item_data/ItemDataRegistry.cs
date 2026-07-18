@@ -55,6 +55,7 @@ public partial class ItemDataRegistry : Node
     public ItemData get_by_id(string id) { return Get(id); }
     #endregion
 
+    #region Get by idx
     public ItemData Get(int idx)
     {
         if (_register.Count < idx)
@@ -65,6 +66,9 @@ public partial class ItemDataRegistry : Node
 
         return _register.ElementAt(idx).Value;
     }
+    public ItemData get_by_idx(int idx) { return Get(idx); }
+    #endregion
+
     public System.Collections.Generic.IEnumerable<ItemData> GetAll() => _register.Values;
 
     #region Register resource

@@ -3,7 +3,18 @@ using Godot;
 [GlobalClass]
 public abstract partial class ViewModel : Resource
 {
+    public enum ViewType
+    {
+        Entity,
+        Local,
+        World
+    }
+
     public virtual PackedScene GetEntityView()
+    {
+        return null;
+    }
+    public virtual Node InstantiateEntityView()
     {
         return null;
     }
@@ -12,22 +23,41 @@ public abstract partial class ViewModel : Resource
     {
         return null;
     }
+    public virtual Node InstantiateLocalView()
+    {
+        return null;
+    }
 
     public virtual PackedScene GetWorldView()
     {
         return null;
     }
-
-    public PackedScene GetView<T>()
+    public virtual Node InstantiateWorldView()
     {
-        string typeName = typeof(T).Name;
-        
-        return typeName switch
+        return GetWorldView().Instantiate();
+    }
+
+
+    public PackedScene GetView(ViewType viewType)
+    {
+        return viewType switch
         {
-            "Entity" => GetEntityView(),
-            "Local" => GetLocalView(),
-            "World" => GetWorldView(),
+            ViewType.Entity => GetEntityView(),
+            ViewType.Local => GetLocalView(),
+            ViewType.World => GetWorldView(),
             _ => null
         };
     }
+
+    public Node InstantiateView(ViewType viewType)
+    {
+        return viewType switch
+        {
+            ViewType.Entity => InstantiateEntityView(),
+            ViewType.Local => InstantiateLocalView(),
+            ViewType.World => InstantiateWorldView(),
+            _ => null
+        };
+    }
+
 }
