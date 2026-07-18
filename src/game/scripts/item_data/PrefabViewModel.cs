@@ -16,7 +16,7 @@ public partial class PrefabViewModel : ViewModel
     {
         return Local;
     }
-    
+
     public override PackedScene GetWorldView()
     {
         return World;

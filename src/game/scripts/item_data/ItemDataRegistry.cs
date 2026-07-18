@@ -1,6 +1,4 @@
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using Godot;
 using Godot.Collections;
 
@@ -12,14 +10,26 @@ public partial class ItemDataRegistry : Node
 
     public override void _Ready()
     {
-        if (_instance != null) return;
+        if (_instance != null)
+        {
+            QueueFree();
+            return;
+        }
         
         _instance = this;
+        ProcessMode = ProcessModeEnum.Always;
     }
     #endregion
     
+    public override void _ExitTree()
+    {
+        if (_instance == this)
+        {
+            _instance = null;
+        }
+    }
 
-    private readonly Dictionary<string, ItemData> _register = [];
+    [Export] private Dictionary<string, ItemData> _register = [];
     public bool Has(string id) => _register.ContainsKey(id);
 
     
@@ -80,7 +90,7 @@ public partial class ItemDataRegistry : Node
     #endregion
 
     #region Register directiories
-    private void Register(string[] dir_paths, bool recursive = true)
+    public void Register(string[] dir_paths, bool recursive = true)
     {
         if (dir_paths.IsEmpty()) return;
 
@@ -90,28 +100,24 @@ public partial class ItemDataRegistry : Node
             if (dir == null)
             {
                 LogError($"Cannot open directory: {dir_path}");
-                return;
+                continue;
             }
 
-            dir.ListDirBegin();
-            string fileName = dir.GetNext();
-            string fullPath = "";
-
-            while (fileName != "")
+            foreach (string file in dir.GetFiles())
             {
-                if (fileName == "." || fileName == "..")
+                if (file.EndsWith(".tres") || file.EndsWith(".res"))
                 {
-                    fileName = dir.GetNext();
-                    continue;
+                    Register(dir_path.PathJoin(file));
                 }
-
-                fullPath = dir_path.PathJoin(fileName);
-
-                Register(fullPath);
-
-                fileName = dir.GetNext();
             }
-            dir.ListDirEnd();
+
+            if (recursive)
+            {
+                foreach (string subDir in dir.GetDirectories())
+                {
+                    Register([dir_path.PathJoin(subDir)], true);
+                }
+            }
         }
     }
     public void register_directories(string[] dir_paths, bool recursive = true) { Register(dir_paths, recursive); }

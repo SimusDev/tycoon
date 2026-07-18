@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://buxy54iln71fk"]
 
+[ext_resource type="Script" uid="uid://bf6f2mxftmr1l" path="res://src/game/scenes/mainmenu/ScriptingCs.cs" id="1_rnjdm"]
+
 [sub_resource type="GDScript" id="GDScript_akcrd"]
 script/source = "extends Control
 
@@ -63,184 +65,18 @@ font_size = 45
 font_color = Color(1, 0, 0, 1)
 
 [sub_resource type="GDScript" id="GDScript_sx3cy"]
-script/source = "@tool
-extends Node
-
-## Runtime Script Executor
-
-@export_group(\"Script Source\")
-@export_multiline var script_code: String = \"\":
-	set(value):
-		script_code = value
-		_update_preview()
-
-@export var script_file_path: String = \"\"
-
-@export_group(\"Controls\")
-@export_tool_button(\"Run Script\", \"Play\") var run_action: Callable = _run_script
-@export_tool_button(\"Run Script\", \"Play\") var stop_action: Callable = _run_script
-@export_tool_button(\"Reload\", \"Reload\") var reload_action: Callable = _reload_script
-@export_tool_button(\"Load File\", \"Folder\") var load_action: Callable = _load_from_file
-@export_tool_button(\"Save\", \"Save\") var save_action: Callable = _save_script
-
-@export_group(\"Settings\")
-@export var auto_run_on_ready: bool = false
-
-@export_group(\"Output\")
-@export_multiline var output_text: String = \"\"
-@export_multiline var preview_text: String = \"\"
-
-var _script_instance: Object = null
-var _is_running: bool = false
+script/source = "extends Node
 
 func _ready() -> void:
-	if Engine.is_editor_hint():
-		ItemDataRegistry.register_directories([
-            \"res://src/game/item_data/\"
-		])
-		return
+	var start_time:int = 0
 	
-	if auto_run_on_ready and not script_code.is_empty():
-		_run_script()
-
-func _run_script() -> void:
-	if _is_running:
-		output_text = \"Script is already running!\"
-		return
+	start_time = Time.get_ticks_msec()
 	
-	if script_code.is_empty():
-		output_text = \"Error: Script code is empty!\"
-		return
+	ItemDataRegistry.register_directories([
+		\"res://src/game/item_data\",
+	], true)
 	
-	output_text = \"\"
-	_is_running = true
-	
-	var result = await _execute_script(script_code)
-	_is_running = false
-	_on_script_completed(result)
-
-func _execute_script(code: String) -> Variant:
-	var script = GDScript.new()
-	script.source_code = code
-	
-	var error = script.reload()
-	if error != OK:
-		output_text = \"Syntax Error: %s\" % _get_error_message(error)
-		return false
-	
-	_script_instance = script.new()
-	if not _script_instance:
-		output_text = \"Failed to create script instance\"
-		return false
-	
-	if _script_instance.has_method(\"_run\"):
-		output_text = \"Running script...\\n\"
-		return await _script_instance._run()
-	else:
-		output_text = \"Script has no _run() method\"
-		return false
-
-func _on_script_completed(result: Variant) -> void:
-	if typeof(result) == TYPE_STRING:
-		output_text += result
-	elif result != null and typeof(result) != TYPE_NIL:
-		output_text += \"Script completed successfully\"
-		output_text += \"\\nResult: %s\" % str(result)
-	
-	print(output_text)
-	_script_instance = null
-
-func _load_from_file() -> void:
-	var dialog = EditorFileDialog.new()
-	dialog.file_mode = EditorFileDialog.FILE_MODE_OPEN_FILE
-	dialog.add_filter(\"*.gd\", \"GDScript files\")
-	dialog.title = \"Load GDScript File\"
-	
-	EditorInterface.get_base_control().add_child(dialog)
-	dialog.popup_centered()
-	
-	dialog.file_selected.connect(_on_file_selected)
-
-func _on_file_selected(path: String) -> void:
-	script_file_path = path
-	var file = FileAccess.open(path, FileAccess.READ)
-	if file:
-		script_code = file.get_as_text()
-		file.close()
-		output_text = \"Loaded: %s\" % path.get_file()
-		_update_preview()
-
-func _save_script() -> void:
-	if script_code.is_empty():
-		output_text = \"Nothing to save!\"
-		return
-	
-	var dialog = EditorFileDialog.new()
-	dialog.file_mode = EditorFileDialog.FILE_MODE_SAVE_FILE
-	dialog.add_filter(\"*.gd\", \"GDScript files\")
-	dialog.title = \"Save GDScript File\"
-	dialog.current_file = \"script.gd\"
-	
-	EditorInterface.get_base_control().add_child(dialog)
-	dialog.popup_centered()
-	
-	dialog.file_selected.connect(_on_save_file_selected)
-
-func _on_save_file_selected(path: String) -> void:
-	if not path.ends_with(\".gd\"):
-		path += \".gd\"
-	
-	var file = FileAccess.open(path, FileAccess.WRITE)
-	if file:
-		file.store_string(script_code)
-		file.close()
-		output_text = \"Saved: %s\" % path.get_file()
-		script_file_path = path
-
-func _reload_script() -> void:
-	if _is_running:
-		output_text = \"Cannot reload while script is running!\"
-		return
-	
-	if not script_file_path.is_empty():
-		var file = FileAccess.open(script_file_path, FileAccess.READ)
-		if file:
-			script_code = file.get_as_text()
-			file.close()
-			output_text = \"Reloaded: %s\" % script_file_path.get_file()
-			_update_preview()
-		else:
-			output_text = \"File not found: %s\" % script_file_path
-	else:
-		output_text = \"No file to reload\"
-
-func _update_preview() -> void:
-	if script_code.is_empty():
-		preview_text = \"\"
-		return
-	
-	var lines = script_code.split(\"\\n\")
-	var preview_lines = []
-	for i in range(min(10, lines.size())):
-		preview_lines.append(lines[i])
-	
-	preview_text = \"\\n\".join(preview_lines)
-	if lines.size() > 10:
-		preview_text += \"\\n...\"
-
-func _get_error_message(error: int) -> String:
-	var errors = {
-		ERR_PARSE_ERROR: \"Parse error\",
-		ERR_COMPILATION_FAILED: \"Compilation failed\",
-		ERR_FILE_NOT_FOUND: \"File not found\",
-	}
-	return errors.get(error, \"Unknown error (code %d)\" % error)
-
-
-func _exit_tree() -> void:
-	if _script_instance:
-		_script_instance.free()
-		_script_instance = null
+	#print(\"scan successful: %sms\" % [Time.get_ticks_msec() - start_time])
 "
 
 [node name="Mainmenu" type="Control" unique_id=268212786]
@@ -316,3 +152,6 @@ horizontal_alignment = 1
 
 [node name="Scripting" type="Node" parent="." unique_id=420632716]
 script = SubResource("GDScript_sx3cy")
+
+[node name="ScriptingCS" type="Node" parent="." unique_id=860239137]
+script = ExtResource("1_rnjdm")

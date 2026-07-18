@@ -211,6 +211,7 @@ public partial class GameServer : Node
 
     public void RequestLogin(string login, string password) 
     { 
+        
         RpcId(1, MethodName.Login, login, password); 
     }
     
