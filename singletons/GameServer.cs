@@ -14,6 +14,7 @@ public partial class GameServer : Node
         Default,
         Inventory,
         ItemStack,
+        SynchronizationServerMessages
     }
 
     private Dictionary<long, ServerPlayerData> _usersById = [];

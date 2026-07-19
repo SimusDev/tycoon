@@ -9,8 +9,9 @@ using System.Buffers;
 public partial class GDNetRpc : GDNetCommunicator
 {
 	public GDNetBuffer Buffer = new();
+	public GDNetBuffer BufferLocal = new();
 
-	private System.Collections.Generic.Dictionary<string, Callable> _methodBinds = new();
+    private System.Collections.Generic.Dictionary<string, Callable> _methodBinds = new();
 	private System.Collections.Generic.Dictionary<string, Delegate> _delegateBinds = new();
 
     private System.Collections.Generic.Dictionary<string, ushort> _rpcIdRegistry = new();
@@ -124,7 +125,57 @@ public partial class GDNetRpc : GDNetCommunicator
 
     private void ReceivedRpcPacketLocally(int fromPeer, int target, int sender, string method, RpcType type, object[] args)
     {
-		bool isServer = GDNet.isServer;
+        if (fromPeer == GDNet.uniqueID)
+        {
+            TryCallMethodLocalWithSerialization(method, args);
+            return;
+        }
+
+        Dictionary<string, Variant> cfg = _cfgRegistry[method];
+        if (!ValidateWithError(GDNet.uniqueID, Authority, cfg))
+            return;
+
+		_remoteSender = sender;
+
+        Buffer.Clear();
+        ServerSerializeRpcBuffer(method, sender, args);
+
+        switch (type)
+		{
+			case RpcType.All:
+				if (_observersEnabled)
+				{
+					for (int i = 0; i < Observers.Length; i++)
+					{
+						SendToAll(Buffer.GetBytes());
+					}
+
+					break;
+				}
+
+				foreach (var pId in GDNet.Instance.Multiplayer.GetPeers())
+                    SendToAll(Buffer.GetBytes());
+
+
+                break;
+		}
+
+		_remoteSender = 0;
+
+    }
+
+    private void ServerSerializeRpcBuffer(string method, int sender, object[] args)
+    {
+		Buffer.WriteLong(sender);
+		Buffer.WriteLong(_rpcIdRegistry[method]);
+		Buffer.WriteUInt8((byte)args.Length);
+		
+		for (byte i = 0 ; i < args.Length;)
+		{
+			Buffer.Write(args[i]);
+		}
+
+
     }
 
     public override void ReceivedBytes(long peerId, byte[] data)
@@ -182,9 +233,28 @@ public partial class GDNetRpc : GDNetCommunicator
 		{
 			@delegate.DynamicInvoke(args);
 		}
+
 	}
 
-	public void BindDelegate(string rpcMethod, Delegate @delegate)
+    private void TryCallMethodLocalWithSerialization(string method, object[] args)
+    {
+		BufferLocal.Clear();
+		for (byte i = 0; i < args.Length; i++)
+		{
+			Buffer.Write(args[i]);
+		}
+
+		BufferLocal.Seek(0);
+
+        for (byte i = 0; i < args.Length; i++)
+        {
+			args[i] = BufferLocal.Read();
+        }
+
+        TryCallMethodLocal(method, args);
+    }
+
+    public void BindDelegate(string rpcMethod, Delegate @delegate)
 	{
 		_delegateBinds[rpcMethod] = @delegate;
 	}

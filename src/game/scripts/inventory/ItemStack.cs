@@ -24,8 +24,6 @@ public partial class ItemStack : Resource
         return null;
     }
 
-    
-
     public byte[] Serialize()
     {
         _buffer.Clear();
@@ -43,11 +41,15 @@ public partial class ItemStack : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        return new()
+        ItemStack item = new()
         {
             ItemData = _buffer.ReadResource<ItemData>(),
             Count = _buffer.ReadUInt16(),
             SkinId = _buffer.ReadUInt16()
         };
+
+        return item;
+
+
     }
 }
