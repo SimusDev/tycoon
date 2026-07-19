@@ -3,7 +3,7 @@ using Godot;
 [GlobalClass]
 public partial class ViewModelRoot : Node3D
 {
-    [Export] public Inventory inventory;
+    [Export] private Inventory inventory;
     private Node itemInstanceRef;
 
     public override void _Ready()

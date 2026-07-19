@@ -4,14 +4,14 @@ using System;
 [GlobalClass]
 public partial class InventorySlot : Resource
 {
-    //[Export] private ItemStack _itemStack = null;
+    private ItemStack _itemStack = null;
     [Export] public ItemStack ItemStack
     {
-        get => ItemStack;
+        get => _itemStack;
         set
         {
-            ItemStack = value;
-            Send(value);
+            _itemStack = value;
+            Send();
         }
     }
     public bool IsEmpty() => ItemStack == null;
@@ -25,13 +25,19 @@ public partial class InventorySlot : Resource
         _communicator.SynchronizeNetworkIDByUniqueID(GDNet.Instance.GenerateNetworkID());
     }
 
-    private void Send(ItemStack itemStack)
+    private void Send()
     {
         if (!GameServer.Instance.Multiplayer.IsServer()) return;
 
         _buffer.Clear();
-        _buffer.WriteResource(itemStack);
         
+        _buffer.WriteBool(_itemStack != null);
+        if (_itemStack != null)
+        {
+            _buffer.WriteBytesDynamic(_itemStack.Serialize());
+        }
+        
+
         _communicator.SendToAll(_buffer.GetBytes());
     }
 
@@ -41,7 +47,10 @@ public partial class InventorySlot : Resource
 
         _buffer.SetBytes(bytes);
         _buffer.Seek(0);
-        ItemStack = _buffer.ReadResource<ItemStack>();
+        if (_buffer.ReadBool()) // != null
+        {
+            _itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+        }
     }
 
 

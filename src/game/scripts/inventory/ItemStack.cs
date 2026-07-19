@@ -5,22 +5,26 @@ using Godot.Collections;
 public partial class ItemStack : Resource
 {
     [Export] public ItemData ItemData;
+
+    private ushort _quantity = 1;
     [Export] public ushort Quantity
     {
-        get => Quantity;
+        get => _quantity;
         set
         {
-            Quantity = value;
-            Send(nameof(Quantity), value);
+            _quantity = value;
+            Send(nameof(_quantity), value);
         }
     }
+
+    private ushort _skinId = 0;
     public ushort SkinId
     {
-        get => SkinId;
+        get => _skinId;
         set
         {
-            SkinId = value;
-            Send(nameof(SkinId), value);
+            _skinId = value;
+            Send(nameof(_skinId), value);
         }
     }
     

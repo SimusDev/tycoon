@@ -72,9 +72,10 @@ func _ready() -> void:
 	
 	start_time = Time.get_ticks_msec()
 	
-	ItemDataRegistry.register_directories([
-		\"res://src/game/item_data\",
-	], true)
+	if true:
+		ItemDataRegistry.register_directories([
+			\"res://src/game/item_data\",
+		], true)
 	
 	
 	## testing

@@ -219,8 +219,8 @@ public partial class Inventory : Node
         
         if (IsMultiplayerAuthority())
         {
-            //InitSlots();
-            _isSynchronized = true;
+            InitSlots();
+            //_isSynchronized = true;
         }
         else RequestSync();
     }
