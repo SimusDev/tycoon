@@ -1,0 +1,30 @@
+[gd_scene format=3 uid="uid://bnhvcegwshl68"]
+
+[ext_resource type="Script" uid="uid://dj5vvsahlc547" path="res://addons/GDNet/profiler/SimpleProfiler.cs" id="1_me7wu"]
+
+[node name="SimpleProfilerBase" type="Control" unique_id=492826883 node_paths=PackedStringArray("_label", "_timer")]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 428.0
+offset_bottom = 127.0
+mouse_filter = 2
+script = ExtResource("1_me7wu")
+_label = NodePath("Label")
+_timer = NodePath("Timer")
+
+[node name="Label" type="Label" parent="." unique_id=1490747978]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "fps: %s
+in: %s / %s
+out: %s / %s
+ping: %s ms"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Timer" type="Timer" parent="." unique_id=1092461816]
+wait_time = 0.15

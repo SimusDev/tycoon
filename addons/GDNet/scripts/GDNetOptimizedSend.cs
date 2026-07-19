@@ -22,7 +22,10 @@ public partial class GDNetOptimizedSend : Node
 
 	[Signal] public delegate void MultiplayerPeerPacketEventHandler(long id, byte[] bytes);
 
-	const int CompressionThresholdDeflate = 256;
+	[Signal] public delegate void MultiplayerPeerPacketRawSentEventHandler(long id, byte[] bytes);
+	[Signal] public delegate void MultiplayerPeerPacketRawReceivedEventHandler(long id, byte[] bytes);
+
+    const int CompressionThresholdDeflate = 256;
 	const int CompressionThresholdZstd = 1024;
 
 	enum CompressHeader: byte
@@ -40,6 +43,8 @@ public partial class GDNetOptimizedSend : Node
 
 	private void OnApiPeerPacket(long id, byte[] packet)
 	{
+		EmitSignal(SignalName.MultiplayerPeerPacketRawReceived, id, packet);
+
 		_pendingReceivedPacketsQueue.Enqueue(
 			new ReceivedPacket(id, packet)
 			);
@@ -329,5 +334,6 @@ public partial class GDNetOptimizedSend : Node
 		}
 
 		_api.SendBytes(data, id, mode, channel);
+		EmitSignal(SignalName.MultiplayerPeerPacketRawSent, (long)id, data);
 	}
 }

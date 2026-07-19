@@ -8,7 +8,13 @@ public class GDNetRpcAttribute : Attribute
     public Mode Mode { get; init; } = Mode.Reliable;
     public int Channel { get; init; }
 
-    public GDNetRpcAttribute(Permission permission = Permission.Server)
+    public const string PermissionStringServerOrAuth = "server_or_auth";
+    public const string PermissionStringAny = "any";
+    public const string ModeStringReliable = "reliable";
+    public const string ModeStringUnreliable = "unreliable";
+    public const string ModeStringUnreliableOrdered = "unreliable_ordered";
+
+    public GDNetRpcAttribute(Permission permission = Permission.ServerOrAuth)
     {
         Permission = permission;
     }
@@ -16,9 +22,9 @@ public class GDNetRpcAttribute : Attribute
     {
         return mode switch
         {
-            Mode.Reliable => "reliable",
-            Mode.Unreliable => "unreliable",
-            Mode.UnreliableOrdered => "unreliable_ordered",
+            Mode.Reliable => ModeStringReliable,
+            Mode.Unreliable => ModeStringUnreliable,
+            Mode.UnreliableOrdered => ModeStringUnreliableOrdered,
             _ => "",
         };
     }
@@ -27,9 +33,8 @@ public class GDNetRpcAttribute : Attribute
     {
         return permission switch
         {
-            Permission.Any => "any",
-            Permission.Authority => "authority",
-            Permission.Server => "server",
+            Permission.ServerOrAuth => PermissionStringServerOrAuth,
+            Permission.Any => PermissionStringAny,
             _ => "",
         };
     }
@@ -37,9 +42,8 @@ public class GDNetRpcAttribute : Attribute
 
 public enum Permission
 {
-    Server,    
-    Authority,     
-    Any,        
+    ServerOrAuth,     
+    Any,
 }
 
 public enum Mode

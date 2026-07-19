@@ -16,6 +16,7 @@ public partial class GDNetBuffer : RefCounted
         GodotVar,
         Object,
 
+        BytesDynamic,
         Bool,
         Int8,
         Int16,
@@ -27,6 +28,8 @@ public partial class GDNetBuffer : RefCounted
         UInt32,
         UInt64,
 
+        Vector3,
+        Vector2,
     }
 
     internal enum GodotVarType : byte
@@ -86,6 +89,14 @@ public partial class GDNetBuffer : RefCounted
         _writers[typeof(ulong)] = (b, v) => { b._WriteVarType(VarType.UInt64); b.WriteUInt64((ulong)v); };
         _readers[VarType.UInt64] = b => b.ReadUInt64();
 
+        _writers[typeof(byte[])] = (b, v) => { b._WriteVarType(VarType.BytesDynamic); b.WriteBytesDynamic((byte[])v); };
+        _readers[VarType.BytesDynamic] = b => b.ReadBytesDynamic();
+
+        _writers[typeof(Vector3)] = (b, v) => { b._WriteVarType(VarType.Vector3); b.WriteVector3((Vector3)v); };
+        _readers[VarType.Vector3] = b => b.ReadVector3();
+
+        _writers[typeof(Vector2)] = (b, v) => { b._WriteVarType(VarType.Vector2); b.WriteVector2((Vector2)v); };
+        _readers[VarType.Vector2] = b => b.ReadVector2();
 
         _writersGodotVar[Variant.Type.Int] = (b, v) => { b._WriteGodotVarType(GodotVarType.Int); b.WriteLong((long)v); };
         _readersGodotVar[GodotVarType.Int] = b =>  b.ReadLong();
@@ -149,6 +160,34 @@ public partial class GDNetBuffer : RefCounted
     public ulong ReadUInt64() => _stream.ReadUInt64();
     public void WriteString(string value) => _stream.WriteString(value);
     public string ReadString() => _stream.ReadString();
+    public void WriteFloat(float value) => _stream.WriteFloat(value);
+    public float ReadFloat() => _stream.ReadFloat();
+    public void WriteDouble(double value) => _stream.WriteDouble(value);
+    public double ReadDouble() => _stream.ReadDouble();
+
+
+    public void WriteVector3(Vector3 value)
+    {
+        WriteFloat(value.X);
+        WriteFloat(value.Y);
+        WriteFloat(value.Z);
+    }
+
+    public Vector3 ReadVector3()
+    {
+        return new Vector3(ReadFloat(), ReadFloat(), ReadFloat());
+    }
+
+    public void WriteVector2(Vector2 value)
+    {
+        WriteFloat(value.X);
+        WriteFloat(value.Y);
+    }
+
+    public Vector2 ReadVector2()
+    {
+        return new Vector2(ReadFloat(), ReadFloat());
+    }
 
     public void WriteFullNodeRef(Node node)
     {
