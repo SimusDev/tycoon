@@ -19,17 +19,8 @@ script/source = "extends Node
 @export_group(\"Info\")
 @export var is_server:bool = false
 
-#func _ready() -> void:
-	#is_server = multiplayer.is_server()
-	#
-	#GDNet.OnNetworkReady.connect(_network_ready)
-	#if GDNet.IsConnectedToServer(): _network_ready()
-#
-#func _network_ready() -> void:
-	#if player_spawner:
-		#player_spawner.RequestSpawn(player_prefab.resource_path)
-
 func _ready() -> void:
+	is_server = multiplayer.is_server()
 	spawn_btn.pressed.connect(on_spawn_btn_pressed)
 
 func on_spawn_btn_pressed() -> void:

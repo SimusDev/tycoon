@@ -3,46 +3,72 @@ using System;
 
 public partial class SynchronizationServer : Node
 {
-    public static SynchronizationServer Instance;
+    // public enum DataType: byte
+    // {
+    //     Default,
+    //     Dictionary
+    // }
 
-    private GDNetBuffer _buffer = new();
+    // private static GDNetBuffer _buffer = new();
 
-    public override void _Ready()
-    {
-        Instance = this;
-    }
+    // public SynchronizationServer()
+    // {
+        
+    // }
 
-    [Rpc(mode: MultiplayerApi.RpcMode.AnyPeer, TransferChannel = (int)GameServer.TransferChannels.SynchronizationServerMessages)]
-    public void ReceiveMessageRemote(byte[] data)
-    {
-        int fromPeer = Multiplayer.GetRemoteSenderId();
+    // public void Send(GodotObject godot_object, string propertyName, Variant value)
+    // {
+    //     if (!GameServer.Instance.Multiplayer.IsServer()) return;
+    //     GDNetCommunicator communicator = (GDNetCommunicator)(GodotObject)godot_object.Get("_communicator");
+    //     if (communicator == null) return;
 
-        _buffer.SetBytes(data);
-        _buffer.Seek(0);
+    //     communicator.OnBytesReceived += (peer, bytes) => OnBytesReceivedFunc(communicator, peer, bytes);
 
-        uint uniqueId = (uint)_buffer.ReadLong();
-        ushort packetId = (ushort)_buffer.ReadLong();
-        Variant args = _buffer.ReadVar();
+    //     _buffer.Clear();
+    //     _buffer.WriteUInt8((byte)DataType.Default);
+    //     _buffer.WriteString(propertyName);
+    //     _buffer.WriteVar(value);
+        
+    //     communicator.SendToAll(_buffer.GetBytes());
+    // }
+    
+    // public void Send(GDNetCommunicator communicator, string dictName, string propertyName, Variant value)
+    // {
+    //     if (!GameServer.Instance.Multiplayer.IsServer()) return;
 
-        var communicator = NetCommunicator.TryGetByNetworkId(uniqueId);
+    //     communicator.OnBytesReceived += (peer, bytes) => OnBytesReceivedFunc(communicator, peer, bytes);
 
-        if (communicator == null)
-        {
-            GD.PushError($"Cant Get NetCommunicator with id {uniqueId}");
-            return;
-        }
+    //     _buffer.Clear();
+    //     _buffer.WriteUInt8((byte)DataType.Dictionary); 
+    //     _buffer.WriteString(dictName);
+    //     _buffer.WriteString(propertyName);
+    //     _buffer.WriteVar(value);
+        
+    //     communicator.SendToAll(_buffer.GetBytes());
+    // }
+    
+    // private void OnBytesReceivedFunc(GDNetCommunicator communicator, int peer, byte[] bytes)
+    // {
+    //     if (peer != GDNet.ServerID) return;
+    //     communicator.OnBytesReceived -= OnBytesReceived;
+    //     OnBytesReceived(peer, bytes);
+    // }
 
-        communicator._MessageReceivedInternal(fromPeer, packetId, args);
-    }
-
-    public void SendMessage(int peer, uint uniqueId, ushort packetId, Variant args)
-    {
-        _buffer.Clear();
-        _buffer.WriteLong(uniqueId);
-        _buffer.WriteLong(packetId);
-        _buffer.WriteVar(args);
-        RpcId(peer, MethodName.ReceiveMessageRemote, _buffer.GetBytes());
-    }
+    // private void OnBytesReceived(int peer, byte[] bytes)
+    // {
+    //     _buffer.SetBytes(bytes);
+    //     _buffer.Seek(0);
+    //     byte type = _buffer.ReadUInt8();
+    //     switch ((DataType)type)
+    //     {
+    //         case DataType.Default:
+    //             Set(_buffer.ReadString(), _buffer.ReadVar());
+    //             break;
+    //         case DataType.Dictionary:
+    //             Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = _buffer.ReadVar();
+    //             break;
+    //     }
+    // }
 
 }
 

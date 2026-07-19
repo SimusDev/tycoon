@@ -22,7 +22,6 @@ public partial class ViewModelRoot : Node3D
         
         if (inventory.SelectedSlotIdx >= 0) OnInventorySlotSelected(inventory.SelectedSlotIdx);
         inventory.SlotSelected += OnInventorySlotSelected;
-        //inventory.SlotDeselected += OnInventorySlotDeselected;
         
         inventory.Synchronized -= OnInventorySynchronized;
     }

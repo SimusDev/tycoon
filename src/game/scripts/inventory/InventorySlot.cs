@@ -4,13 +4,50 @@ using System;
 [GlobalClass]
 public partial class InventorySlot : Resource
 {
-    [Export] private ItemStack _itemStack = null;
-    public ItemStack ItemStack => _itemStack;
-    private static GDNetBuffer _buffer = new();
+    //[Export] private ItemStack _itemStack = null;
+    [Export] public ItemStack ItemStack
+    {
+        get => ItemStack;
+        set
+        {
+            ItemStack = value;
+            Send(value);
+        }
+    }
+    public bool IsEmpty() => ItemStack == null;
+
+    private static readonly GDNetBuffer _buffer = new();
+    private GDNetCommunicator _communicator = new();
     
+    public InventorySlot()
+    {
+        _communicator.OnBytesReceived += OnBytesReceived;
+        _communicator.SynchronizeNetworkIDByUniqueID(GDNet.Instance.GenerateNetworkID());
+    }
+
+    private void Send(ItemStack itemStack)
+    {
+        if (!GameServer.Instance.Multiplayer.IsServer()) return;
+
+        _buffer.Clear();
+        _buffer.WriteResource(itemStack);
+        
+        _communicator.SendToAll(_buffer.GetBytes());
+    }
+
+    private void OnBytesReceived(int peer, byte[] bytes)
+    {
+        if (peer != GDNet.ServerID) return;
+
+        _buffer.SetBytes(bytes);
+        _buffer.Seek(0);
+        ItemStack = _buffer.ReadResource<ItemStack>();
+    }
+
+
     public bool CanStackWith(ItemStack itemStack)
     {
-        if (_itemStack == null) return true;
+        if (ItemStack == null) return true;
         
         return false;
     }
@@ -19,7 +56,7 @@ public partial class InventorySlot : Resource
     {
         _buffer.Clear();
         
-        _buffer.WriteBytesDynamic(_itemStack.Serialize());
+        _buffer.WriteBytesDynamic(ItemStack.Serialize());
 
         return _buffer.GetBytes();
     }
@@ -31,7 +68,7 @@ public partial class InventorySlot : Resource
 
         return new()
         {
-            _itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic())
+            ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic())
         };
     }
 }

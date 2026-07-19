@@ -5,8 +5,6 @@
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
-[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="3_dr81t"]
-[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/item_data/jirobas/jirobas.tres" id="3_viwye"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
@@ -15,52 +13,12 @@
 [ext_resource type="Script" uid="uid://h3fspgjlyyjc" path="res://network/NetNodeSynchronizer.cs" id="8_yxoci"]
 [ext_resource type="Script" uid="uid://csi3ql3vlyeu3" path="res://network/resources/NetSyncData.cs" id="9_g7k81"]
 [ext_resource type="Script" uid="uid://kmw3wwhoyb60" path="res://network/resources/NetSyncProperty.cs" id="9_t8tym"]
-
-[sub_resource type="Resource" id="Resource_fnvcv"]
-script = ExtResource("3_dr81t")
-ItemData = ExtResource("3_viwye")
-metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+[ext_resource type="Script" uid="uid://cn8uccug21l8x" path="res://src/game/scripts/LocalCanvasLayer.cs" id="14_viwye"]
+[ext_resource type="Script" uid="uid://c1guisyaw0jj8" path="res://src/game/player/PlayerUI.cs" id="15_dr81t"]
 
 [sub_resource type="Resource" id="Resource_sx3cy"]
 script = ExtResource("2_viwye")
-_itemStack = SubResource("Resource_fnvcv")
 metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="GDScript" id="GDScript_0r077"]
-script/source = "extends Node3D
-
-@onready var state_machine: StateMachine = $\"../../StateMachine\"
-@onready var animation_player: AnimationPlayer = $AnimationPlayer
-
-@export var anim_prefix:StringName = &\"\"
-
-func _ready() -> void:
-	state_machine.StateEnter.connect(_on_state_enter)
-	
-	var auth = is_multiplayer_authority()
-	set_process(auth)
-	set_process_input(auth)
-	if !auth:
-		return
-
-func _input(_event: InputEvent) -> void:
-	if Input.is_action_just_pressed(\"Hello\"):
-		play_animation.rpc(anim_prefix + \"Helo\")
-
-@rpc(\"authority\", \"call_local\")
-func play_animation(anim_name: String) -> void:
-	animation_player.play(anim_name)
-
-func _on_state_enter(state_name: String) -> void:
-	var anim_name:String = anim_prefix + state_name
-	if !animation_player.has_animation(anim_name):
-		return
-	
-	animation_player.play(anim_name)
-"
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0r077"]
-height = 2.7138672
 
 [sub_resource type="Resource" id="Resource_viwye"]
 script = ExtResource("9_t8tym")
@@ -103,6 +61,42 @@ TargetNode = NodePath("../PlayerHead")
 Properties = Array[ExtResource("9_t8tym")]([SubResource("Resource_g7k81")])
 metadata/_custom_type_script = "uid://csi3ql3vlyeu3"
 
+[sub_resource type="GDScript" id="GDScript_0r077"]
+script/source = "extends Node3D
+
+@onready var state_machine: StateMachine = $\"../../StateMachine\"
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
+
+@export var anim_prefix:StringName = &\"\"
+
+func _ready() -> void:
+	state_machine.StateEnter.connect(_on_state_enter)
+	
+	var auth = is_multiplayer_authority()
+	set_process(auth)
+	set_process_input(auth)
+	if !auth:
+		return
+
+func _input(_event: InputEvent) -> void:
+	if Input.is_action_just_pressed(\"Hello\"):
+		play_animation.rpc(anim_prefix + \"Helo\")
+
+@rpc(\"authority\", \"call_local\")
+func play_animation(anim_name: String) -> void:
+	animation_player.play(anim_name)
+
+func _on_state_enter(state_name: String) -> void:
+	var anim_name:String = anim_prefix + state_name
+	if !animation_player.has_animation(anim_name):
+		return
+	
+	animation_player.play(anim_name)
+"
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_0r077"]
+height = 2.7138672
+
 [node name="Player" type="CharacterBody3D" unique_id=1518439692]
 
 [node name="Inventory" type="Node" parent="." unique_id=423074224]
@@ -119,6 +113,12 @@ metadata/_custom_type_script = "uid://uwx7o3qw48xq"
 script = ExtResource("1_3sks1")
 StateMachine = NodePath("../StateMachine")
 metadata/_custom_type_script = "uid://cergfw7flr4fn"
+
+[node name="NetNodeSynchronizer" type="Node" parent="." unique_id=912177943]
+script = ExtResource("8_yxoci")
+SyncList = Array[ExtResource("9_g7k81")]([SubResource("Resource_r0546"), SubResource("Resource_ix81w")])
+ReplicationTickrate = 64.0
+metadata/_custom_type_script = "uid://h3fspgjlyyjc"
 
 [node name="PlayerHead" type="Node3D" parent="." unique_id=1122001657 node_paths=PackedStringArray("Player", "HeadCamera")]
 transform = Transform3D(1, 0, 0, 0, 0.9999995, 0, 0, 0, 0.9999995, 0, 1.5, 0)
@@ -344,10 +344,45 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.2, 0)
 script = ExtResource("7_uigmc")
 metadata/_custom_type_script = "uid://dw5slsckmsybw"
 
-[node name="NetNodeSynchronizer" type="Node" parent="." unique_id=912177943]
-script = ExtResource("8_yxoci")
-SyncList = Array[ExtResource("9_g7k81")]([SubResource("Resource_r0546"), SubResource("Resource_ix81w")])
-ReplicationTickrate = 64.0
-metadata/_custom_type_script = "uid://h3fspgjlyyjc"
+[node name="LocalCanvasLayer" type="CanvasLayer" parent="." unique_id=741956915]
+script = ExtResource("14_viwye")
+metadata/_custom_type_script = "uid://cn8uccug21l8x"
+
+[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("inventory")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("15_dr81t")
+inventory = NodePath("../../Inventory")
+
+[node name="AddSlot" type="Button" parent="LocalCanvasLayer/PlayerUI" unique_id=1079460467]
+layout_mode = 0
+offset_right = 160.0
+offset_bottom = 160.0
+mouse_filter = 1
+text = "add slot"
+
+[node name="AddItem" type="Button" parent="LocalCanvasLayer/PlayerUI" unique_id=1248628591]
+layout_mode = 0
+offset_left = 168.0
+offset_right = 328.0
+offset_bottom = 160.0
+mouse_filter = 1
+text = "add item"
+
+[node name="RemoveSlot" type="Button" parent="LocalCanvasLayer/PlayerUI" unique_id=621208682]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.23300001
+anchor_bottom = 0.23300001
+offset_top = 0.23999023
+offset_right = 160.0
+offset_bottom = 160.23999
+mouse_filter = 1
+text = "remove slot (front)"
 
 [editable path="Visuals/humanZov"]

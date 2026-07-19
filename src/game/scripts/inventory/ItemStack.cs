@@ -1,4 +1,3 @@
-using System;
 using Godot;
 using Godot.Collections;
 
@@ -6,13 +5,44 @@ using Godot.Collections;
 public partial class ItemStack : Resource
 {
     [Export] public ItemData ItemData;
-    [Export] public ushort Count = 1;
-    public ushort SkinId = 0;
-    private static GDNetBuffer _buffer = new();
-
-    public static ItemStack CreateFrom(Node node)
+    [Export] public ushort Quantity
     {
-        ItemData itemData = ItemData.FindIn(node);
+        get => Quantity;
+        set
+        {
+            Quantity = value;
+            Send(nameof(Quantity), value);
+        }
+    }
+    public ushort SkinId
+    {
+        get => SkinId;
+        set
+        {
+            SkinId = value;
+            Send(nameof(SkinId), value);
+        }
+    }
+    
+    [Export] protected Dictionary data = [];
+    public void SetData(string name, Variant value)
+    {
+        data[name] = value;
+        Send(nameof(data), name, value);
+    }
+    public Variant GetData(string name) => data[name];
+
+    private static GDNetBuffer _buffer = new();
+    private GDNetCommunicator _communicator = new();
+    
+    public ItemStack()
+    {
+        _communicator.OnBytesReceived += OnBytesReceived;
+        _communicator.SynchronizeNetworkIDByUniqueID(GDNet.Instance.GenerateNetworkID());
+    }
+
+    public static ItemStack CreateFrom(ItemData itemData)
+    {
         if (itemData != null)
         {
             ItemStack itemStack = new()
@@ -23,16 +53,65 @@ public partial class ItemStack : Resource
         }
         return null;
     }
+    
+
+    public static ItemStack CreateFrom(Node node) => CreateFrom(ItemData.FindIn(node));
+
+    private void Send(string propertyName, Variant value)
+    {
+        if (!GameServer.Instance.Multiplayer.IsServer()) return;
+
+        _buffer.Clear();
+        _buffer.WriteUInt8(0); // Default
+        _buffer.WriteString(propertyName);
+        _buffer.WriteVar(value);
+        
+        _communicator.SendToAll(_buffer.GetBytes());
+    }
+    
+    private void Send(string dictName, string propertyName, Variant value)
+    {
+        if (!GameServer.Instance.Multiplayer.IsServer()) return;
+
+        _buffer.Clear();
+        _buffer.WriteUInt8(1); // Dictionary
+        _buffer.WriteString(dictName);
+        _buffer.WriteString(propertyName);
+        _buffer.WriteVar(value);
+        
+        _communicator.SendToAll(_buffer.GetBytes());
+    }
+    
+    private void OnBytesReceived(int peer, byte[] bytes)
+    {
+        if (peer != GDNet.ServerID) return;
+
+        _buffer.SetBytes(bytes);
+        _buffer.Seek(0);
+        byte type = _buffer.ReadUInt8();
+        switch (type)
+        {
+            case 0: // Default
+                Set(_buffer.ReadString(), _buffer.ReadVar());
+                break;
+            case 1: // Dictionary
+                Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = _buffer.ReadVar();
+                break;
+        }
+    }
+
 
     public byte[] Serialize()
     {
         _buffer.Clear();
         
-        _buffer.WriteUInt16(Count);
-        _buffer.WriteUInt16(SkinId);
-
         _buffer.WriteResource(ItemData);
+        _buffer.WriteUInt16(Quantity);
+        _buffer.WriteUInt16(SkinId);
+        _buffer.WriteVar(data);
 
+        _buffer.WriteLong((long)_communicator.GetNetworkID());
+        
         return _buffer.GetBytes();
     }
 
@@ -44,12 +123,12 @@ public partial class ItemStack : Resource
         ItemStack item = new()
         {
             ItemData = _buffer.ReadResource<ItemData>(),
-            Count = _buffer.ReadUInt16(),
-            SkinId = _buffer.ReadUInt16()
+            Quantity = _buffer.ReadUInt16(),
+            SkinId = _buffer.ReadUInt16(),
+            data = _buffer.ReadVar().AsGodotDictionary()
         };
-
+        
+        item._communicator.SynchronizeNetworkIDByUniqueID(_buffer.ReadLong());
         return item;
-
-
     }
 }
