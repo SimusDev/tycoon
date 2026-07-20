@@ -61,6 +61,8 @@ public partial class Inventory : Node
 
 
     #region Slots
+    [Signal] public delegate void SlotAddedEventHandler(InventorySlot slot);
+    [Signal] public delegate void SlotRemovedEventHandler(InventorySlot slot);
     [Signal] public delegate void SlotSelectedEventHandler(short idx);
     [Signal] private delegate void SlotsInitializedEventHandler();
     
@@ -143,6 +145,7 @@ public partial class Inventory : Node
     {
         if (_slots.Contains(slot)) return;
         _slots.Add(slot);
+        EmitSignal(SignalName.SlotAdded, slot);
     }
     #endregion
 
@@ -171,6 +174,7 @@ public partial class Inventory : Node
     {
         if (!_slots.Contains(slot)) return;
         _slots.Remove(slot);
+        EmitSignal(SignalName.SlotRemoved, slot);
     }
 
     [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
@@ -187,10 +191,16 @@ public partial class Inventory : Node
     #region Select/Deselect Slot
     public void RequestSelectSlot(short idx)
     {
+        if (IsMultiplayerAuthority())
+        {
+            SelectSlot(idx);
+            return;
+        }
+
         RpcId(GetMultiplayerAuthority(), MethodName.SelectSlot, idx);
     }
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
     private void SelectSlot(short idx)
     {
         if (_slots.Count < idx) return;
@@ -231,14 +241,30 @@ public partial class Inventory : Node
     public override void _Ready()
     {
         _inventoryOwnerId = GetParent().GetMultiplayerAuthority();
+        SetProcessInput(IsInventoryOwner());
         SetMultiplayerAuthority(GameServer.ServerId);
         
         if (IsMultiplayerAuthority())
         {
             InitSlots();
-            //_isSynchronized = true;
+            _isSynchronized = true;
         }
         else RequestSync();
     }
+
+    public override void _Input(InputEvent @event)
+    {
+        for (short i = 0; i < 9; i++)
+        {
+            
+            if (Input.IsActionJustPressed($"inventory.selectslot_{i}"))
+            {
+                RequestSelectSlot(i);
+                break;
+            }
+
+        }
+    }
+
 }
 

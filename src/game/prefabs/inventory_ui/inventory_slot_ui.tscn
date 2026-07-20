@@ -1,0 +1,52 @@
+[gd_scene format=3 uid="uid://bvbiiicg8nnlv"]
+
+[ext_resource type="Script" uid="uid://cihheqveavynu" path="res://src/game/scripts/inventory/ui/InventorySlotUI.cs" id="1_h41kt"]
+[ext_resource type="Texture2D" uid="uid://cive6gr2g1pah" path="res://icon.svg" id="2_f7cgj"]
+
+[node name="InventorySlotUI" type="Control" unique_id=979390737 node_paths=PackedStringArray("iconTextureRect", "quantityLabel")]
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 3
+anchor_right = 0.05
+anchor_bottom = 0.08888889
+script = ExtResource("1_h41kt")
+iconTextureRect = NodePath("IconTextureRect")
+quantityLabel = NodePath("QuantityLabel")
+metadata/_custom_type_script = "uid://cihheqveavynu"
+metadata/_edit_use_anchors_ = true
+
+[node name="Panel" type="ColorRect" parent="." unique_id=2128127442]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.07683582, 0.07683582, 0.07683582, 1)
+
+[node name="IconTextureRect" type="TextureRect" parent="." unique_id=978658821]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -2.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_f7cgj")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="QuantityLabel" type="Label" parent="." unique_id=696170721]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.016
+anchor_top = 0.984
+anchor_right = 0.016
+anchor_bottom = 0.984
+offset_left = -0.024000049
+offset_top = -15.976002
+offset_right = 61.976
+offset_bottom = 0.02399826
+text = "1234567"

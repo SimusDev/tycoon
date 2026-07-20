@@ -4,6 +4,7 @@ using System;
 [GlobalClass]
 public partial class InventorySlot : Resource
 {
+    [Signal] public delegate void ItemStackChangedEventHandler();
     private ItemStack _itemStack = null;
     [Export] public ItemStack ItemStack
     {
@@ -12,6 +13,7 @@ public partial class InventorySlot : Resource
         {
             _itemStack = value;
             Send();
+            EmitSignal(SignalName.ItemStackChanged);
         }
     }
     public bool IsEmpty() => ItemStack == null;
@@ -22,7 +24,7 @@ public partial class InventorySlot : Resource
     public InventorySlot()
     {
         _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(GDNet.Instance.GenerateNetworkID());
+        _communicator.SynchronizeNetworkIDByUniqueID(GDNet.GenerateUniqueID());
     }
 
     private void Send()

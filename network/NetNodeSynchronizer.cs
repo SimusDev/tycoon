@@ -12,7 +12,7 @@ public partial class NetNodeSynchronizer : Node
 
     private double _replicationTime = 0;
     private float _tickInterval;
-
+    
     // ============ ОПТИМИЗАЦИЯ 1: КЭШ УЗЛОВ ============
     private readonly Dictionary<NodePath, Node> _nodeCache = new();
 
