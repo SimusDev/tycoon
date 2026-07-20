@@ -3,37 +3,18 @@ using System;
 
 public partial class PlayerUI : Control
 {
-    [Export] private Inventory inventory;
-    static RandomNumberGenerator rng = new();
+    [Export] public Control Inventory; // эта типа нода где интерфейсы инвентаренй крч и тд
+    private Input.MouseModeEnum _lastMouseMode;
 
-    public override void _Ready()
+    public override void _Input(InputEvent @event)
     {
-        rng.Randomize();
-        foreach (Node child in GetChildren())
-        {
-            if (child is Button button)
+        if (Input.IsActionJustPressed("inventory")) {
+            Inventory.Visible = !Inventory.Visible;
+            if (Inventory.Visible)
             {
-                button.Pressed += () => OnBtnPressed(button.Name);
-            }
-        }
-    }
-
-    private void OnBtnPressed(string btnName)
-    {
-        switch (btnName)
-        {
-            case "AddSlot":
-                inventory.AddSlot();
-                break;
-            case "AddItem":
-                inventory.AddItem(
-                    ItemStack.CreateFrom(ItemDataRegistry.Instance.Get(
-                        rng.RandiRange(0, ItemDataRegistry.Instance.Count-1)
-                )));
-                break;
-            case "RemoveSlot":
-                inventory.RemoveSlot();
-                break;
+                _lastMouseMode = Input.MouseMode;
+                Input.MouseMode = Input.MouseModeEnum.Visible;
+            } else Input.MouseMode = _lastMouseMode;
         }
     }
 

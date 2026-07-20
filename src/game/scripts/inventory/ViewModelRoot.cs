@@ -3,6 +3,7 @@ using Godot;
 [GlobalClass]
 public partial class ViewModelRoot : Node3D
 {
+    [Export] private ViewModel.ViewType viewType = ViewModel.ViewType.Local;
     [Export] private Inventory inventory;
     private Node itemInstanceRef;
 
@@ -36,11 +37,11 @@ public partial class ViewModelRoot : Node3D
         if (slot.ItemStack.ItemData == null) return;
         if (slot.ItemStack.ItemData.ViewModel == null) return;
 
-        itemInstanceRef = slot.ItemStack.ItemData.ViewModel.InstantiateLocalView();  
+        itemInstanceRef = slot.ItemStack.ItemData.ViewModel.InstantiateView(viewType);  
         if (itemInstanceRef == null) return;
 
         itemInstanceRef.SetMultiplayerAuthority(GetMultiplayerAuthority());
-        slot.ItemStack.ItemData.SetIn(itemInstanceRef);
+        slot.ItemStack.SetIn(itemInstanceRef);
 
         AddChild(itemInstanceRef);
     }

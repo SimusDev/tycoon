@@ -5,7 +5,10 @@
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
+[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/item_data/jirobas/jirobas.tres" id="3_t6wnj"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
+[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="4_fnd46"]
+[ext_resource type="Resource" uid="uid://3g3opgatre5p" path="res://src/game/item_data/sas/sas.tres" id="5_1m3ve"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
 [ext_resource type="Script" uid="uid://dtlbmw8nhq7ar" path="res://src/game/scripts/inventory/ViewModelRoot.cs" id="7_dr81t"]
@@ -15,12 +18,102 @@
 [ext_resource type="Script" uid="uid://kmw3wwhoyb60" path="res://network/resources/NetSyncProperty.cs" id="9_t8tym"]
 [ext_resource type="Script" uid="uid://cn8uccug21l8x" path="res://src/game/scripts/LocalCanvasLayer.cs" id="14_viwye"]
 [ext_resource type="Script" uid="uid://c1guisyaw0jj8" path="res://src/game/player/PlayerUI.cs" id="15_dr81t"]
+[ext_resource type="Script" uid="uid://dc2ckg2il1pte" path="res://src/game/scripts/inventory/ui/InventoryUI.cs" id="16_af7lx"]
+[ext_resource type="PackedScene" uid="uid://bvbiiicg8nnlv" path="res://src/game/prefabs/inventory_ui/inventory_slot_ui.tscn" id="17_6obk6"]
 
 [sub_resource type="Resource" id="Resource_viwye"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
+[sub_resource type="Resource" id="Resource_fdf0i"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("3_t6wnj")
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
 [sub_resource type="Resource" id="Resource_6obk6"]
+script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_fdf0i")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_6qmy7"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("5_1m3ve")
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
+[sub_resource type="Resource" id="Resource_1km7v"]
+script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_6qmy7")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_usirl"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_t6wnj"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_fnd46"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_1m3ve"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_8lfix"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_6gle3"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_m3xhp"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_7hwkm"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_wvdpb"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_nfu6k"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_16hq7"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_ya7eq"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_a8ffs"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_r8pt6"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_ptro2"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_5nume"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_koc2e"]
+script = ExtResource("2_viwye")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_qtsxn"]
 script = ExtResource("9_t8tym")
 Name = "position"
 TransferMode = 0
@@ -32,7 +125,7 @@ Name = "rotation"
 TransferMode = 0
 metadata/_custom_type_script = "uid://kmw3wwhoyb60"
 
-[sub_resource type="Resource" id="Resource_1km7v"]
+[sub_resource type="Resource" id="Resource_1blg1"]
 script = ExtResource("9_t8tym")
 Name = "scale"
 TransferMode = 0
@@ -47,7 +140,7 @@ metadata/_custom_type_script = "uid://kmw3wwhoyb60"
 [sub_resource type="Resource" id="Resource_r0546"]
 script = ExtResource("9_g7k81")
 TargetNode = NodePath("..")
-Properties = [SubResource("Resource_6obk6"), SubResource("Resource_26fnn"), SubResource("Resource_1km7v"), SubResource("Resource_af7lx")]
+Properties = Array[ExtResource("9_t8tym")]([SubResource("Resource_qtsxn"), SubResource("Resource_26fnn"), SubResource("Resource_1blg1"), SubResource("Resource_af7lx")])
 metadata/_custom_type_script = "uid://csi3ql3vlyeu3"
 
 [sub_resource type="Resource" id="Resource_g7k81"]
@@ -58,7 +151,7 @@ metadata/_custom_type_script = "uid://kmw3wwhoyb60"
 [sub_resource type="Resource" id="Resource_ix81w"]
 script = ExtResource("9_g7k81")
 TargetNode = NodePath("../PlayerHead")
-Properties = [SubResource("Resource_g7k81")]
+Properties = Array[ExtResource("9_t8tym")]([SubResource("Resource_g7k81")])
 metadata/_custom_type_script = "uid://csi3ql3vlyeu3"
 
 [sub_resource type="GDScript" id="GDScript_0r077"]
@@ -101,7 +194,7 @@ height = 2.7138672
 
 [node name="Inventory" type="Node" parent="." unique_id=423074224]
 script = ExtResource("1_26fnn")
-_slots = [SubResource("Resource_viwye")]
+_slots = Array[ExtResource("2_viwye")]([SubResource("Resource_viwye"), SubResource("Resource_6obk6"), SubResource("Resource_1km7v"), SubResource("Resource_usirl"), SubResource("Resource_t6wnj"), SubResource("Resource_fnd46"), SubResource("Resource_1m3ve"), SubResource("Resource_8lfix"), SubResource("Resource_6gle3"), SubResource("Resource_m3xhp"), SubResource("Resource_7hwkm"), SubResource("Resource_wvdpb"), SubResource("Resource_nfu6k"), SubResource("Resource_16hq7"), SubResource("Resource_ya7eq"), SubResource("Resource_a8ffs"), SubResource("Resource_r8pt6"), SubResource("Resource_ptro2"), SubResource("Resource_5nume"), SubResource("Resource_koc2e")])
 metadata/_custom_type_script = "uid://dl1aia5nkwjn6"
 
 [node name="StateMachine" type="Node" parent="." unique_id=1463452377]
@@ -116,7 +209,7 @@ metadata/_custom_type_script = "uid://cergfw7flr4fn"
 
 [node name="NetNodeSynchronizer" type="Node" parent="." unique_id=912177943]
 script = ExtResource("8_yxoci")
-SyncList = [SubResource("Resource_r0546"), SubResource("Resource_ix81w")]
+SyncList = Array[ExtResource("9_g7k81")]([SubResource("Resource_r0546"), SubResource("Resource_ix81w")])
 ReplicationTickrate = 64.0
 metadata/_custom_type_script = "uid://h3fspgjlyyjc"
 
@@ -331,6 +424,17 @@ secondary_positive_damp_threshold = 1.0
 secondary_negative_limit_angle = 3.1415927
 secondary_negative_damp_threshold = 1.0
 
+[node name="BoneAttachment3D" type="BoneAttachment3D" parent="Visuals/humanZov/Armature/Skeleton3D" index="2" unique_id=529430557]
+transform = Transform3D(-0.9980671, -0.011116342, 0.061139546, 0.008591988, -0.9991057, -0.041397408, 0.061545048, -0.040792108, 0.99727035, -0.0116968285, -0.00045142183, -0.01776722)
+bone_name = "B0_R"
+bone_idx = 9
+
+[node name="ViewModelRoot" type="Node3D" parent="Visuals/humanZov/Armature/Skeleton3D/BoneAttachment3D" unique_id=2146037363 node_paths=PackedStringArray("inventory")]
+script = ExtResource("7_dr81t")
+viewType = 0
+inventory = NodePath("../../../../../../Inventory")
+metadata/_custom_type_script = "uid://dtlbmw8nhq7ar"
+
 [node name="AnimationPlayer" parent="Visuals/humanZov" index="1" unique_id=1040534006]
 libraries/animation = ExtResource("6_0r077")
 autoplay = &"animation/Idle"
@@ -348,7 +452,7 @@ metadata/_custom_type_script = "uid://dw5slsckmsybw"
 script = ExtResource("14_viwye")
 metadata/_custom_type_script = "uid://cn8uccug21l8x"
 
-[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("inventory")]
+[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("Inventory")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -357,32 +461,55 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("15_dr81t")
-inventory = NodePath("../../Inventory")
+Inventory = NodePath("Inventory")
 
-[node name="AddSlot" type="Button" parent="LocalCanvasLayer/PlayerUI" unique_id=1079460467]
-layout_mode = 0
-offset_right = 160.0
-offset_bottom = 160.0
-mouse_filter = 1
-text = "add slot"
-
-[node name="AddItem" type="Button" parent="LocalCanvasLayer/PlayerUI" unique_id=1248628591]
-layout_mode = 0
-offset_left = 168.0
-offset_right = 328.0
-offset_bottom = 160.0
-mouse_filter = 1
-text = "add item"
-
-[node name="RemoveSlot" type="Button" parent="LocalCanvasLayer/PlayerUI" unique_id=621208682]
+[node name="Inventory" type="Control" parent="LocalCanvasLayer/PlayerUI" unique_id=280166401]
 layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.23300001
-anchor_bottom = 0.23300001
-offset_top = 0.23999023
-offset_right = 160.0
-offset_bottom = 160.23999
-mouse_filter = 1
-text = "remove slot (front)"
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="InventoryUI" type="Control" parent="LocalCanvasLayer/PlayerUI/Inventory" unique_id=155956012 node_paths=PackedStringArray("Inventory", "_container")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("16_af7lx")
+Inventory = NodePath("../../../../Inventory")
+_container = NodePath("ColorRect/GridContainer")
+_prefabSlotUI = ExtResource("17_6obk6")
+metadata/_custom_type_script = "uid://dc2ckg2il1pte"
+
+[node name="ColorRect" type="ColorRect" parent="LocalCanvasLayer/PlayerUI/Inventory/InventoryUI" unique_id=1263904016]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -320.0
+offset_right = 320.0
+offset_bottom = 320.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14767182, 0.14767179, 0.14767179, 1)
+
+[node name="GridContainer" type="GridContainer" parent="LocalCanvasLayer/PlayerUI/Inventory/InventoryUI/ColorRect" unique_id=320114855]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 9
 
 [editable path="Visuals/humanZov"]

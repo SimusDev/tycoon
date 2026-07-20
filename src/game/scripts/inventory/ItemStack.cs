@@ -6,6 +6,7 @@ public partial class ItemStack : Resource
 {
     [Export] public ItemData ItemData;
 
+    [Signal] public delegate void QuantityChangedEventHandler();
     private ushort _quantity = 1;
     [Export] public ushort Quantity
     {
@@ -14,9 +15,11 @@ public partial class ItemStack : Resource
         {
             _quantity = value;
             Send(nameof(_quantity), value);
+            EmitSignal(SignalName.QuantityChanged);
         }
     }
 
+    [Signal] public delegate void SkinIdChangedEventHandler();
     private ushort _skinId = 0;
     public ushort SkinId
     {
@@ -25,26 +28,43 @@ public partial class ItemStack : Resource
         {
             _skinId = value;
             Send(nameof(_skinId), value);
+            EmitSignal(SignalName.SkinIdChanged);
         }
     }
     
+    [Signal] public delegate void DataChangedEventHandler();
     [Export] protected Dictionary data = [];
     public void SetData(string name, Variant value)
     {
         data[name] = value;
         Send(nameof(data), name, value);
+        EmitSignal(SignalName.DataChanged);
     }
     public Variant GetData(string name) => data[name];
 
     private static GDNetBuffer _buffer = new();
     private GDNetCommunicator _communicator = new();
     
-    private long _netId = GDNet.Instance.GenerateNetworkID();
+    private long _netId = GDNet.GenerateUniqueID();
 
     public ItemStack()
     {
         _communicator.OnBytesReceived += OnBytesReceived;
         _communicator.SynchronizeNetworkIDByUniqueID(_netId);
+    }
+
+    public void SetIn(Node node)
+    {
+        node.SetMeta("ItemStack", this);
+    }
+
+    public static ItemStack FindIn(Node node)
+    {
+        if (node.HasMeta("ItemData"))
+        {
+            return node.GetMeta("ItemStack").As<ItemStack>();
+        }
+        return null;
     }
 
     public static ItemStack CreateFrom(ItemData itemData)
@@ -59,9 +79,7 @@ public partial class ItemStack : Resource
         }
         return null;
     }
-    
 
-    public static ItemStack CreateFrom(Node node) => CreateFrom(ItemData.FindIn(node));
 
     private void Send(string propertyName, Variant value)
     {
