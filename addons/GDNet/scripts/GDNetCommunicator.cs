@@ -128,14 +128,14 @@ public partial class GDNetCommunicator : RefCounted, IDisposable
         SetNetworkID(GDNet.HashString64(salt));
     }
 
-	public void SetNetworkID(ulong id)
+	private void SetNetworkID(ulong id)
 	{
 		_registry.Remove(_networkID);
 		_networkID = id;
 		_registry[id] = this.GetInstanceId();
 	}
 
-	public ulong GetNetworkID()
+	protected ulong GetHashedNetworkID()
 	{
 		return _networkID;
 	}

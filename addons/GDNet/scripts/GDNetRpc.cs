@@ -59,37 +59,37 @@ public partial class GDNetRpc : GDNetCommunicator
 		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, args, args.Length);
 	}
 
-    public void Invoke<T1>(string method, T1 arg)
-    {
+	public void Invoke<T1>(string method, T1 arg)
+	{
 		_tempArgs[0] = arg;
-        InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 1);
-    }
+		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 1);
+	}
 
-    public void Invoke<T1, T2>(string method, T1 arg1, T2 arg2)
-    {
-        _tempArgs[0] = arg1;
-        _tempArgs[1] = arg2;
-        InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 2);
-    }
+	public void Invoke<T1, T2>(string method, T1 arg1, T2 arg2)
+	{
+		_tempArgs[0] = arg1;
+		_tempArgs[1] = arg2;
+		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 2);
+	}
 
-    public void Invoke<T1, T2, T3>(string method, T1 arg1, T2 arg2, T3 arg3)
-    {
-        _tempArgs[0] = arg1;
-        _tempArgs[1] = arg2;
-        _tempArgs[2] = arg3;
-        InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 3);
-    }
+	public void Invoke<T1, T2, T3>(string method, T1 arg1, T2 arg2, T3 arg3)
+	{
+		_tempArgs[0] = arg1;
+		_tempArgs[1] = arg2;
+		_tempArgs[2] = arg3;
+		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 3);
+	}
 
-    public void Invoke<T1, T2, T3, T4>(string method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-    {
-        _tempArgs[0] = arg1;
-        _tempArgs[1] = arg2;
-        _tempArgs[2] = arg3;
-        _tempArgs[3] = arg4;
-        InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 4);
-    }
+	public void Invoke<T1, T2, T3, T4>(string method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+	{
+		_tempArgs[0] = arg1;
+		_tempArgs[1] = arg2;
+		_tempArgs[2] = arg3;
+		_tempArgs[3] = arg4;
+		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.All, _tempArgs, 4);
+	}
 
-    public void InvokeOn(int id, string method, params object[] args)
+	public void InvokeOn(int id, string method, params object[] args)
 	{
 		InvokeByTypeInternal(id, method, RpcType.Target, args, args.Length);
 	}
@@ -107,33 +107,33 @@ public partial class GDNetRpc : GDNetCommunicator
 	public void Invoke<T1>(Delegate method, T1 arg)
 	{
 		_tempArgs[0] = arg;
-        InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 1);
-    }
+		InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 1);
+	}
 
-    public void Invoke<T1, T2>(Delegate method, T1 arg1, T2 arg2)
-    {
-        _tempArgs[0] = arg1;
-        _tempArgs[1] = arg2;
-        InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 2);
-    }
-    public void Invoke<T1, T2, T3>(Delegate method, T1 arg1, T2 arg2, T3 arg3)
-    {
-        _tempArgs[0] = arg1;
-        _tempArgs[1] = arg2;
-        _tempArgs[2] = arg3;
-        InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 3);
-    }
+	public void Invoke<T1, T2>(Delegate method, T1 arg1, T2 arg2)
+	{
+		_tempArgs[0] = arg1;
+		_tempArgs[1] = arg2;
+		InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 2);
+	}
+	public void Invoke<T1, T2, T3>(Delegate method, T1 arg1, T2 arg2, T3 arg3)
+	{
+		_tempArgs[0] = arg1;
+		_tempArgs[1] = arg2;
+		_tempArgs[2] = arg3;
+		InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 3);
+	}
 
-    public void Invoke<T1, T2, T3, T4>(Delegate method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
-    {
-        _tempArgs[0] = arg1;
-        _tempArgs[1] = arg2;
-        _tempArgs[2] = arg3;
-        _tempArgs[3] = arg4;
-        InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 4);
-    }
+	public void Invoke<T1, T2, T3, T4>(Delegate method, T1 arg1, T2 arg2, T3 arg3, T4 arg4)
+	{
+		_tempArgs[0] = arg1;
+		_tempArgs[1] = arg2;
+		_tempArgs[2] = arg3;
+		_tempArgs[3] = arg4;
+		InvokeByTypeInternal(GDNet.ServerID, method.Method.Name, RpcType.All, _tempArgs, 4);
+	}
 
-    public void InvokeOn(int id, Delegate method, params object[] args)
+	public void InvokeOn(int id, Delegate method, params object[] args)
 	{
 		InvokeByTypeInternal(id, method.Method.Name, RpcType.Target, args, args.Length);
 	}
@@ -182,31 +182,37 @@ public partial class GDNetRpc : GDNetCommunicator
 
 		Buffer.Clear();
 
-        switch (type)
+		switch (type)
 		{
 			case RpcType.All:
-                if (fromPeer != GDNet.ServerID)
-                    TryCallMethodLocal(method, args);
+				if (fromPeer != GDNet.ServerID)
+					TryCallMethodLocal(method, args);
 
 				if (_observersEnabled && Observers.Length == 0)
 					break;
 
 				ServerSerializeRpcBuffer(method, _remoteSender, args, argsSize);
 
-                UpdateModeAndChannel(cfg);
+				UpdateModeAndChannel(cfg);
 
 				SendToAll(Buffer.GetBytes());
 
 				break;
 			case RpcType.OnServer:
+				if (fromPeer ==  GDNet.uniqueID)
+				{
+					TryCallMethodLocalWithSerialization(method, args, argsSize);
+					break;
+				}
+
 				TryCallMethodLocal(method, args);
 				break;
 
 			case RpcType.Target:
-                ServerSerializeRpcBuffer(method, _remoteSender, args, argsSize);
-                UpdateModeAndChannel(cfg);
-                SendTo(_remoteSender, Buffer.GetBytes());
-                break;
+				ServerSerializeRpcBuffer(method, _remoteSender, args, argsSize);
+				UpdateModeAndChannel(cfg);
+				SendTo(_remoteSender, Buffer.GetBytes());
+				break;
 		}
 
 		_remoteSender = 0;
@@ -220,10 +226,10 @@ public partial class GDNetRpc : GDNetCommunicator
 
 		if (_rpcNameRegistry.TryGetValue(rpcId, out string method))
 		{
-            _remoteSender = sender;
-            TryCallMethodLocal(method, args);
+			_remoteSender = sender;
+			TryCallMethodLocal(method, args);
 			_remoteSender = 0;
-            return;
+			return;
 		}
 
 		if (GDNet.Debug)
@@ -231,24 +237,7 @@ public partial class GDNetRpc : GDNetCommunicator
 
 	}
 
-	private void ClientSerializeRpcBuffer(RpcType type, int target, string method, object[] args, int argsSize)
-	{
-		Buffer.WriteByte((byte)type);
 
-		if (type == RpcType.Target)
-		{
-			Buffer.WriteLong(target);
-		}
-
-		Buffer.WriteLong(_rpcIdRegistry[method]);
-		Buffer.WriteUInt8((byte)argsSize);
-
-		for (int i = 0; i < argsSize; i++)
-		{
-			Buffer.Write(args[i]);
-		}
-
-	}
 
 	private void ProcessRpcPacketServer(long peerId, byte[] data)
 	{
@@ -291,30 +280,49 @@ public partial class GDNetRpc : GDNetCommunicator
 		ushort rpcId = (ushort)Buffer.ReadLong();
 		byte argsLength = Buffer.ReadUInt8();
 
-        object[] args = new object[argsLength];
+		object[] args = new object[argsLength];
 
-        for (byte i = 0; i < argsLength; i++)
-        {
-            args[i] = Buffer.Read();
-        }
+		for (byte i = 0; i < argsLength; i++)
+		{
+			args[i] = Buffer.Read();
+		}
 
-        ClientProcessRpc(sender, rpcId, args);
-    }
+		ClientProcessRpc(sender, rpcId, args);
+	}
 
-    private void ServerSerializeRpcBuffer(string method, int sender, object[] args, int argsSize)
-    {
-        Buffer.WriteLong(sender);
-        Buffer.WriteLong(_rpcIdRegistry[method]);
-        Buffer.WriteUInt8((byte)argsSize);
+	private void ServerSerializeRpcBuffer(string method, int sender, object[] args, int argsSize)
+	{
+		Buffer.WriteLong(sender);
+		Buffer.WriteLong(_rpcIdRegistry[method]);
+		Buffer.WriteUInt8((byte)argsSize);
 
-        for (byte i = 0; i < argsSize; i++)
-        {
-            Buffer.Write(args[i]);
-        }
+		for (byte i = 0; i < argsSize; i++)
+		{
+			Buffer.Write(args[i]);
+		}
 
-    }
+	}
 
-    public override void ReceivedBytes(long peerId, byte[] data)
+	private void ClientSerializeRpcBuffer(RpcType type, int target, string method, object[] args, int argsSize)
+	{
+		Buffer.WriteByte((byte)type);
+
+		if (type == RpcType.Target)
+		{
+			Buffer.WriteLong(target);
+		}
+
+		Buffer.WriteLong(_rpcIdRegistry[method]);
+		Buffer.WriteUInt8((byte)argsSize);
+
+		for (int i = 0; i < argsSize; i++)
+		{
+			Buffer.Write(args[i]);
+		}
+
+	}
+
+	public override void ReceivedBytes(long peerId, byte[] data)
 	{
 		bool fromServer = peerId == GDNet.ServerID;
 
@@ -339,17 +347,17 @@ public partial class GDNetRpc : GDNetCommunicator
 
 	}
 
-	private void TryCallMethodLocalWithSerialization(string method, object[] args)
+	private void TryCallMethodLocalWithSerialization(string method, object[] args, int argsSize)
 	{
 		BufferLocal.Clear();
-		for (byte i = 0; i < args.Length; i++)
+		for (byte i = 0; i < argsSize; i++)
 		{
-			Buffer.Write(args[i]);
+			BufferLocal.Write(args[i]);
 		}
 
 		BufferLocal.Seek(0);
 
-		for (byte i = 0; i < args.Length; i++)
+		for (byte i = 0; i < argsSize; i++)
 		{
 			args[i] = BufferLocal.Read();
 		}
@@ -416,7 +424,7 @@ public partial class GDNetRpc : GDNetCommunicator
 	{
 		bool validation = Validate(peerId, authority, cfg);
 		if (!validation && GDNet.Debug)
-			GD.PushError($"Rpc Validation Failed for {peerId} id; {authority} auth; {GetNetworkID()} networkId; {cfg}");
+			GD.PushError($"Rpc Validation Failed for {peerId} id; {authority} auth; {GetHashedNetworkID()} networkId; {cfg}");
 		return validation;
 	}
 

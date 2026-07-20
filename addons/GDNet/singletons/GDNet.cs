@@ -41,7 +41,8 @@ public partial class GDNet : Node
 
 	public GDNet()
 	{
-		_writer = new BinaryWriter(_stream);
+        Instance = this;
+        _writer = new BinaryWriter(_stream);
 		_reader = new BinaryReader(_stream);
 	}
 	public enum PacketType
@@ -65,7 +66,7 @@ public partial class GDNet : Node
 	public const string HashIDSalt = "GDNetHash";
 	public const string HashIDSaltResource = "GDNetHashResource";
 
-	private long _NextNetworkID = 0;
+	private static long _NextUniqueID = 0;
 
 	private ConcurrentDictionary<ulong, ulong> _ObjectsByHashID = new();
 	private ConcurrentDictionary<ulong, ulong> _HashIDByObjects = new();
@@ -86,10 +87,10 @@ public partial class GDNet : Node
 	{
 		return uniqueID;
 	}
-	public long GenerateNetworkID()
+	public static long GenerateUniqueID()
 	{
-		_NextNetworkID++;
-		return _NextNetworkID;
+		_NextUniqueID++;
+		return _NextUniqueID;
 	}
 
 	public static ulong HashString64(string input)

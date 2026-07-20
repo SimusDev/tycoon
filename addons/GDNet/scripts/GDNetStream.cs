@@ -2,7 +2,7 @@ using System;
 
 public class GDNetStream : IDisposable
 {
-	private byte[] _buffer = new byte[512];
+	private byte[] _buffer = new byte[128];
 	private int _position = 0;
 	private int _length = 0;
 
