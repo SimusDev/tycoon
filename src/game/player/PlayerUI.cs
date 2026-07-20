@@ -4,9 +4,11 @@ using System;
 public partial class PlayerUI : Control
 {
     [Export] private Inventory inventory;
+    static RandomNumberGenerator rng = new();
 
     public override void _Ready()
     {
+        rng.Randomize();
         foreach (Node child in GetChildren())
         {
             if (child is Button button)
@@ -24,7 +26,10 @@ public partial class PlayerUI : Control
                 inventory.AddSlot();
                 break;
             case "AddItem":
-                inventory.AddItem( ItemStack.CreateFrom(ItemDataRegistry.Instance.Get(0)) );
+                inventory.AddItem(
+                    ItemStack.CreateFrom(ItemDataRegistry.Instance.Get(
+                        rng.RandiRange(0, ItemDataRegistry.Instance.Count-1)
+                )));
                 break;
             case "RemoveSlot":
                 inventory.RemoveSlot();

@@ -6,6 +6,8 @@ public partial class Inventory : Node
 {
     #region Sync
     [Signal] public delegate void SynchronizedEventHandler();
+    private GDNetBuffer _buffer = new();
+
     private bool _isSynchronized = false;
     public bool IsSynchronized() => _isSynchronized;
 
@@ -14,27 +16,41 @@ public partial class Inventory : Node
 	[Rpc(mode: MultiplayerApi.RpcMode.AnyPeer, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
 	private void SyncToSender()
 	{
-        Dictionary data = [];
-        data["slots"] = _slots;
-        data["selected_slot_idx"] = _selectedSlotIdx;
+        _buffer.Clear();
+        _buffer.WriteInt16((short)_slots.Count);
+        foreach (InventorySlot slot in _slots)
+        {
+            _buffer.WriteBytesDynamic(slot.Serialize());
+        }
+        _buffer.WriteInt16(_selectedSlotIdx);
 
-		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer, GD.VarToBytes(data));
+		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer, _buffer.GetBytes());
 	}
 
 	[Rpc(mode: MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
 	private void ReceiveFromSyncer(byte[] bytes)
 	{
-        Dictionary data = GD.BytesToVar(bytes).AsGodotDictionary();
-        if (data == null) return;
+        _buffer.SetBytes(bytes);
+        _buffer.Seek(0);
 
-        _slots = data["slots"].AsGodotArray<InventorySlot>();
-        _selectedSlotIdx = data["selected_slot_dx"].AsInt16();
+        short slotCount = _buffer.ReadInt16();
+
+        _slots.Resize(slotCount);
+        for (short i = 0; i < slotCount; i++) 
+        {
+            _slots[i] = InventorySlot.Deserialize(_buffer.ReadBytesDynamic());
+        }
+
+
+        _selectedSlotIdx = _buffer.ReadInt16();
 
         _isSlotsInitialized = true;
         EmitSignal(SignalName.SlotsInitialized);
         _isSynchronized = true;
         EmitSignal(SignalName.Synchronized);
 	}
+
+    
     #endregion
 
     #region Inventory Owner

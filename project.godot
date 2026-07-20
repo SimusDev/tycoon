@@ -35,7 +35,7 @@ project/assembly_name="Tycoon"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/GDNet/plugin.cfg")
+enabled=PackedStringArray()
 
 [gui]
 

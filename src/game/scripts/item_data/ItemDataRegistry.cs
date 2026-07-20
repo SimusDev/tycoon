@@ -30,6 +30,7 @@ public partial class ItemDataRegistry : Node
     }
 
     [Export] private Dictionary<string, ItemData> _register = [];
+    public int Count => _register.Count;
     public bool Has(string id) => _register.ContainsKey(id);
 
     
@@ -58,12 +59,12 @@ public partial class ItemDataRegistry : Node
     #region Get by idx
     public ItemData Get(int idx)
     {
-        if (_register.Count < idx)
+        if (_register.Count >= 0 && _register.Count < idx)
         {
             LogError($"Item with index '{idx}' not found in registry");
             return null;
         }
-
+    
         return _register.ElementAt(idx).Value;
     }
     public ItemData get_by_idx(int idx) { return Get(idx); }

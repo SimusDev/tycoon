@@ -39,10 +39,12 @@ public partial class ItemStack : Resource
     private static GDNetBuffer _buffer = new();
     private GDNetCommunicator _communicator = new();
     
+    private long _netId = GDNet.Instance.GenerateNetworkID();
+
     public ItemStack()
     {
         _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(GDNet.Instance.GenerateNetworkID());
+        _communicator.SynchronizeNetworkIDByUniqueID(_netId);
     }
 
     public static ItemStack CreateFrom(ItemData itemData)
@@ -114,7 +116,7 @@ public partial class ItemStack : Resource
         _buffer.WriteUInt16(SkinId);
         _buffer.WriteVar(data);
 
-        _buffer.WriteLong((long)_communicator.GetNetworkID());
+        _buffer.WriteLong(_netId);
         
         return _buffer.GetBytes();
     }

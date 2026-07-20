@@ -65,7 +65,11 @@ public partial class InventorySlot : Resource
     {
         _buffer.Clear();
         
-        _buffer.WriteBytesDynamic(ItemStack.Serialize());
+        _buffer.WriteBool(_itemStack != null);
+        if (_itemStack != null)
+        {
+            _buffer.WriteBytesDynamic(ItemStack.Serialize());
+        }
 
         return _buffer.GetBytes();
     }
@@ -75,10 +79,14 @@ public partial class InventorySlot : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        return new()
+        ItemStack itemStack = null;
+
+        if (_buffer.ReadBool())
         {
-            ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic())
-        };
+            itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+        }
+
+        return new() { ItemStack = itemStack };
     }
 }
 
