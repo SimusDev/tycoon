@@ -98,8 +98,8 @@ public partial class GDNetBuffer : RefCounted
 		_writers[typeof(Vector2)] = (b, v) => { b._WriteVarType(VarType.Vector2); b.WriteVector2((Vector2)v); };
 		_readers[VarType.Vector2] = b => b.ReadVector2();
 
-		_writersGodotVar[Variant.Type.Int] = (b, v) => { b._WriteGodotVarType(GodotVarType.Int); b.WriteLong((long)v); };
-		_readersGodotVar[GodotVarType.Int] = b =>  b.ReadLong();
+		_writersGodotVar[Variant.Type.Int] = (b, v) => { b._WriteGodotVarType(GodotVarType.Int); b.WriteInt64((long)v); };
+		_readersGodotVar[GodotVarType.Int] = b =>  b.ReadUInt64();
 
 		_writersGodotVar[Variant.Type.Bool] = (b, v) => { b._WriteGodotVarType(GodotVarType.Bool); b.WriteBool((bool)v); };
 		_readersGodotVar[GodotVarType.Bool] = b => b.ReadBool();
@@ -199,7 +199,39 @@ public partial class GDNetBuffer : RefCounted
 		return GDNet.Instance.GetNode(ReadString());
 	}
 
-	public void WriteLong(long value)
+	public void WriteIntVar(int value)
+	{
+		uint zigzag = (uint)((value << 1) ^ (value >> 31)); 
+
+		while (zigzag >= 0x80)
+		{
+			WriteByte((byte)(zigzag | 0x80));
+			zigzag >>= 7;
+		}
+		WriteByte((byte)zigzag);
+	}
+
+	public int ReadIntVar()
+	{
+		uint result = 0;
+		int shift = 0;
+		byte b;
+
+		do
+		{
+			b = ReadByte();
+			result |= (uint)(b & 0x7F) << shift;
+			shift += 7;
+
+			if (shift > 35) 
+				throw new InvalidOperationException("VarInt too long!");
+
+		} while ((b & 0x80) != 0);
+
+		return (int)(result >> 1) ^ -(int)(result & 1);
+	}
+
+	public void WriteLongVar(long value)
 	{
 		ulong zigzag = (ulong)((value << 1) ^ (value >> 63));
 
@@ -211,7 +243,7 @@ public partial class GDNetBuffer : RefCounted
 		WriteByte((byte)zigzag);
 	}
 
-	public long ReadLong()
+	public long ReadLongVar()
 	{
 		ulong result = 0;
 		int shift = 0;
@@ -219,16 +251,16 @@ public partial class GDNetBuffer : RefCounted
 
 		do
 		{
+			if (shift >= 64) 
+				throw new InvalidOperationException("VarLong too long!");
+
 			b = ReadByte();
 			result |= (ulong)(b & 0x7F) << shift;
 			shift += 7;
 
-			if (shift > 63)
-				throw new InvalidOperationException("VLQ too long!");
-
 		} while ((b & 0x80) != 0);
 
-		return (long)((result >> 1) ^ (ulong)(-(long)(result & 1)));
+		return (long)(result >> 1) ^ -(long)(result & 1);
 	}
 
 	public void WriteBytes(byte[] bytes) => _stream.WriteBytes(bytes);
@@ -236,13 +268,13 @@ public partial class GDNetBuffer : RefCounted
 
 	public void WriteBytesDynamic(byte[] bytes)
 	{
-		WriteLong(bytes.Length);
+		WriteIntVar(bytes.Length);
 		_stream.WriteBytes(bytes);
 	}
 
 	public byte[] ReadBytesDynamic()
 	{
-		return _stream.ReadBytes((int)ReadLong());
+		return _stream.ReadBytes(ReadIntVar());
 	}
 
 	private void _WriteVarType(VarType type)
@@ -392,7 +424,7 @@ public partial class GDNetBuffer : RefCounted
 
 	public void WriteList<T>(System.Collections.Generic.List<T> value)
 	{
-		WriteLong(value.Count);
+		WriteIntVar(value.Count);
 		for (int i = 0; i < value.Count; i++)
 			Write(value[i]);
 	}
@@ -400,7 +432,7 @@ public partial class GDNetBuffer : RefCounted
 	public System.Collections.Generic.List<T> ReadList<T>()
 	{
 		System.Collections.Generic.List<T> result = new();
-		long length = ReadLong();
+		long length = ReadIntVar();
 		for (int i = 0; i < length; i++)
 			result.Add((T)Read());
 		return result;

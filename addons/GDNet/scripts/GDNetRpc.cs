@@ -248,9 +248,9 @@ public partial class GDNetRpc : GDNetCommunicator
 		int targetId = -1;
 
 		if (type == RpcType.Target)
-			targetId = (int)Buffer.ReadLong();
+			targetId = (int)Buffer.ReadIntVar();
   
-		ushort rpcId = (ushort)Buffer.ReadLong();
+		ushort rpcId = (ushort)Buffer.ReadIntVar();
 
 		if (!_rpcNameRegistry.TryGetValue(rpcId, out string method))
 		{
@@ -276,8 +276,8 @@ public partial class GDNetRpc : GDNetCommunicator
 		Buffer.SetBytes(data);
 		Buffer.Seek(0);
 
-		int sender = (int)Buffer.ReadLong();
-		ushort rpcId = (ushort)Buffer.ReadLong();
+		int sender = Buffer.ReadIntVar();
+		ushort rpcId = (ushort)Buffer.ReadIntVar();
 		byte argsLength = Buffer.ReadUInt8();
 
 		object[] args = new object[argsLength];
@@ -292,8 +292,8 @@ public partial class GDNetRpc : GDNetCommunicator
 
 	private void ServerSerializeRpcBuffer(string method, int sender, object[] args, int argsSize)
 	{
-		Buffer.WriteLong(sender);
-		Buffer.WriteLong(_rpcIdRegistry[method]);
+		Buffer.WriteIntVar(sender);
+		Buffer.WriteIntVar(_rpcIdRegistry[method]);
 		Buffer.WriteUInt8((byte)argsSize);
 
 		for (byte i = 0; i < argsSize; i++)
@@ -309,10 +309,10 @@ public partial class GDNetRpc : GDNetCommunicator
 
 		if (type == RpcType.Target)
 		{
-			Buffer.WriteLong(target);
+			Buffer.WriteIntVar(target);
 		}
 
-		Buffer.WriteLong(_rpcIdRegistry[method]);
+		Buffer.WriteIntVar(_rpcIdRegistry[method]);
 		Buffer.WriteUInt8((byte)argsSize);
 
 		for (int i = 0; i < argsSize; i++)

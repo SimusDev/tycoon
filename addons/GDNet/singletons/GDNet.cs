@@ -66,7 +66,7 @@ public partial class GDNet : Node
 	public const string HashIDSalt = "GDNetHash";
 	public const string HashIDSaltResource = "GDNetHashResource";
 
-	private static long _NextUniqueID = 0;
+	private static long _NextUniqueID = int.MinValue;
 
 	private ConcurrentDictionary<ulong, ulong> _ObjectsByHashID = new();
 	private ConcurrentDictionary<ulong, ulong> _HashIDByObjects = new();
