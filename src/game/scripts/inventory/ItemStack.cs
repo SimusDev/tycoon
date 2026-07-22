@@ -40,7 +40,8 @@ public partial class ItemStack : Resource
         Send(nameof(data), name, value);
         EmitSignal(SignalName.DataChanged);
     }
-    public Variant GetData(string name) => data[name];
+    public Dictionary GetData() => data;
+    public Variant GetDataValue(string name) => data[name];
 
     private static readonly GDNetBuffer _buffer = new();
     [Export] private GDNetCommunicator _communicator = new();
@@ -150,14 +151,22 @@ public partial class ItemStack : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        ItemStack item = new(_buffer.ReadLongVar())
+        ItemStack itemStack = new(_buffer.ReadLongVar())
         {
             ItemData = _buffer.ReadResource<ItemData>(),
             Quantity = _buffer.ReadUInt16(),
             SkinId = _buffer.ReadUInt16(),
             //data = _buffer.ReadVar().AsGodotDictionary()
         };
+
+        GD.Print(
+            $"Deserialized ItemStack '{itemStack}'\n",
+            $"ItemData: {itemStack.ItemData}\n",
+            $"Quantity: {itemStack.Quantity} \n",
+            $"SkinId: {itemStack.SkinId} \n",
+            $"Data: {itemStack.GetData()} \n"
+        );
         
-        return item;
+        return itemStack;
     }
 }

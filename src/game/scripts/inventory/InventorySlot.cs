@@ -67,6 +67,10 @@ public partial class InventorySlot : Resource
     public bool CanStackWith(ItemStack itemStack)
     {
         if (ItemStack == null) return true;
+        // if (
+        //     itemStack.ItemData == ItemStack.ItemData &&
+        //     itemStack.GetData() == ItemStack.GetData()
+        //    ) return true;
         
         return false;
     }
@@ -92,7 +96,6 @@ public partial class InventorySlot : Resource
         _buffer.SetBytes(bytes);
 
         InventorySlot newSlot = new(_buffer.ReadLongVar());
-        //ItemStack itemStack = null;
 
         if (_buffer.ReadBool())
         {
