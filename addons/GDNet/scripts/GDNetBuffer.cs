@@ -1,4 +1,5 @@
 using Godot;
+using Godot.Collections;
 using System;
 
 [GlobalClass]
@@ -359,13 +360,24 @@ public partial class GDNetBuffer : RefCounted
 		return null;
 	}
 
+	//sex vlados
+	
+	public void WriteDictionarySimple<[MustBeVariant] TKey, [MustBeVariant] TValue>(Dictionary<TKey, TValue> dict)
+	{
+		WriteBytesDynamic(GD.VarToBytes(dict));
+	}
+
+	public Dictionary<TKey, TValue> ReadDictionarySimple<[MustBeVariant] TKey, [MustBeVariant] TValue>()
+	{
+		Dictionary<TKey, TValue> dict = (Dictionary<TKey, TValue>)GD.BytesToVar(ReadBytesDynamic());
+		return dict;
+	}
+
+	//zxcvlad78
+
 	public void WriteResource(Resource resource)
 	{
-		if (resource == null)
-		{
-			WriteBool(true);
-			return;
-		}
+		WriteBool(resource == null);
 
 		long hash = ResourceUid.TextToId(ResourceUid.PathToUid(resource.ResourcePath));
 		WriteInt64(hash);

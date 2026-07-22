@@ -1,6 +1,10 @@
 [gd_scene format=3 uid="uid://buxy54iln71fk"]
 
+[ext_resource type="Resource" uid="uid://3g3opgatre5p" path="res://src/game/item_data/sas/sas.tres" id="1_g7xdu"]
 [ext_resource type="Script" uid="uid://bf6f2mxftmr1l" path="res://src/game/scenes/mainmenu/ScriptingCs.cs" id="1_rnjdm"]
+[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="2_xmdbi"]
+[ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="3_lv2lk"]
+[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/item_data/jirobas/jirobas.tres" id="5_xmdbi"]
 
 [sub_resource type="GDScript" id="GDScript_akcrd"]
 script/source = "extends Control
@@ -67,6 +71,7 @@ font_color = Color(1, 0, 0, 1)
 [sub_resource type="GDScript" id="GDScript_sx3cy"]
 script/source = "extends Node
 
+
 func _ready() -> void:
 	var start_time:int = 0
 	
@@ -89,7 +94,29 @@ func _ready() -> void:
 	
 	if false:
 		print(\"scan successful: %sms\" % [Time.get_ticks_msec() - start_time])
+	
+	
 "
+
+[sub_resource type="Resource" id="Resource_6fqfh"]
+script = ExtResource("2_xmdbi")
+ItemData = ExtResource("1_g7xdu")
+Quantity = 7
+data = {
+"Sus": 78
+}
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
+[sub_resource type="Resource" id="Resource_rnjdm"]
+script = ExtResource("3_lv2lk")
+ItemStack = SubResource("Resource_6fqfh")
+metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_g7xdu"]
+script = ExtResource("2_xmdbi")
+ItemData = ExtResource("5_xmdbi")
+Quantity = 8
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
 
 [node name="Mainmenu" type="Control" unique_id=268212786]
 layout_mode = 3
@@ -167,3 +194,5 @@ script = SubResource("GDScript_sx3cy")
 
 [node name="ScriptingCS" type="Node" parent="." unique_id=860239137]
 script = ExtResource("1_rnjdm")
+slot = SubResource("Resource_rnjdm")
+stack = SubResource("Resource_g7xdu")

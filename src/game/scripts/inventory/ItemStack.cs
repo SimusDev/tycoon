@@ -33,17 +33,19 @@ public partial class ItemStack : Resource
     }
     
     [Signal] public delegate void DataChangedEventHandler();
-    [Export] protected Dictionary data = [];
+    [Export] protected Dictionary<string, Variant> data = [];
     public void SetData(string name, Variant value)
     {
         data[name] = value;
         Send(nameof(data), name, value);
         EmitSignal(SignalName.DataChanged);
     }
-    public Dictionary GetData() => data;
+    public Dictionary<string, Variant> GetData() => data;
     public Variant GetDataValue(string name) => data[name];
 
     private static readonly GDNetBuffer _buffer = new();
+    private static readonly GDNetBuffer _s_buffer = new();
+
     [Export] private GDNetCommunicator _communicator = new();
     
     private long _netId = GDNet.GenerateUniqueID();
@@ -134,38 +136,29 @@ public partial class ItemStack : Resource
 
     public byte[] Serialize()
     {
-        _buffer.Clear();
+        _s_buffer.Clear();
         
-        _buffer.WriteLongVar(_netId);
-        _buffer.WriteResource(ItemData);
-        _buffer.WriteUInt16(Quantity);
-        _buffer.WriteUInt16(SkinId);
-        //_buffer.WriteVar(data);
+        _s_buffer.WriteLongVar(_netId);
+        _s_buffer.WriteResource(ItemData);
+        _s_buffer.WriteUInt16(Quantity);
+        _s_buffer.WriteUInt16(SkinId);
+        _buffer.WriteDictionarySimple(data);
 
-        
-        return _buffer.GetBytes();
+        return _s_buffer.GetBytes();
     }
 
     public static ItemStack Deserialize(byte[] bytes)
     {
-        _buffer.Clear();
-        _buffer.SetBytes(bytes);
+        _s_buffer.Clear();
+        _s_buffer.SetBytes(bytes);
 
-        ItemStack itemStack = new(_buffer.ReadLongVar())
+        ItemStack itemStack = new(_s_buffer.ReadLongVar())
         {
-            ItemData = _buffer.ReadResource<ItemData>(),
-            Quantity = _buffer.ReadUInt16(),
-            SkinId = _buffer.ReadUInt16(),
-            //data = _buffer.ReadVar().AsGodotDictionary()
+            ItemData = _s_buffer.ReadResource<ItemData>(),
+            Quantity = _s_buffer.ReadUInt16(),
+            SkinId = _s_buffer.ReadUInt16(),
+            data = _buffer.ReadDictionarySimple<string, Variant>()
         };
-
-        GD.Print(
-            $"Deserialized ItemStack '{itemStack}'\n",
-            $"ItemData: {itemStack.ItemData}\n",
-            $"Quantity: {itemStack.Quantity} \n",
-            $"SkinId: {itemStack.SkinId} \n",
-            $"Data: {itemStack.GetData()} \n"
-        );
         
         return itemStack;
     }
