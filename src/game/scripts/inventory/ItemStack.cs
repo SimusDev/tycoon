@@ -14,7 +14,7 @@ public partial class ItemStack : Resource
         set
         {
             _quantity = value;
-            Send(nameof(_quantity), value);
+            Send(nameof(Quantity), value);
             EmitSignal(SignalName.QuantityChanged);
         }
     }
@@ -27,7 +27,7 @@ public partial class ItemStack : Resource
         set
         {
             _skinId = value;
-            Send(nameof(_skinId), value);
+            Send(nameof(SkinId), value);
             EmitSignal(SignalName.SkinIdChanged);
         }
     }
@@ -42,8 +42,8 @@ public partial class ItemStack : Resource
     }
     public Variant GetData(string name) => data[name];
 
-    private static GDNetBuffer _buffer = new();
-    private GDNetCommunicator _communicator = new();
+    private static readonly GDNetBuffer _buffer = new();
+    [Export] private GDNetCommunicator _communicator = new();
     
     private long _netId = GDNet.GenerateUniqueID();
 
@@ -51,6 +51,12 @@ public partial class ItemStack : Resource
     {
         _communicator.OnBytesReceived += OnBytesReceived;
         _communicator.SynchronizeNetworkIDByUniqueID(_netId);
+    }
+
+    public ItemStack(long netId)
+    {
+        _communicator.OnBytesReceived += OnBytesReceived;
+        _communicator.SynchronizeNetworkIDByUniqueID(netId);
     }
 
     public void SetIn(Node node)
@@ -129,12 +135,12 @@ public partial class ItemStack : Resource
     {
         _buffer.Clear();
         
+        _buffer.WriteLongVar(_netId);
         _buffer.WriteResource(ItemData);
         _buffer.WriteUInt16(Quantity);
         _buffer.WriteUInt16(SkinId);
-        _buffer.WriteVar(data);
+        //_buffer.WriteVar(data);
 
-        _buffer.WriteLong(_netId);
         
         return _buffer.GetBytes();
     }
@@ -144,15 +150,14 @@ public partial class ItemStack : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        ItemStack item = new()
+        ItemStack item = new(_buffer.ReadLongVar())
         {
             ItemData = _buffer.ReadResource<ItemData>(),
             Quantity = _buffer.ReadUInt16(),
             SkinId = _buffer.ReadUInt16(),
-            data = _buffer.ReadVar().AsGodotDictionary()
+            //data = _buffer.ReadVar().AsGodotDictionary()
         };
         
-        item._communicator.SynchronizeNetworkIDByUniqueID(_buffer.ReadLong());
         return item;
     }
 }

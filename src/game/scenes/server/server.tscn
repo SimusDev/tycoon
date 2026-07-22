@@ -72,7 +72,7 @@ func _on_user_data_received(data: Dictionary) -> void:
 	
 	error_message(\"User data loaded successfully\", Color.GREEN)
 
-func _on_player_disconnected(user_id: int) -> void:
+func _on_player_disconnected(_user_id: int) -> void:
 	error_message(\"Disconnected from server\", Color.RED)
 	play_button.disabled = true
 

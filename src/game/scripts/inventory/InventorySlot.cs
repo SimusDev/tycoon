@@ -19,12 +19,20 @@ public partial class InventorySlot : Resource
     public bool IsEmpty() => ItemStack == null;
 
     private static readonly GDNetBuffer _buffer = new();
-    private GDNetCommunicator _communicator = new();
+    [Export] private GDNetCommunicator _communicator = new();
+
+    private long _netId = GDNet.GenerateUniqueID();
     
     public InventorySlot()
     {
         _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(GDNet.GenerateUniqueID());
+        _communicator.SynchronizeNetworkIDByUniqueID(_netId);
+    }
+
+    public InventorySlot(long netId)
+    {
+        _communicator.OnBytesReceived += OnBytesReceived;
+        _communicator.SynchronizeNetworkIDByUniqueID(netId);
     }
 
     private void Send()
@@ -67,6 +75,8 @@ public partial class InventorySlot : Resource
     {
         _buffer.Clear();
         
+        _buffer.WriteLongVar(_netId);
+
         _buffer.WriteBool(_itemStack != null);
         if (_itemStack != null)
         {
@@ -81,14 +91,15 @@ public partial class InventorySlot : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        ItemStack itemStack = null;
+        InventorySlot newSlot = new(_buffer.ReadLongVar());
+        //ItemStack itemStack = null;
 
         if (_buffer.ReadBool())
         {
-            itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+            newSlot.ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
         }
 
-        return new() { ItemStack = itemStack };
+        return newSlot;
     }
 }
 
