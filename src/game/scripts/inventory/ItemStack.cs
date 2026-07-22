@@ -92,7 +92,7 @@ public partial class ItemStack : Resource
 
     private void Send(string propertyName, Variant value)
     {
-        if (!GameServer.Instance.Multiplayer.IsServer()) return;
+        if (!GameServer.IsMultiplayerValid() || !GameServer.Instance.Multiplayer.IsServer()) return;
 
         _buffer.Clear();
         _buffer.WriteUInt8(0); // Default
@@ -104,7 +104,7 @@ public partial class ItemStack : Resource
     
     private void Send(string dictName, string propertyName, Variant value)
     {
-        if (!GameServer.Instance.Multiplayer.IsServer()) return;
+        if (!GameServer.IsMultiplayerValid() || !GameServer.Instance.Multiplayer.IsServer()) return;
 
         _buffer.Clear();
         _buffer.WriteUInt8(1); // Dictionary
@@ -142,7 +142,7 @@ public partial class ItemStack : Resource
         _s_buffer.WriteResource(ItemData);
         _s_buffer.WriteUInt16(Quantity);
         _s_buffer.WriteUInt16(SkinId);
-        _buffer.WriteDictionarySimple(data);
+        //_buffer.WriteDictionarySimple(data);
 
         return _s_buffer.GetBytes();
     }
@@ -157,7 +157,7 @@ public partial class ItemStack : Resource
             ItemData = _s_buffer.ReadResource<ItemData>(),
             Quantity = _s_buffer.ReadUInt16(),
             SkinId = _s_buffer.ReadUInt16(),
-            data = _buffer.ReadDictionarySimple<string, Variant>()
+            //data = _buffer.ReadDictionarySimple<string, Variant>()
         };
         
         return itemStack;

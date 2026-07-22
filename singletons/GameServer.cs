@@ -69,6 +69,19 @@ public partial class GameServer : Node
         }
     }
 
+    public static bool IsMultiplayerValid()
+    {
+        if (Instance == null || Instance.Multiplayer == null)
+            return false;
+
+        return true;
+    }
+
+    public static bool IsServer()
+    {
+        return IsMultiplayerValid() && Instance.Multiplayer.IsServer();
+    }
+
     public void RequestPlayerNickname(long peerId)
     {
         if (IsMultiplayerAuthority())

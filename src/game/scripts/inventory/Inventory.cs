@@ -78,7 +78,7 @@ public partial class Inventory : Node
         {
             if (_slots[i] is Resource resourceSlot)
             {
-                _slots[i] = resourceSlot.Duplicate() as InventorySlot;
+                _slots[i] = resourceSlot.Duplicate(true) as InventorySlot;
             }
         }
         _isSlotsInitialized = true;

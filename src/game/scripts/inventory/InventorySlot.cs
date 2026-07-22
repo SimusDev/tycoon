@@ -37,7 +37,7 @@ public partial class InventorySlot : Resource
 
     private void Send()
     {
-        if (!GameServer.Instance.Multiplayer.IsServer()) return;
+        if (!GameServer.IsMultiplayerValid() || !GameServer.Instance.Multiplayer.IsServer()) return;
 
         _buffer.Clear();
         
@@ -62,7 +62,6 @@ public partial class InventorySlot : Resource
             _itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
         }
     }
-
 
     public bool CanStackWith(ItemStack itemStack)
     {
