@@ -114,7 +114,7 @@ public partial class ItemStack : Resource
         _buffer.Clear();
         _buffer.WriteUInt8(0); // Default
         _buffer.WriteString(propertyName);
-        _buffer.WriteVar(value);
+        _buffer.WriteBytesDynamic(GD.VarToBytes(value));
         
         _communicator.SendToAll(_buffer.GetBytes());
     }
@@ -127,7 +127,7 @@ public partial class ItemStack : Resource
         _buffer.WriteUInt8(1); // Dictionary
         _buffer.WriteString(dictName);
         _buffer.WriteString(propertyName);
-        _buffer.WriteVar(value);
+        _buffer.WriteBytesDynamic(GD.VarToBytes(value));
         
         _communicator.SendToAll(_buffer.GetBytes());
     }
@@ -142,10 +142,10 @@ public partial class ItemStack : Resource
         switch (type)
         {
             case 0: // Default
-                Set(_buffer.ReadString(), _buffer.ReadVar());
+                Set(_buffer.ReadString(), GD.BytesToVar(_buffer.ReadBytesDynamic()));
                 break;
             case 1: // Dictionary
-                Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = _buffer.ReadVar();
+                Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = GD.BytesToVar(_buffer.ReadBytesDynamic());
                 break;
         }
     }
