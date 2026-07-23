@@ -14,11 +14,14 @@ public partial class ScriptingCs : Node
 
     public override void _Ready()
     {
-        slotSerialized = slot.Serialize();
-        slotDeserialized = InventorySlot.Deserialize(slotSerialized);
+        if (true == false)
+        {
+            slotSerialized = slot.Serialize();
+            slotDeserialized = InventorySlot.Deserialize(slotSerialized);
 
-        stackSerialized = stack.Serialize();
-        stackDeserialized = ItemStack.Deserialize(stackSerialized);
+            stackSerialized = stack.Serialize();
+            stackDeserialized = ItemStack.Deserialize(stackSerialized);
+        }
 
         if (true) return;
         

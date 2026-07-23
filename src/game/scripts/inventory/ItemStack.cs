@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Godot;
 using Godot.Collections;
 
@@ -31,6 +32,22 @@ public partial class ItemStack : Resource
             EmitSignal(SignalName.SkinIdChanged);
         }
     }
+
+    [Signal] public delegate void StackSizeChangedEventHandler();
+    private short stackSize = -1;
+    public short StackSize
+    {
+        get
+        {
+            if (stackSize == -1) return (short)ItemData?.ItemStackConfig?.StackSize;
+            return stackSize;
+        }
+        set
+        {
+            stackSize = value;
+        }
+    }
+
     
     [Signal] public delegate void DataChangedEventHandler();
     [Export] protected Dictionary<string, Variant> data = [];
@@ -97,7 +114,7 @@ public partial class ItemStack : Resource
         _buffer.Clear();
         _buffer.WriteUInt8(0); // Default
         _buffer.WriteString(propertyName);
-        _buffer.WriteVar(value);
+        _buffer.WriteBytesDynamic(GD.VarToBytes(value));
         
         _communicator.SendToAll(_buffer.GetBytes());
     }
@@ -110,7 +127,7 @@ public partial class ItemStack : Resource
         _buffer.WriteUInt8(1); // Dictionary
         _buffer.WriteString(dictName);
         _buffer.WriteString(propertyName);
-        _buffer.WriteVar(value);
+        _buffer.WriteBytesDynamic(GD.VarToBytes(value));
         
         _communicator.SendToAll(_buffer.GetBytes());
     }
@@ -125,10 +142,10 @@ public partial class ItemStack : Resource
         switch (type)
         {
             case 0: // Default
-                Set(_buffer.ReadString(), _buffer.ReadVar());
+                Set(_buffer.ReadString(), GD.BytesToVar(_buffer.ReadBytesDynamic()));
                 break;
             case 1: // Dictionary
-                Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = _buffer.ReadVar();
+                Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = GD.BytesToVar(_buffer.ReadBytesDynamic());
                 break;
         }
     }
@@ -138,7 +155,7 @@ public partial class ItemStack : Resource
     {
         _s_buffer.Clear();
         
-        _s_buffer.WriteLongVar(_netId);
+        _s_buffer.WriteInt64(_netId);
         _s_buffer.WriteResource(ItemData);
         _s_buffer.WriteUInt16(Quantity);
         _s_buffer.WriteUInt16(SkinId);
@@ -152,7 +169,7 @@ public partial class ItemStack : Resource
         _s_buffer.Clear();
         _s_buffer.SetBytes(bytes);
 
-        ItemStack itemStack = new(_s_buffer.ReadLongVar())
+        ItemStack itemStack = new(_s_buffer.ReadInt64())
         {
             ItemData = _s_buffer.ReadResource<ItemData>(),
             Quantity = _s_buffer.ReadUInt16(),

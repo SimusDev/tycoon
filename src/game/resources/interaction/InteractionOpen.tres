@@ -1,0 +1,7 @@
+[gd_resource type="Resource" format=3 uid="uid://cdo8axpxmp65j"]
+
+[ext_resource type="Script" uid="uid://bxugimjn411h4" path="res://src/game/resources/interaction/InteractionOpen.cs" id="1_3doe5"]
+
+[resource]
+script = ExtResource("1_3doe5")
+metadata/_custom_type_script = "uid://coo3dbh5twu1a"

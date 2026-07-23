@@ -1,9 +1,12 @@
+using System;
 using Godot;
 using Godot.Collections;
 
 [GlobalClass]
 public partial class Inventory : Node
 {
+    [Export] private Node _root;
+
     #region Sync
     [Signal] public delegate void SynchronizedEventHandler();
     private GDNetBuffer _buffer = new();
@@ -222,25 +225,95 @@ public partial class Inventory : Node
     #region Add/Remove Item
     public void AddItem(ItemStack itemStack)
     {
-        //if (!IsMultiplayerAuthority()) return;
+        foreach (InventorySlot slot in Slots)
+        {
+            if (!slot.IsEmpty() && slot.CanStackWith(itemStack))
+            {
+                StackItem(slot, itemStack);
+
+                if (itemStack.Quantity <= 0) return;
+            }
+        }
         
-        if (!TryGetFreeSlot(out InventorySlot free_slot)) return;
-        
-        free_slot.ItemStack = itemStack;
+        if (TryGetFreeSlot(out InventorySlot freeSlot))
+            freeSlot.ItemStack = itemStack;
     }
 
     public void AddItem(ItemData itemData)
     {
-        //if (!IsMultiplayerAuthority()) return;
         AddItem(ItemStack.CreateFrom(itemData));
     }
 
     public void RemoveItem(InventorySlot slot) => slot.ItemStack = null;
+    public void RemoveItem(short slotIdx)
+    {
+        if (TryGetSlot(slotIdx, out InventorySlot slot)) RemoveItem(slot);
+    }
     #endregion
+
+    #region Move/Swap/Stack Item
+    public void MoveItem(InventorySlot fromSlot, InventorySlot toSlot)
+    {
+        if (fromSlot.IsEmpty()) return;
+
+        if (toSlot.IsEmpty())
+        {
+            toSlot.ItemStack = fromSlot.ItemStack;
+            fromSlot.ItemStack = null;
+        }
+        else if (toSlot.CanStackWith(fromSlot.ItemStack))
+        {
+            StackItem(toSlot, fromSlot.ItemStack);
+        }
+        else SwapItem(fromSlot, toSlot);
+    }
+
+    public void SwapItem(InventorySlot fromSlot, InventorySlot toSlot)
+    {
+        if (fromSlot.IsEmpty()) return;
+        
+        ItemStack t = fromSlot.ItemStack;
+        fromSlot.ItemStack = toSlot.ItemStack;
+        toSlot.ItemStack = t;
+    }
+
+    public void StackItem(InventorySlot slot, ItemStack itemStack)
+    {
+        if (slot == null || itemStack == null) return;
+        
+        if (slot.IsEmpty())
+        {
+            slot.ItemStack = itemStack;
+            return;
+        }
+
+        if (slot.CanStackWith(itemStack))
+        {
+            ushort maxAmount = (ushort)slot.ItemStack.StackSize;
+            ushort currentAmount = slot.ItemStack.Quantity;
+            int spaceLeft = maxAmount - currentAmount;
+
+            if (spaceLeft > 0)
+            {
+                ushort transferAmount = (ushort)Math.Min(spaceLeft, itemStack.Quantity);
+                slot.ItemStack.Quantity += transferAmount;
+                itemStack.Quantity -= transferAmount;
+            }
+
+        }
+    }
+
+    #endregion
+
+    Inventory()
+    {
+       // Interactable.GetOrCreate(this).AddInteraction(ResourceLoader.Load<Interaction>("uid://bf6f2mxftmr1l"));
+    }
 
     public override void _Ready()
     {
-        _inventoryOwnerId = GetParent().GetMultiplayerAuthority();
+        Interactable.GetOrCreate(_root).AddInteraction(ResourceLoader.Load<Interaction>("uid://cdo8axpxmp65j"));
+        _inventoryOwnerId = _root.GetMultiplayerAuthority();
         SetProcessInput(IsInventoryOwner());
         SetMultiplayerAuthority(GameServer.ServerId);
         

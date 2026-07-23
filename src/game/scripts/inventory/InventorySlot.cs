@@ -78,7 +78,7 @@ public partial class InventorySlot : Resource
     {
         _buffer.Clear();
         
-        _buffer.WriteLongVar(_netId);
+        _buffer.WriteInt64(_netId);
 
         _buffer.WriteBool(_itemStack != null);
         if (_itemStack != null)
@@ -94,7 +94,7 @@ public partial class InventorySlot : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        InventorySlot newSlot = new(_buffer.ReadLongVar());
+        InventorySlot newSlot = new(_buffer.ReadInt64());
 
         if (_buffer.ReadBool())
         {

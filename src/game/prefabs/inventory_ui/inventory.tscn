@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://bv2epmj154h2e"]
+
+[ext_resource type="Script" uid="uid://dc2ckg2il1pte" path="res://src/game/scripts/inventory/ui/InventoryUI.cs" id="1_8v72j"]
+[ext_resource type="PackedScene" uid="uid://bvbiiicg8nnlv" path="res://src/game/prefabs/inventory_ui/inventory_slot_ui.tscn" id="2_pocco"]
+
+[node name="PlayerInventory" type="Control" unique_id=439694090 node_paths=PackedStringArray("_container")]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+script = ExtResource("1_8v72j")
+_container = NodePath("ColorRect/GridContainer")
+_prefabSlotUI = ExtResource("2_pocco")
+metadata/_custom_type_script = "uid://dc2ckg2il1pte"
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=453157222]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -320.0
+offset_right = 320.0
+offset_bottom = 320.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14767182, 0.14767179, 0.14767179, 1)
+
+[node name="GridContainer" type="GridContainer" parent="ColorRect" unique_id=199086386]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 9

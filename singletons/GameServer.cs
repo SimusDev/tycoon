@@ -77,10 +77,10 @@ public partial class GameServer : Node
         return true;
     }
 
-    public static bool IsServer()
-    {
-        return IsMultiplayerValid() && Instance.Multiplayer.IsServer();
-    }
+    // public static bool IsServer()
+    // {
+    //     return IsMultiplayerValid() && Instance.Multiplayer.IsServer();
+    // }
 
     public void RequestPlayerNickname(long peerId)
     {
