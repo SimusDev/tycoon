@@ -1,5 +1,4 @@
 using Godot;
-using Godot.Collections;
 using System;
 
 [GlobalClass]
@@ -363,9 +362,11 @@ public partial class GDNetBuffer : RefCounted
 	public void WriteResource(Resource resource)
 	{
 		WriteBool(resource == null);
-
-		long hash = ResourceUid.TextToId(ResourceUid.PathToUid(resource.ResourcePath));
-		WriteInt64(hash);
+		if (resource != null)
+		{
+			long hash = ResourceUid.TextToId(ResourceUid.PathToUid(resource.ResourcePath));
+			WriteInt64(hash);
+		}
 	}
 
 	public Resource ReadResource()

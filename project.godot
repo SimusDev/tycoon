@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 
 GDNet="*uid://dbr3vod01qpcy"
 GameServer="*uid://ca6stfyq2pb8y"
+SynchronizationServer="*uid://bipn2unkbles0"
 ItemDataRegistry="*uid://d2p8q1duq80ih"
 
 [display]

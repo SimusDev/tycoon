@@ -6,7 +6,7 @@ public partial class GameWorld : Node3D
 
 	// public override void _Ready()
 	// {
-    //     _test.InitOnClient(12321312);
+	//     _test.InitOnClient(12321312);
 	// }
 
 }

@@ -93,20 +93,29 @@ public partial class GDNet : Node
 		return _NextUniqueID;
 	}
 
-	public static ulong HashString64(string input)
-	{
-		string combined = input + "GDNetSalt";
+    public static ulong HashString64(string input)
+    {
+        string combined = input + "GDNetSalt";
+        byte[] bytes = System.Text.Encoding.UTF8.GetBytes(combined);
 
-		int h1_int = GD.Hash(combined);
-		int h2_int = GD.Hash(combined + "_salt_" + input.Length);
+        // FNV-1a 64-bit (ВСЕГДА ДЕТЕРМИНИРОВАН!)
+        const ulong FNV_OFFSET = 14695981039346656037;
+        const ulong FNV_PRIME = 1099511628211;
 
-		uint h1 = (uint)h1_int;
-		uint h2 = (uint)h2_int;
+        ulong hash = FNV_OFFSET;
 
-		return ((ulong)h1 << 32) | h2;
-	}
+        for (int i = 0; i < bytes.Length; i++)
+        {
+            hash ^= bytes[i];
+            hash *= FNV_PRIME;
+        }
 
-	public override void _EnterTree()
+        return hash;
+    }
+
+
+
+    public override void _EnterTree()
 	{
 		Instance = this;
 	}

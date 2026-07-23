@@ -209,9 +209,10 @@ public partial class GDNetRpc : GDNetCommunicator
 				break;
 
 			case RpcType.Target:
-				ServerSerializeRpcBuffer(method, _remoteSender, args, argsSize);
+				ServerSerializeRpcBuffer(method, target, args, argsSize);
 				UpdateModeAndChannel(cfg);
-				SendTo(_remoteSender, Buffer.GetBytes());
+				SendTo(target, Buffer.GetBytes());
+				//GD.Print($"Calling on target {target}, with {argsSize} args");
 				break;
 		}
 
@@ -221,8 +222,6 @@ public partial class GDNetRpc : GDNetCommunicator
 
 	private void ClientProcessRpc(int sender, ushort rpcId, object[] args)
 	{
-		if (sender == GDNet.uniqueID)
-			return;
 
 		if (_rpcNameRegistry.TryGetValue(rpcId, out string method))
 		{

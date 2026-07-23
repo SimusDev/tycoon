@@ -14,8 +14,7 @@ public partial class GDNetCommunicator : RefCounted, IDisposable
 
 	[Signal] public delegate void OnBytesReceivedEventHandler(int peer, byte[] data);
 
-    //привет SimusDeveloper78 !! я тут добавил readonly если все сломаетмся сори!
-	private static readonly Dictionary<ulong, ulong> _registry = [];
+	private static Dictionary<ulong, ulong> _registry = new();
 
 	protected int[] Observers;
 	protected bool _observersEnabled = false;
