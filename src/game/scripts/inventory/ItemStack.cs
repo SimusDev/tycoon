@@ -155,7 +155,7 @@ public partial class ItemStack : Resource
     {
         _s_buffer.Clear();
         
-        _s_buffer.WriteLongVar(_netId);
+        _s_buffer.WriteInt64(_netId);
         _s_buffer.WriteResource(ItemData);
         _s_buffer.WriteUInt16(Quantity);
         _s_buffer.WriteUInt16(SkinId);
@@ -169,7 +169,7 @@ public partial class ItemStack : Resource
         _s_buffer.Clear();
         _s_buffer.SetBytes(bytes);
 
-        ItemStack itemStack = new(_s_buffer.ReadLongVar())
+        ItemStack itemStack = new(_s_buffer.ReadInt64())
         {
             ItemData = _s_buffer.ReadResource<ItemData>(),
             Quantity = _s_buffer.ReadUInt16(),

@@ -19,9 +19,8 @@
 [ext_resource type="Script" uid="uid://5no3x5wwyg5m" path="res://src/game/scripts/interaction/InteractionRay.cs" id="13_fnd46"]
 [ext_resource type="Script" uid="uid://cn8uccug21l8x" path="res://src/game/scripts/LocalCanvasLayer.cs" id="14_viwye"]
 [ext_resource type="Script" uid="uid://c1guisyaw0jj8" path="res://src/game/player/PlayerUI.cs" id="15_dr81t"]
-[ext_resource type="Script" uid="uid://dc2ckg2il1pte" path="res://src/game/scripts/inventory/ui/InventoryUI.cs" id="16_af7lx"]
-[ext_resource type="PackedScene" uid="uid://bvbiiicg8nnlv" path="res://src/game/prefabs/inventory_ui/inventory_slot_ui.tscn" id="17_6obk6"]
 [ext_resource type="Script" uid="uid://cgtm7q5lofp71" path="res://src/game/scripts/inventory/ui/InventoryUIContainer.cs" id="20_1m3ve"]
+[ext_resource type="PackedScene" uid="uid://bv2epmj154h2e" path="res://src/game/prefabs/inventory_ui/inventory.tscn" id="21_fdf0i"]
 
 [sub_resource type="Resource" id="Resource_viwye"]
 script = ExtResource("2_viwye")
@@ -194,8 +193,9 @@ height = 2.7138672
 
 [node name="Player" type="CharacterBody3D" unique_id=1518439692]
 
-[node name="Inventory" type="Node" parent="." unique_id=423074224]
+[node name="Inventory" type="Node" parent="." unique_id=423074224 node_paths=PackedStringArray("_root")]
 script = ExtResource("1_26fnn")
+_root = NodePath("..")
 _slots = Array[ExtResource("2_viwye")]([SubResource("Resource_viwye"), SubResource("Resource_6obk6"), SubResource("Resource_1km7v"), SubResource("Resource_usirl"), SubResource("Resource_t6wnj"), SubResource("Resource_fnd46"), SubResource("Resource_1m3ve"), SubResource("Resource_8lfix"), SubResource("Resource_6gle3"), SubResource("Resource_m3xhp"), SubResource("Resource_7hwkm"), SubResource("Resource_wvdpb"), SubResource("Resource_nfu6k"), SubResource("Resource_16hq7"), SubResource("Resource_ya7eq"), SubResource("Resource_a8ffs"), SubResource("Resource_r8pt6"), SubResource("Resource_ptro2"), SubResource("Resource_5nume"), SubResource("Resource_koc2e")])
 metadata/_custom_type_script = "uid://dl1aia5nkwjn6"
 
@@ -478,98 +478,22 @@ mouse_filter = 1
 script = ExtResource("15_dr81t")
 InventoryUIContainer = NodePath("InventoryContainer")
 
-[node name="InventoryContainer" type="Control" parent="LocalCanvasLayer/PlayerUI" unique_id=564166297 node_paths=PackedStringArray("playerInventoryUI", "otherInventoryUI")]
+[node name="InventoryContainer" type="HBoxContainer" parent="LocalCanvasLayer/PlayerUI" unique_id=60282174 node_paths=PackedStringArray("playerInventoryUI")]
+propagate_maximum_size = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 0
 script = ExtResource("20_1m3ve")
-playerInventoryUI = NodePath("HBoxContainer/PlayerInventory")
-otherInventoryUI = NodePath("HBoxContainer/OtherInventory")
+_inventoryUIPrefab = ExtResource("21_fdf0i")
+playerInventoryUI = NodePath("PlayerInventory")
 metadata/_custom_type_script = "uid://cgtm7q5lofp71"
 
-[node name="HBoxContainer" type="HBoxContainer" parent="LocalCanvasLayer/PlayerUI/InventoryContainer" unique_id=908623180]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="PlayerInventory" type="Control" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer" unique_id=155956012 node_paths=PackedStringArray("Inventory", "_container")]
+[node name="PlayerInventory" parent="LocalCanvasLayer/PlayerUI/InventoryContainer" unique_id=439694090 node_paths=PackedStringArray("Inventory") instance=ExtResource("21_fdf0i")]
 layout_mode = 2
-size_flags_horizontal = 3
-script = ExtResource("16_af7lx")
-Inventory = NodePath("../../../../../Inventory")
-_container = NodePath("ColorRect/GridContainer")
-_prefabSlotUI = ExtResource("17_6obk6")
-metadata/_custom_type_script = "uid://dc2ckg2il1pte"
-
-[node name="ColorRect" type="ColorRect" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/PlayerInventory" unique_id=1263904016]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -320.0
-offset_right = 320.0
-offset_bottom = 320.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.14767182, 0.14767179, 0.14767179, 1)
-
-[node name="GridContainer" type="GridContainer" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/PlayerInventory/ColorRect" unique_id=320114855]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -8.0
-grow_horizontal = 2
-grow_vertical = 2
-columns = 9
-
-[node name="OtherInventory" type="Control" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer" unique_id=596693357 node_paths=PackedStringArray("_container")]
-visible = false
-layout_mode = 2
-size_flags_horizontal = 3
-script = ExtResource("16_af7lx")
-_container = NodePath("ColorRect/GridContainer")
-_prefabSlotUI = ExtResource("17_6obk6")
-metadata/_custom_type_script = "uid://dc2ckg2il1pte"
-
-[node name="ColorRect" type="ColorRect" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/OtherInventory" unique_id=1540590406]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -320.0
-offset_right = 320.0
-offset_bottom = 320.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(0.14767182, 0.14767179, 0.14767179, 1)
-
-[node name="GridContainer" type="GridContainer" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/OtherInventory/ColorRect" unique_id=1648326967]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 8.0
-offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -8.0
-grow_horizontal = 2
-grow_vertical = 2
-columns = 9
+Inventory = NodePath("../../../../Inventory")
 
 [editable path="Visuals/humanZov"]

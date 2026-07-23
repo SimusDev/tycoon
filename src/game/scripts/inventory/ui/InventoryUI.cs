@@ -3,17 +3,7 @@ using Godot;
 [GlobalClass]
 public partial class InventoryUI : Control
 {
-    private Inventory _inventory;
-    [Export] public Inventory Inventory
-    {
-        get => _inventory;
-        set
-        {
-            Inventory old = _inventory;
-            _inventory = value;
-            if (IsNodeReady()) Update(old);
-        }
-    }
+    [Export] public Inventory Inventory;
 
     [Export] private Container _container;
     [Export] private PackedScene _prefabSlotUI;
@@ -21,37 +11,29 @@ public partial class InventoryUI : Control
 
     public override void _Ready()
     {
-        if (_inventory.IsSynchronized()) Update();
-        else _inventory.Synchronized += OnInventorySynchronized;
+        if (Inventory.IsSynchronized()) Update();
+        else Inventory.Synchronized += OnInventorySynchronized;
     }
 
     private void OnInventorySynchronized()
     {
         Update();
-        _inventory.Synchronized -= OnInventorySynchronized;
+        Inventory.Synchronized -= OnInventorySynchronized;
     }
 
-    private void Update(Inventory old = null)
+    private void Update()
     {
         Clear();
 
-        if (old != null)
-        {
-            old.SlotAdded -= OnSlotAdded;
-            old.SlotRemoved -= OnSlotRemoved;
 
-            //foreach (InventorySlot oldSlot in old.Slots)
-            
-        }
-
-        if (_inventory != null)
+        if (Inventory != null)
         {
-            _inventory.SlotAdded += OnSlotAdded;
-            _inventory.SlotRemoved += OnSlotRemoved;
+            Inventory.SlotAdded += OnSlotAdded;
+            Inventory.SlotRemoved += OnSlotRemoved;
 
             if (_container != null)
             {
-                foreach (InventorySlot newSlot in _inventory.Slots)
+                foreach (InventorySlot newSlot in Inventory.Slots)
                 {
                     AddSlotUI(newSlot);
                 }

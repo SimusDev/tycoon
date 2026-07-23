@@ -5,6 +5,8 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Inventory : Node
 {
+    [Export] private Node _root;
+
     #region Sync
     [Signal] public delegate void SynchronizedEventHandler();
     private GDNetBuffer _buffer = new();
@@ -305,12 +307,13 @@ public partial class Inventory : Node
 
     Inventory()
     {
-        Interactable.GetOrCreate(this).AddInteraction(ResourceLoader.Load<Interaction>("uid://bf6f2mxftmr1l"));
+       // Interactable.GetOrCreate(this).AddInteraction(ResourceLoader.Load<Interaction>("uid://bf6f2mxftmr1l"));
     }
 
     public override void _Ready()
     {
-        _inventoryOwnerId = GetParent().GetMultiplayerAuthority();
+        Interactable.GetOrCreate(_root).AddInteraction(ResourceLoader.Load<Interaction>("uid://cdo8axpxmp65j"));
+        _inventoryOwnerId = _root.GetMultiplayerAuthority();
         SetProcessInput(IsInventoryOwner());
         SetMultiplayerAuthority(GameServer.ServerId);
         

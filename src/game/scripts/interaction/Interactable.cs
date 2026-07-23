@@ -14,25 +14,25 @@ public partial class Interactable : RefCounted
         if (position >= 0 && position <= _interactions.Count)
             _interactions.Insert(position, interaction);
 
-        else _interactions.Append(interaction);
-
+        else _interactions.Add(interaction);
     }
 
     public void RemoveInteraction(Interaction interaction)
     {
+        GD.Print("sas78");
         if (!_interactions.Contains(interaction)) return;
         _interactions.Remove(interaction);
     }
 
-    public static Interactable GetOrCreate(Node node)
+    public static Interactable GetOrCreate(GodotObject godotObject)
     {
-        if (!node.HasMeta(nameof(Interactable)))
+        if (!godotObject.HasMeta(nameof(Interactable)))
         {
             Interactable interactable = new();
-            node.SetMeta(nameof(Interactable), interactable);
+            godotObject.SetMeta(nameof(Interactable), interactable);
         }
 
-        return (Interactable)(GodotObject)node.GetMeta(nameof(Interactable));
+        return (Interactable)(GodotObject)godotObject.GetMeta(nameof(Interactable));
     }
 
     public static Interactable GetIn(GodotObject godotObject)
@@ -47,9 +47,13 @@ public partial class Interactable : RefCounted
         return interactable != null;
     }
 
-    public void Interact(InteractionRay interactionRay)
+    public void Interact(InteractionRay interactionRay, GodotObject collider)
     {
-        if (_interactions.Count > SelectedIdx)
-            _interactions.ElementAt(SelectedIdx).Do(interactionRay, this);
+        if (_interactions.Count == 0) return;
+        
+        if (SelectedIdx >= _interactions.Count)
+            SelectedIdx = (short)(_interactions.Count - 1);
+            
+        _interactions[SelectedIdx].Do(interactionRay, this, collider);
     }
 }

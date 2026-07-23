@@ -4,16 +4,19 @@ namespace CustomInteraction
 {
     public partial class InteractionOpen : Interaction
     {
-        public override void Do(InteractionRay interactionRay, Interactable interactable)
+        public override void Do(InteractionRay interactionRay, Interactable interactable, GodotObject collider)
         {
-            base.Do(interactionRay, interactable);
+            base.Do(interactionRay, interactable, collider);
             PlayerUI playerUI = interactionRay.Root.GetNodeOrNull<PlayerUI>("LocalCanvasLayer/PlayerUI");
             if (playerUI == null) return;
 
-            Inventory inventory = interactionRay.Root.GetNodeOrNull<Inventory>("Inventory");
-            if (inventory == null) return;
-            
-            playerUI.InventoryUIContainer.OpenOther(inventory);
+            if (collider is Node node)
+            {
+                Inventory inventory = node.GetNodeOrNull<Inventory>("Inventory");
+                if (inventory == null) return;
+                
+                playerUI.InventoryUIContainer.OpenOther(inventory);
+            }
         }
     }
 }

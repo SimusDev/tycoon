@@ -69,6 +69,46 @@ material = SubResource("StandardMaterial3D_5xa05")
 left_to_right = 1.0
 size = Vector3(5, 5, 1)
 
+[sub_resource type="Shader" id="Shader_1m3ve"]
+code = "shader_type spatial;
+render_mode blend_mix, cull_back;
+
+// Настройки эффекта
+uniform float time_scale  = 1.0;   // скорость анимации
+uniform float wave_amp    = 0.08;  // амплитуда искажения вершин
+uniform float wave_freq   = 2.5;   // частота волн
+uniform float wobble_speed = 3.0;  // скорость подёргивания размера
+
+void vertex() {
+	// 1. \"Желейное\" смещение вершин по нормали
+	float wave = sin(TIME * time_scale + VERTEX.x * wave_freq + VERTEX.y * 1.2) * wave_amp;
+	VERTEX += NORMAL * wave;
+
+	// 2. Смешное подёргивание размера (всё тело пульсирует)
+	float pulse = 1.0 + 0.03 * sin(TIME * wobble_speed + VERTEX.z * 3.0);
+	VERTEX *= pulse;
+}
+
+void fragment() {
+	// 3. Радужный перелив – смешиваем три канала с разным сдвигом
+	vec3 rainbow = 0.5 + 0.5 * cos(TIME * 0.4 + vec3(0.0, 2.0, 4.0) + UV.x * 8.0 + UV.y * 6.0);
+	
+	// 4. Хаотичное мерцание яркости (как будто материал живой)
+	float flicker = 0.7 + 0.3 * sin(TIME * 5.0 + UV.y * 15.0 + UV.x * 10.0);
+	ALBEDO = rainbow * flicker;
+
+	// 5. Лёгкое свечение (чтобы было ещё забавнее)
+	EMISSION = rainbow * 0.1 * (0.5 + 0.5 * sin(TIME * 2.0));
+}"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fnd46"]
+render_priority = 0
+shader = SubResource("Shader_1m3ve")
+shader_parameter/time_scale = 1.0
+shader_parameter/wave_amp = 0.08
+shader_parameter/wave_freq = 2.5
+shader_parameter/wobble_speed = 3.0
+
 [sub_resource type="SphereMesh" id="SphereMesh_sx3cy"]
 
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_x63xq"]
@@ -150,19 +190,27 @@ material = SubResource("StandardMaterial3D_td0jm")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 3, 0)
 mesh = SubResource("PrismMesh_sx3cy")
 
-[node name="RigidBody3D" type="RigidBody3D" parent="CSGBox3D" unique_id=2047508907]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 0)
+[node name="RigidBody3D" type="CharacterBody3D" parent="CSGBox3D" unique_id=1441055820]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 9.09383)
+motion_mode = 1
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="CSGBox3D/RigidBody3D" unique_id=499544405]
+material_override = SubResource("ShaderMaterial_fnd46")
 mesh = SubResource("SphereMesh_sx3cy")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CSGBox3D/RigidBody3D" unique_id=765114533]
 shape = SubResource("ConvexPolygonShape3D_x63xq")
 
-[node name="Inventory" type="Node" parent="CSGBox3D/RigidBody3D" unique_id=1241710433]
+[node name="Inventory" type="Node" parent="CSGBox3D/RigidBody3D" unique_id=1241710433 node_paths=PackedStringArray("_root")]
 script = ExtResource("8_g13qv")
+_root = NodePath("..")
 _slots = Array[ExtResource("9_x63xq")]([SubResource("Resource_x33g4"), SubResource("Resource_rk7f3"), SubResource("Resource_vfsvf"), SubResource("Resource_yo1fc"), SubResource("Resource_m8gnr"), SubResource("Resource_1rd04"), SubResource("Resource_6ym41")])
 metadata/_custom_type_script = "uid://dl1aia5nkwjn6"
+
+[node name="Label3D" type="Label3D" parent="CSGBox3D/RigidBody3D" unique_id=1460809134]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.87057114, 0)
+billboard = 1
+text = "pacan [e]"
 
 [node name="Players" type="Node3D" parent="." unique_id=638171573]
 

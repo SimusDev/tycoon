@@ -9,7 +9,6 @@ public partial class InteractionRay : RayCast3D
     InteractionRay()
     {
         CollideWithAreas = true;
-        Enabled = false;
     }
 
     public override void _Ready()
@@ -26,11 +25,13 @@ public partial class InteractionRay : RayCast3D
     {
         if (Input.IsActionJustPressed("interact"))
         {
-            Enabled = true;
             GodotObject collider = GetCollider();
+            if (collider == null) return;
+            
+
             if (Interactable.TryGetIn(collider, out Interactable interactable))
             {
-                interactable.Interact(this);
+                interactable.Interact(this, collider);
             }
         }
     }
