@@ -80,7 +80,7 @@ public partial class InventoryUI : Control
             return null;
         }
 
-        newSlot.Init(slot);
+        newSlot.Init(this, slot);
         _container.AddChild(newSlot);
 
         return newSlot;

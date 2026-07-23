@@ -5,10 +5,10 @@
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
-[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/item_data/jirobas/jirobas.tres" id="3_t6wnj"]
+[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/resources/item_data/jirobas/jirobas.tres" id="3_t6wnj"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
 [ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="4_fnd46"]
-[ext_resource type="Resource" uid="uid://3g3opgatre5p" path="res://src/game/item_data/sas/sas.tres" id="5_1m3ve"]
+[ext_resource type="Resource" uid="uid://3g3opgatre5p" path="res://src/game/resources/item_data/sas/sas.tres" id="5_1m3ve"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
 [ext_resource type="Script" uid="uid://dtlbmw8nhq7ar" path="res://src/game/scripts/inventory/ViewModelRoot.cs" id="7_dr81t"]
@@ -16,10 +16,12 @@
 [ext_resource type="Script" uid="uid://h3fspgjlyyjc" path="res://network/NetNodeSynchronizer.cs" id="8_yxoci"]
 [ext_resource type="Script" uid="uid://csi3ql3vlyeu3" path="res://network/resources/NetSyncData.cs" id="9_g7k81"]
 [ext_resource type="Script" uid="uid://kmw3wwhoyb60" path="res://network/resources/NetSyncProperty.cs" id="9_t8tym"]
+[ext_resource type="Script" uid="uid://5no3x5wwyg5m" path="res://src/game/scripts/interaction/InteractionRay.cs" id="13_fnd46"]
 [ext_resource type="Script" uid="uid://cn8uccug21l8x" path="res://src/game/scripts/LocalCanvasLayer.cs" id="14_viwye"]
 [ext_resource type="Script" uid="uid://c1guisyaw0jj8" path="res://src/game/player/PlayerUI.cs" id="15_dr81t"]
 [ext_resource type="Script" uid="uid://dc2ckg2il1pte" path="res://src/game/scripts/inventory/ui/InventoryUI.cs" id="16_af7lx"]
 [ext_resource type="PackedScene" uid="uid://bvbiiicg8nnlv" path="res://src/game/prefabs/inventory_ui/inventory_slot_ui.tscn" id="17_6obk6"]
+[ext_resource type="Script" uid="uid://cgtm7q5lofp71" path="res://src/game/scripts/inventory/ui/InventoryUIContainer.cs" id="20_1m3ve"]
 
 [sub_resource type="Resource" id="Resource_viwye"]
 script = ExtResource("2_viwye")
@@ -231,6 +233,12 @@ script = ExtResource("7_dr81t")
 inventory = NodePath("../../Inventory")
 metadata/_custom_type_script = "uid://dtlbmw8nhq7ar"
 
+[node name="InteractionRay" type="RayCast3D" parent="PlayerHead" unique_id=444675504 node_paths=PackedStringArray("_root")]
+target_position = Vector3(0, 0, -3)
+script = ExtResource("13_fnd46")
+_root = NodePath("../..")
+metadata/_custom_type_script = "uid://5no3x5wwyg5m"
+
 [node name="Visuals" type="Node3D" parent="." unique_id=1317231076]
 
 [node name="NetNodeFreeNodesIfServer" type="Node" parent="Visuals" unique_id=1254843018 node_paths=PackedStringArray("Targets")]
@@ -244,9 +252,10 @@ script = SubResource("GDScript_0r077")
 anim_prefix = &"animation/"
 
 [node name="Armature" parent="Visuals/humanZov" index="0" unique_id=1279326609]
-transform = Transform3D(-39.89, 3.4872944e-06, 1.5243449e-13, 0, -1.7436472e-06, 39.89, 3.4872944e-06, 39.89, 1.7436472e-06, 0.19587517, -0.28350365, -0.18934536)
+transform = Transform3D(-1, 1.509958e-07, 6.600236e-15, 0, -4.371139e-08, 1, 1.509958e-07, 1, 4.371139e-08, 0.19587517, -0.28350365, -0.18934536)
 
 [node name="Skeleton3D" parent="Visuals/humanZov/Armature" index="0" unique_id=1287875790]
+transform = Transform3D(39, 0, 0, 0, 39, 0, 0, 0, 39, 0, 0, 0)
 bones/0/rotation = Quaternion(0.7071068, 8.4293724e-08, 8.42937e-08, 0.7071067)
 bones/1/position = Vector3(0, 0.007, 0)
 bones/2/scale = Vector3(1, 1, 1)
@@ -424,15 +433,21 @@ secondary_positive_damp_threshold = 1.0
 secondary_negative_limit_angle = 3.1415927
 secondary_negative_damp_threshold = 1.0
 
-[node name="BoneAttachment3D" type="BoneAttachment3D" parent="Visuals/humanZov/Armature/Skeleton3D" index="2" unique_id=529430557]
+[node name="BoneAttachment3D" type="BoneAttachment3D" parent="Visuals/humanZov/Armature/Skeleton3D" index="2" unique_id=284636983]
 transform = Transform3D(-0.9980671, -0.011116342, 0.061139546, 0.008591988, -0.9991057, -0.041397408, 0.061545048, -0.040792108, 0.99727035, -0.0116968285, -0.00045142183, -0.01776722)
 bone_name = "B0_R"
 bone_idx = 9
 
-[node name="ViewModelRoot" type="Node3D" parent="Visuals/humanZov/Armature/Skeleton3D/BoneAttachment3D" unique_id=2146037363 node_paths=PackedStringArray("inventory")]
+[node name="RemoteTransform3D" type="RemoteTransform3D" parent="Visuals/humanZov/Armature/Skeleton3D/BoneAttachment3D" unique_id=1436327017]
+transform = Transform3D(0.99999994, 9.313226e-10, 2.910383e-11, 0, 0.9999999, -3.7252903e-09, -1.1641532e-10, 0, 0.99999994, -0.0016297381, -1.8151564e-05, 9.9834404e-05)
+remote_path = NodePath("../../../ViewModelRoot")
+update_scale = false
+
+[node name="ViewModelRoot" type="Node3D" parent="Visuals/humanZov/Armature" index="1" unique_id=162158717 node_paths=PackedStringArray("inventory")]
+transform = Transform3D(-0.9980673, -0.011116312, 0.061139215, 0.008591991, -0.99910295, -0.04139718, 0.06154506, -0.040791996, 0.997265, -0.39249346, -0.017605461, -0.69292164)
 script = ExtResource("7_dr81t")
 viewType = 0
-inventory = NodePath("../../../../../../Inventory")
+inventory = NodePath("../../../../Inventory")
 metadata/_custom_type_script = "uid://dtlbmw8nhq7ar"
 
 [node name="AnimationPlayer" parent="Visuals/humanZov" index="1" unique_id=1040534006]
@@ -452,7 +467,7 @@ metadata/_custom_type_script = "uid://dw5slsckmsybw"
 script = ExtResource("14_viwye")
 metadata/_custom_type_script = "uid://cn8uccug21l8x"
 
-[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("Inventory")]
+[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("InventoryUIContainer")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -461,9 +476,21 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("15_dr81t")
-Inventory = NodePath("Inventory")
+InventoryUIContainer = NodePath("InventoryContainer")
 
-[node name="Inventory" type="Control" parent="LocalCanvasLayer/PlayerUI" unique_id=280166401]
+[node name="InventoryContainer" type="Control" parent="LocalCanvasLayer/PlayerUI" unique_id=564166297 node_paths=PackedStringArray("playerInventoryUI", "otherInventoryUI")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("20_1m3ve")
+playerInventoryUI = NodePath("HBoxContainer/PlayerInventory")
+otherInventoryUI = NodePath("HBoxContainer/OtherInventory")
+metadata/_custom_type_script = "uid://cgtm7q5lofp71"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="LocalCanvasLayer/PlayerUI/InventoryContainer" unique_id=908623180]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -471,20 +498,16 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="InventoryUI" type="Control" parent="LocalCanvasLayer/PlayerUI/Inventory" unique_id=155956012 node_paths=PackedStringArray("Inventory", "_container")]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="PlayerInventory" type="Control" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer" unique_id=155956012 node_paths=PackedStringArray("Inventory", "_container")]
+layout_mode = 2
+size_flags_horizontal = 3
 script = ExtResource("16_af7lx")
-Inventory = NodePath("../../../../Inventory")
+Inventory = NodePath("../../../../../Inventory")
 _container = NodePath("ColorRect/GridContainer")
 _prefabSlotUI = ExtResource("17_6obk6")
 metadata/_custom_type_script = "uid://dc2ckg2il1pte"
 
-[node name="ColorRect" type="ColorRect" parent="LocalCanvasLayer/PlayerUI/Inventory/InventoryUI" unique_id=1263904016]
+[node name="ColorRect" type="ColorRect" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/PlayerInventory" unique_id=1263904016]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -499,7 +522,44 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.14767182, 0.14767179, 0.14767179, 1)
 
-[node name="GridContainer" type="GridContainer" parent="LocalCanvasLayer/PlayerUI/Inventory/InventoryUI/ColorRect" unique_id=320114855]
+[node name="GridContainer" type="GridContainer" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/PlayerInventory/ColorRect" unique_id=320114855]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+columns = 9
+
+[node name="OtherInventory" type="Control" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer" unique_id=596693357 node_paths=PackedStringArray("_container")]
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("16_af7lx")
+_container = NodePath("ColorRect/GridContainer")
+_prefabSlotUI = ExtResource("17_6obk6")
+metadata/_custom_type_script = "uid://dc2ckg2il1pte"
+
+[node name="ColorRect" type="ColorRect" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/OtherInventory" unique_id=1540590406]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = -320.0
+offset_right = 320.0
+offset_bottom = 320.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14767182, 0.14767179, 0.14767179, 1)
+
+[node name="GridContainer" type="GridContainer" parent="LocalCanvasLayer/PlayerUI/InventoryContainer/HBoxContainer/OtherInventory/ColorRect" unique_id=1648326967]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

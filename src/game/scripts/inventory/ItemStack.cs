@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using Godot;
 using Godot.Collections;
 
@@ -31,6 +32,22 @@ public partial class ItemStack : Resource
             EmitSignal(SignalName.SkinIdChanged);
         }
     }
+
+    [Signal] public delegate void StackSizeChangedEventHandler();
+    private short stackSize = -1;
+    public short StackSize
+    {
+        get
+        {
+            if (stackSize == -1) return (short)ItemData?.ItemStackConfig?.StackSize;
+            return stackSize;
+        }
+        set
+        {
+            stackSize = value;
+        }
+    }
+
     
     [Signal] public delegate void DataChangedEventHandler();
     [Export] protected Dictionary<string, Variant> data = [];
