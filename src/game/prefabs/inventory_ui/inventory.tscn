@@ -3,6 +3,9 @@
 [ext_resource type="Script" uid="uid://dc2ckg2il1pte" path="res://src/game/scripts/inventory/ui/InventoryUI.cs" id="1_8v72j"]
 [ext_resource type="PackedScene" uid="uid://bvbiiicg8nnlv" path="res://src/game/prefabs/inventory_ui/inventory_slot_ui.tscn" id="2_pocco"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sx3cy"]
+bg_color = Color(0.12591082, 0.12591085, 0.12591076, 1)
+
 [node name="PlayerInventory" type="Control" unique_id=439694090 node_paths=PackedStringArray("_container")]
 layout_mode = 3
 anchors_preset = 15
@@ -43,3 +46,17 @@ offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 columns = 9
+
+[node name="Label" type="Label" parent="." unique_id=949037379]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.056
+anchor_right = 0.5
+anchor_bottom = 0.056
+offset_left = -320.0
+offset_top = -17.32
+offset_right = 320.0
+offset_bottom = -0.3199997
+theme_override_styles/normal = SubResource("StyleBoxFlat_sx3cy")
+text = "Inventory (sas id)"

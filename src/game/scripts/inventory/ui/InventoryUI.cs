@@ -5,9 +5,10 @@ public partial class InventoryUI : Control
 {
     [Export] public Inventory Inventory;
 
-    [Export] private Container _container;
     [Export] private PackedScene _prefabSlotUI;
-
+    
+    [Export] private Container _container;
+    [Export] private Label _labelTitle; 
 
     public override void _Ready()
     {
@@ -23,6 +24,7 @@ public partial class InventoryUI : Control
 
     private void Update()
     {
+        _labelTitle.Text = $"Inventory ({Inventory?.GetOwnerId()})";
         Clear();
 
 
