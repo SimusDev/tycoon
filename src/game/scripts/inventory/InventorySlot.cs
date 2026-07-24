@@ -22,19 +22,12 @@ public partial class InventorySlot : Resource
     [Export] private GDNetCommunicator _communicator = new();
 
     private long _netId = 0;
-    
-    public InventorySlot()
-    {
-        _netId = GDNet.GenerateUniqueID();
-        _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(_netId);
-    }
 
-    public InventorySlot(long netId)
+    public void NetworkInit(long netId)
     {
         _netId = netId;
         _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(netId);
+        _communicator.SynchronizeNetworkIDByUniqueID(_netId);
     }
 
     private void Send()
@@ -97,12 +90,14 @@ public partial class InventorySlot : Resource
         _buffer.Clear();
         _buffer.SetBytes(bytes);
 
-        InventorySlot newSlot = new(_buffer.ReadInt64());
+        InventorySlot newSlot = new();
+        newSlot.NetworkInit(_buffer.ReadInt64());
 
         if (_buffer.ReadBool())
         {
             newSlot.ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
         }
+
 
         return newSlot;
     }

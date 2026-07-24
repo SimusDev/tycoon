@@ -92,7 +92,10 @@ public partial class Inventory : Node
 		{
 			if (_slots[i] is Resource resourceSlot)
 			{
-				_slots[i] = resourceSlot.Duplicate(true) as InventorySlot;
+				long netId = GDNet.GenerateUniqueID();
+				var duplicated = resourceSlot.Duplicate(true) as InventorySlot;
+				duplicated.NetworkInit(netId);
+				_slots[i] = duplicated;
 			}
 		}
 		_isSlotsInitialized = true;
