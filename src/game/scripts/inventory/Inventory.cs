@@ -59,8 +59,6 @@ public partial class Inventory : Node
 		_isSynchronized = true;
 		EmitSignal(SignalName.Synchronized);
 	}
-
-	
 	#endregion
 
 	#region Inventory Owner
@@ -96,6 +94,15 @@ public partial class Inventory : Node
 		}
 		_isSlotsInitialized = true;
 		EmitSignal(SignalName.SlotsInitialized);
+	}
+
+	public short IndexOfSlot(InventorySlot slot)
+	{
+		for (short i = 0; i < Slots.Count; i++)
+		{
+			if (_slots[i] == slot) return i;
+		}
+		return -1;
 	}
 
 	public InventorySlot GetSlot(short idx)
@@ -254,15 +261,69 @@ public partial class Inventory : Node
 		AddItem(ItemStack.CreateFrom(itemData));
 	}
 
-	public void RemoveItem(InventorySlot slot) => slot.ItemStack = null;
-	public void RemoveItem(short slotIdx)
+	// Remove
+
+	public void RequestRemoveItem(InventorySlot slot)
+	{
+		RemoveItem(slot);
+		if (IsMultiplayerAuthority()) return;
+		RpcId(GetMultiplayerAuthority(), MethodName.RemoveItem, slot);
+	}
+
+	public void RequestRemoveItem(short slotIdx)
+	{
+		RemoveItem(slotIdx);
+		if (IsMultiplayerAuthority()) return;
+		RpcId(GetMultiplayerAuthority(), MethodName.RemoveItem, slotIdx);
+	}
+
+	private void RemoveItem(InventorySlot slot) => slot.ItemStack = null;
+	private void RemoveItem(short slotIdx)
 	{
 		if (TryGetSlot(slotIdx, out InventorySlot slot)) RemoveItem(slot);
 	}
 	#endregion
 
 	#region Move/Swap/Stack Item
-	public void MoveItem(InventorySlot fromSlot, InventorySlot toSlot)
+	/// <summary>
+	/// Move item fromSlotIdx toSlotIdx. 
+	/// </summary>
+	public void RequestMoveItem(short fromSlotIdx, short toSlotIdx) 
+	{
+		MoveItem(fromSlotIdx, toSlotIdx);
+		if (IsMultiplayerAuthority()) return;
+		RpcId(GetMultiplayerAuthority(), MethodName.MoveItem, fromSlotIdx, toSlotIdx);
+	}
+
+	public void RequestMoveItem(short fromSlotIdx, short toSlotIdx, NodePath fromInventory)
+	{
+		MoveItem(fromSlotIdx, toSlotIdx, fromInventory);
+		if (IsMultiplayerAuthority()) return;
+		RpcId(GetMultiplayerAuthority(), MethodName.MoveItem, fromSlotIdx, toSlotIdx, fromInventory);
+	} 
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void MoveItem(short fromSlotIdx, short toSlotIdx)
+	{
+		if (TryGetSlot(fromSlotIdx, out InventorySlot fromSlot) && TryGetSlot(toSlotIdx, out InventorySlot toSlot))
+		{
+			MoveItem(fromSlot, toSlot);
+		}
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void MoveItem(short fromSlotIdx, short toSlotIdx, NodePath fromInventory)
+	{
+		Inventory fromInventoryNode = GetTree().Root.GetNodeOrNull<Inventory>(fromInventory);
+		if (fromInventoryNode == null) return;
+
+		if (fromInventoryNode.TryGetSlot(fromSlotIdx, out InventorySlot fromSlot) && TryGetSlot(toSlotIdx, out InventorySlot toSlot))
+		{
+			MoveItem(fromSlot, toSlot);
+		}
+	}
+
+	private void MoveItem(InventorySlot fromSlot, InventorySlot toSlot)
 	{
 		if (fromSlot.IsEmpty()) return;
 
@@ -278,7 +339,23 @@ public partial class Inventory : Node
 		else SwapItem(fromSlot, toSlot);
 	}
 
-	public void SwapItem(InventorySlot fromSlot, InventorySlot toSlot)
+	public void RequestSwapItem(short fromIdx, short toIdx)
+	{
+		SwapItem(fromIdx, toIdx);
+		if (IsMultiplayerAuthority()) return;
+		RpcId(GetMultiplayerAuthority(), MethodName.SwapItem, fromIdx, toIdx);
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void SwapItem(short fromIdx, short toIdx)
+	{
+		if (TryGetSlot(fromIdx, out InventorySlot fromSlot) && TryGetSlot(toIdx, out InventorySlot toSlot))
+		{
+			SwapItem(fromSlot, toSlot);
+		}
+	}
+
+	private void SwapItem(InventorySlot fromSlot, InventorySlot toSlot)
 	{
 		if (fromSlot.IsEmpty()) return;
 		
@@ -287,29 +364,29 @@ public partial class Inventory : Node
 		toSlot.ItemStack = t;
 	}
 
-	public void StackItem(InventorySlot slot, ItemStack itemStack)
+
+	private void StackItem(InventorySlot toSlot, ItemStack itemStack)
 	{
-		if (slot == null || itemStack == null) return;
+		if (toSlot == null || itemStack == null) return;
 		
-		if (slot.IsEmpty())
+		if (toSlot.IsEmpty())
 		{
-			slot.ItemStack = itemStack;
+			toSlot.ItemStack = itemStack;
 			return;
 		}
 
-		if (slot.CanStackWith(itemStack))
+		if (toSlot.CanStackWith(itemStack))
 		{
-			ushort maxAmount = (ushort)slot.ItemStack.StackSize;
-			ushort currentAmount = slot.ItemStack.Quantity;
+			ushort maxAmount = (ushort)toSlot.ItemStack.StackSize;
+			ushort currentAmount = toSlot.ItemStack.Quantity;
 			int spaceLeft = maxAmount - currentAmount;
 
 			if (spaceLeft > 0)
 			{
 				ushort transferAmount = (ushort)Math.Min(spaceLeft, itemStack.Quantity);
-				slot.ItemStack.Quantity += transferAmount;
+				toSlot.ItemStack.Quantity += transferAmount;
 				itemStack.Quantity -= transferAmount;
 			}
-
 		}
 	}
 

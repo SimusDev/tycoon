@@ -1,5 +1,5 @@
-using System;
 using Godot;
+using Godot.Collections;
 
 [GlobalClass]
 public partial class InventorySlotUI : Control
@@ -67,39 +67,37 @@ public partial class InventorySlotUI : Control
         previewContainer.Position = -atPosition;
 
         SetDragPreview(previewContainer);
-        _isDragging = true;
 
-        return _slot;
+        Dictionary data = [];
+        data["inventory"] = _inventoryUI.Inventory.GetPath();
+        data["slot_idx"] = _inventoryUI.Inventory.IndexOfSlot(_slot);
+
+        return data;
     }
 
-    public override void _Notification(int what)
-    {
-        return;
-        if (!_isDragging) return;
-
-        if (what == NotificationDragEnd)
-        {
-            iconTextureRect.Show();
-        }
-            
-        else if (what == NotificationDragBegin)
-        {
-            iconTextureRect.Hide();
-        }
-    }
 
     public override bool _CanDropData(Vector2 atPosition, Variant data)
     {
-        return data.Obj is InventorySlot;
+        //return data.Obj is long; // годот прикольно конвертирует int в long
+        return true;
     }
     
     public override void _DropData(Vector2 atPosition, Variant data)
     {
-        if (data.Obj is InventorySlot slot)
+        if (data.Obj is Dictionary dataDict)
         {
-            _inventoryUI.Inventory.MoveItem(slot, _slot);
+            NodePath fromInventory = dataDict["inventory"].As<NodePath>();
+            short fromSlotIdx = dataDict["slot_idx"].AsInt16();
+            short toSlotIdx = _inventoryUI.Inventory.IndexOfSlot(_slot);
+            
+            _inventoryUI.Inventory.RequestMoveItem(
+                fromSlotIdx,
+                toSlotIdx,
+                fromInventory
+            );
+
+            GD.Print($"Moving: from {fromSlotIdx} to {toSlotIdx}");
         }
-        iconTextureRect.Show();
     }
 
     #endregion
