@@ -12,14 +12,29 @@ public partial class InventoryUIContainer : HBoxContainer
 
     public override void _Input(InputEvent @event)
     {
-        if (Input.IsActionJustPressed("inventory")) {
-            Visible = !Visible;
-            if (Visible)
-            {
-                _lastMouseMode = Input.MouseMode;
-                Input.MouseMode = Input.MouseModeEnum.Visible;
-            } else Input.MouseMode = _lastMouseMode;
+        if (Input.IsActionJustPressed("inventory"))
+        {
+            Switch();
         }
+    }
+
+    public void Switch() // Open/Close inventory ui
+    {
+        Visible = !Visible;
+        if (otherInventoryUI != null) otherInventoryUI.Visible = Visible;
+        
+        if (Visible)
+        {
+            _lastMouseMode = Input.MouseMode;
+            Input.MouseMode = Input.MouseModeEnum.Visible;
+        } 
+        else
+        {
+            Input.MouseMode = _lastMouseMode;
+        }
+
+
+
     }
 
     public void OpenOther(Inventory inventory)
@@ -40,7 +55,7 @@ public partial class InventoryUIContainer : HBoxContainer
         otherInventoryUI.Inventory = inventory;
 
         AddChild(otherInventoryUI);
-        Show();
+        Switch();
     }
 
     public void CloseOther()

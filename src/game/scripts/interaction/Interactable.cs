@@ -8,6 +8,20 @@ public partial class Interactable : RefCounted
     [Export] private Array<Interaction> _interactions = [];
     public static short SelectedIdx = 0;
 
+    public Interaction GetSelectedInteraction()
+    {
+        if (_interactions.Count == 0) return null;
+        if (SelectedIdx > _interactions.Count) return null;
+
+        return _interactions[SelectedIdx];
+    }
+
+    public bool TryGetSelectedInteraction(out Interaction interaction)
+    {
+        interaction = GetSelectedInteraction();
+        return interaction != null;
+    }
+
     public void AddInteraction(Interaction interaction, int position = -1)
     {
         if (_interactions.Contains(interaction)) return;
@@ -19,7 +33,6 @@ public partial class Interactable : RefCounted
 
     public void RemoveInteraction(Interaction interaction)
     {
-        GD.Print("sas78");
         if (!_interactions.Contains(interaction)) return;
         _interactions.Remove(interaction);
     }
@@ -47,13 +60,13 @@ public partial class Interactable : RefCounted
         return interactable != null;
     }
 
-    public void Interact(InteractionRay interactionRay, GodotObject collider)
+    public void Interact(InteractionRay interactionRay)
     {
         if (_interactions.Count == 0) return;
         
-        if (SelectedIdx >= _interactions.Count)
-            SelectedIdx = (short)(_interactions.Count - 1);
-            
-        _interactions[SelectedIdx].Do(interactionRay, this, collider);
+        if (TryGetSelectedInteraction(out Interaction interaction))
+        {
+            interaction.Do(interactionRay, this);
+        }
     }
 }

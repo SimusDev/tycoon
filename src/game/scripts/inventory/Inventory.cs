@@ -47,11 +47,7 @@ public partial class Inventory : Node
 		{
 			var deserialized = InventorySlot.Deserialize(_buffer.ReadBytesDynamic());
 
-			GD.Print($"{i}: Deserialized slot: ", deserialized);
-
 			_slots.Add(deserialized);
-
-			GD.Print($"{i}: Added slot: ", _slots[i]);
 
 		}
 

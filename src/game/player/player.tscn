@@ -467,7 +467,7 @@ metadata/_custom_type_script = "uid://dw5slsckmsybw"
 script = ExtResource("14_viwye")
 metadata/_custom_type_script = "uid://cn8uccug21l8x"
 
-[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("InventoryUIContainer")]
+[node name="PlayerUI" type="Control" parent="LocalCanvasLayer" unique_id=513474192 node_paths=PackedStringArray("InventoryUIContainer", "LabelSelection")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -477,8 +477,10 @@ grow_vertical = 2
 mouse_filter = 1
 script = ExtResource("15_dr81t")
 InventoryUIContainer = NodePath("InventoryContainer")
+LabelSelection = NodePath("LabelSelection")
 
 [node name="InventoryContainer" type="HBoxContainer" parent="LocalCanvasLayer/PlayerUI" unique_id=60282174 node_paths=PackedStringArray("playerInventoryUI")]
+visible = false
 propagate_maximum_size = false
 layout_mode = 1
 anchors_preset = 15
@@ -495,5 +497,15 @@ metadata/_custom_type_script = "uid://cgtm7q5lofp71"
 [node name="PlayerInventory" parent="LocalCanvasLayer/PlayerUI/InventoryContainer" unique_id=439694090 node_paths=PackedStringArray("Inventory") instance=ExtResource("21_fdf0i")]
 layout_mode = 2
 Inventory = NodePath("../../../../Inventory")
+
+[node name="LabelSelection" type="Label" parent="LocalCanvasLayer/PlayerUI" unique_id=1636694286]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [editable path="Visuals/humanZov"]

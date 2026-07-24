@@ -14,7 +14,7 @@ public partial class ScriptingCs : Node
 
     public override void _Ready()
     {
-        if (true == false)
+        if (true != false)
         {
             slotSerialized = slot.Serialize();
             slotDeserialized = InventorySlot.Deserialize(slotSerialized);
