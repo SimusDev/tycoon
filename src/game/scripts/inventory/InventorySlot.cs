@@ -57,6 +57,11 @@ public partial class InventorySlot : Resource
             ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
             GD.Print(ItemStack, " : ", this);
         }
+
+        else
+        {
+            ItemStack = null;
+        }
     }
 
     public bool CanStackWith(ItemStack itemStack)
