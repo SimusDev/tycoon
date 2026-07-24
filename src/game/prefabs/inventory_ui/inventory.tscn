@@ -6,7 +6,7 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sx3cy"]
 bg_color = Color(0.12591082, 0.12591085, 0.12591076, 1)
 
-[node name="PlayerInventory" type="Control" unique_id=439694090 node_paths=PackedStringArray("_container")]
+[node name="PlayerInventory" type="Control" unique_id=439694090 node_paths=PackedStringArray("_container", "_labelTitle")]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -15,8 +15,9 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 script = ExtResource("1_8v72j")
-_container = NodePath("ColorRect/GridContainer")
 _prefabSlotUI = ExtResource("2_pocco")
+_container = NodePath("ColorRect/GridContainer")
+_labelTitle = NodePath("Title")
 metadata/_custom_type_script = "uid://dc2ckg2il1pte"
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=453157222]
@@ -47,7 +48,7 @@ grow_horizontal = 2
 grow_vertical = 2
 columns = 9
 
-[node name="Label" type="Label" parent="." unique_id=949037379]
+[node name="Title" type="Label" parent="." unique_id=949037379]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.5
