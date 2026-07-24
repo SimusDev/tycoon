@@ -5,7 +5,7 @@ using System;
 public partial class InventorySlot : Resource
 {
     [Signal] public delegate void ItemStackChangedEventHandler();
-    private ItemStack _itemStack = null;
+    [Export] private ItemStack _itemStack = null;
     [Export] public ItemStack ItemStack
     {
         get => _itemStack;
@@ -61,7 +61,8 @@ public partial class InventorySlot : Resource
         _buffer.Seek(0);
         if (_buffer.ReadBool()) // != null
         {
-            _itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+            ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+            GD.Print(ItemStack, " : ", this);
         }
     }
 

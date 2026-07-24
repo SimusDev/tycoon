@@ -9,6 +9,8 @@
 [ext_resource type="Texture2D" uid="uid://dl0i78w1kq82h" path="res://textures/bandage/worn-mummy-bandage-texture-loose-600nw-2529485055_normal.png" id="4_v2tld"]
 [ext_resource type="Script" uid="uid://dl1aia5nkwjn6" path="res://src/game/scripts/inventory/Inventory.cs" id="8_g13qv"]
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="9_x63xq"]
+[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/resources/item_data/jirobas/jirobas.tres" id="10_i34ny"]
+[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="11_6jqut"]
 
 [sub_resource type="GDScript" id="GDScript_fnvcv"]
 script/source = "extends Node
@@ -138,8 +140,14 @@ metadata/_custom_type_script = "uid://by736kabyyjys"
 script = ExtResource("9_x63xq")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
+[sub_resource type="Resource" id="Resource_x63xq"]
+script = ExtResource("11_6jqut")
+ItemData = ExtResource("10_i34ny")
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
 [sub_resource type="Resource" id="Resource_6ym41"]
 script = ExtResource("9_x63xq")
+ItemStack = SubResource("Resource_x63xq")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [node name="World" type="Node3D" unique_id=337665220]

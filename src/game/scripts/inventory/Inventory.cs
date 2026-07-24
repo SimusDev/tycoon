@@ -5,27 +5,31 @@ using Godot.Collections;
 [GlobalClass]
 public partial class Inventory : Node
 {
-    [Export] private Node _root;
+	[Export] private Node _root;
 
-    #region Sync
-    [Signal] public delegate void SynchronizedEventHandler();
-    private GDNetBuffer _buffer = new();
+	#region Sync
+	[Signal] public delegate void SynchronizedEventHandler();
+	private GDNetBuffer _buffer = new();
 
-    private bool _isSynchronized = false;
-    public bool IsSynchronized() => _isSynchronized;
+	private bool _isSynchronized = false;
+	public bool IsSynchronized() => _isSynchronized;
 
-    private void RequestSync() => RpcId(GetMultiplayerAuthority(), MethodName.SyncToSender);
+	private void RequestSync()
+	{
+		RpcId(GetMultiplayerAuthority(), MethodName.SyncToSender);
+	}
+
 
 	[Rpc(mode: MultiplayerApi.RpcMode.AnyPeer, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
 	private void SyncToSender()
 	{
-        _buffer.Clear();
-        _buffer.WriteInt16((short)_slots.Count);
-        foreach (InventorySlot slot in _slots)
-        {
-            _buffer.WriteBytesDynamic(slot.Serialize());
-        }
-        _buffer.WriteInt16(_selectedSlotIdx);
+		_buffer.Clear();
+		_buffer.WriteInt16((short)_slots.Count);
+		foreach (InventorySlot slot in _slots)
+		{
+			_buffer.WriteBytesDynamic(slot.Serialize());
+		}
+		_buffer.WriteInt16(_selectedSlotIdx);
 
 		RpcId(Multiplayer.GetRemoteSenderId(), MethodName.ReceiveFromSyncer, _buffer.GetBytes());
 	}
@@ -33,311 +37,311 @@ public partial class Inventory : Node
 	[Rpc(mode: MultiplayerApi.RpcMode.Authority, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
 	private void ReceiveFromSyncer(byte[] bytes)
 	{
-        _buffer.SetBytes(bytes);
-        _buffer.Seek(0);
+		_buffer.SetBytes(bytes);
+		_buffer.Seek(0);
 
-        short slotCount = _buffer.ReadInt16();
+		_slots.Clear();
+		short slotCount = _buffer.ReadInt16();
 
-        _slots.Resize(slotCount);
-        for (short i = 0; i < slotCount; i++) 
-        {
-            _slots[i] = InventorySlot.Deserialize(_buffer.ReadBytesDynamic());
-        }
+		for (short i = 0; i < slotCount; i++) 
+		{
+			_slots.Add(InventorySlot.Deserialize(_buffer.ReadBytesDynamic()));
+			GD.Print("Slot Synchronized: ", _slots[i]);
+		}
 
 
-        _selectedSlotIdx = _buffer.ReadInt16();
+		_selectedSlotIdx = _buffer.ReadInt16();
 
-        _isSlotsInitialized = true;
-        EmitSignal(SignalName.SlotsInitialized);
-        _isSynchronized = true;
-        EmitSignal(SignalName.Synchronized);
+		_isSlotsInitialized = true;
+		EmitSignal(SignalName.SlotsInitialized);
+		_isSynchronized = true;
+		EmitSignal(SignalName.Synchronized);
 	}
 
-    
-    #endregion
+	
+	#endregion
 
-    #region Inventory Owner
-    private long _inventoryOwnerId = -1;
-    public long GetOwnerId() => _inventoryOwnerId;
-    public bool IsInventoryOwner() => Multiplayer.GetUniqueId() == _inventoryOwnerId;
-    #endregion
-
-
-    #region Slots
-    [Signal] public delegate void SlotAddedEventHandler(InventorySlot slot);
-    [Signal] public delegate void SlotRemovedEventHandler(InventorySlot slot);
-    [Signal] public delegate void SlotSelectedEventHandler(short idx);
-    [Signal] private delegate void SlotsInitializedEventHandler();
-    
-    [Export] private Array<InventorySlot> _slots = [];
-    public Array<InventorySlot> Slots => _slots;
-    private bool _isSlotsInitialized = false;
-
-    private void InitSlots()
-    {
-        if (_isSlotsInitialized) return;
-
-        for (int i = 0; i < _slots.Count; i++)
-        {
-            if (_slots[i] is Resource resourceSlot)
-            {
-                _slots[i] = resourceSlot.Duplicate(true) as InventorySlot;
-            }
-        }
-        _isSlotsInitialized = true;
-        EmitSignal(SignalName.SlotsInitialized);
-    }
-
-    public InventorySlot GetSlot(short idx)
-    {
-        if (idx >= 0 && idx < _slots.Count) return _slots[idx];
-        return null;
-    }
-
-    public bool TryGetSlot(short idx, out InventorySlot slot)
-    {
-        slot = GetSlot(idx);
-        return slot != null;
-    }
-
-    public InventorySlot GetFreeSlot()
-    {
-        foreach (InventorySlot slot in _slots)
-        {
-            if (slot.IsEmpty())
-            {
-                return slot;
-            }
-        }
-        
-        return null;
-    }
-
-    public bool TryGetFreeSlot(out InventorySlot slot)
-    {
-        slot = GetFreeSlot();
-        return slot != null;
-    }
+	#region Inventory Owner
+	private long _inventoryOwnerId = -1;
+	public long GetOwnerId() => _inventoryOwnerId;
+	public bool IsInventoryOwner() => Multiplayer.GetUniqueId() == _inventoryOwnerId;
+	#endregion
 
 
-    private short _selectedSlotIdx = 0;
-    public short SelectedSlotIdx => _selectedSlotIdx;
-    public InventorySlot SelectedSlot => GetSlot(_selectedSlotIdx);
-    
+	#region Slots
+	[Signal] public delegate void SlotAddedEventHandler(InventorySlot slot);
+	[Signal] public delegate void SlotRemovedEventHandler(InventorySlot slot);
+	[Signal] public delegate void SlotSelectedEventHandler(short idx);
+	[Signal] private delegate void SlotsInitializedEventHandler();
+	
+	[Export] private Array<InventorySlot> _slots = [];
+	public Array<InventorySlot> Slots => _slots;
+	private bool _isSlotsInitialized = false;
 
-    #endregion
+	private void InitSlots()
+	{
+		if (_isSlotsInitialized) return;
 
-    #region Add/Receive Slot
-    public void AddSlot(InventorySlot slot)
-    {
-        if (!IsMultiplayerAuthority()) return;
-        ReceiveSlot(slot);
-        Rpc(MethodName.ReceiveSlot, slot.Serialize());
-    }
+		for (int i = 0; i < _slots.Count; i++)
+		{
+			if (_slots[i] is Resource resourceSlot)
+			{
+				_slots[i] = resourceSlot.Duplicate(true) as InventorySlot;
+			}
+		}
+		_isSlotsInitialized = true;
+		EmitSignal(SignalName.SlotsInitialized);
+	}
 
-    public void AddSlot() => AddSlot(new());
+	public InventorySlot GetSlot(short idx)
+	{
+		if (idx >= 0 && idx < _slots.Count) return _slots[idx];
+		return null;
+	}
 
-    
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void ReceiveSlot(byte[] bytes)
-    {
-        ReceiveSlot(InventorySlot.Deserialize(bytes));
-    }
+	public bool TryGetSlot(short idx, out InventorySlot slot)
+	{
+		slot = GetSlot(idx);
+		return slot != null;
+	}
 
-    private void ReceiveSlot(InventorySlot slot)
-    {
-        if (_slots.Contains(slot)) return;
-        _slots.Add(slot);
-        EmitSignal(SignalName.SlotAdded, slot);
-    }
-    #endregion
+	public InventorySlot GetFreeSlot()
+	{
+		foreach (InventorySlot slot in _slots)
+		{
+			if (slot.IsEmpty())
+			{
+				return slot;
+			}
+		}
+		
+		return null;
+	}
+
+	public bool TryGetFreeSlot(out InventorySlot slot)
+	{
+		slot = GetFreeSlot();
+		return slot != null;
+	}
 
 
-    #region RemoveSlot
-    public void RemoveSlot(InventorySlot slot)
-    {
-        if (!IsMultiplayerAuthority()) return;
+	private short _selectedSlotIdx = 0;
+	public short SelectedSlotIdx => _selectedSlotIdx;
+	public InventorySlot SelectedSlot => GetSlot(_selectedSlotIdx);
+	
 
-        RemoveSlotRpc(slot);
-        Rpc(MethodName.RemoveSlotRpc, slot.Serialize());
-    }
+	#endregion
 
-    public void RemoveSlot() => RemoveSlot(GetSlot((short)_slots.Count)); //Remove front slot
+	#region Add/Receive Slot
+	public void AddSlot(InventorySlot slot)
+	{
+		if (!IsMultiplayerAuthority()) return;
+		ReceiveSlot(slot);
+		Rpc(MethodName.ReceiveSlot, slot.Serialize());
+	}
 
-    public void RemoveSlot(int idx)
-    {
-        if (!IsMultiplayerAuthority()) return;
+	public void AddSlot() => AddSlot(new());
 
-        RemoveSlotRpc(idx);
-        Rpc(MethodName.RemoveSlotRpc, idx);
-    }
+	
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void ReceiveSlot(byte[] bytes)
+	{
+		ReceiveSlot(InventorySlot.Deserialize(bytes));
+	}
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void RemoveSlotRpc(InventorySlot slot)
-    {
-        if (!_slots.Contains(slot)) return;
-        _slots.Remove(slot);
-        EmitSignal(SignalName.SlotRemoved, slot);
-    }
+	private void ReceiveSlot(InventorySlot slot)
+	{
+		if (_slots.Contains(slot)) return;
+		_slots.Add(slot);
+		EmitSignal(SignalName.SlotAdded, slot);
+	}
+	#endregion
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void RemoveSlotRpc(byte[] bytes) => RemoveSlotRpc(InventorySlot.Deserialize(bytes));
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void RemoveSlotRpc(int idx)
-    {
-        if (_slots.Count < idx) return;
-        _slots.RemoveAt(idx);
-    }
-    #endregion
+	#region RemoveSlot
+	public void RemoveSlot(InventorySlot slot)
+	{
+		if (!IsMultiplayerAuthority()) return;
 
-    #region Select/Deselect Slot
-    public void RequestSelectSlot(short idx)
-    {
-        if (IsMultiplayerAuthority())
-        {
-            SelectSlot(idx);
-            return;
-        }
+		RemoveSlotRpc(slot);
+		Rpc(MethodName.RemoveSlotRpc, slot.Serialize());
+	}
 
-        RpcId(GetMultiplayerAuthority(), MethodName.SelectSlot, idx);
-    }
+	public void RemoveSlot() => RemoveSlot(GetSlot((short)_slots.Count)); //Remove front slot
 
-    [Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void SelectSlot(short idx)
-    {
-        if (_slots.Count < idx) return;
-        if (idx == _selectedSlotIdx) idx = -1;
+	public void RemoveSlot(int idx)
+	{
+		if (!IsMultiplayerAuthority()) return;
 
-        ReceiveSelectedSlotIdx(idx);
-        Rpc(MethodName.ReceiveSelectedSlotIdx, idx);
-    }
+		RemoveSlotRpc(idx);
+		Rpc(MethodName.RemoveSlotRpc, idx);
+	}
 
-    [Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-    private void ReceiveSelectedSlotIdx(short idx)
-    {
-        _selectedSlotIdx = idx;
-        EmitSignal(SignalName.SlotSelected, idx);
-    }
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void RemoveSlotRpc(InventorySlot slot)
+	{
+		if (!_slots.Contains(slot)) return;
+		_slots.Remove(slot);
+		EmitSignal(SignalName.SlotRemoved, slot);
+	}
 
-    #endregion
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void RemoveSlotRpc(byte[] bytes) => RemoveSlotRpc(InventorySlot.Deserialize(bytes));
 
-    #region Add/Remove Item
-    public void AddItem(ItemStack itemStack)
-    {
-        foreach (InventorySlot slot in Slots)
-        {
-            if (!slot.IsEmpty() && slot.CanStackWith(itemStack))
-            {
-                StackItem(slot, itemStack);
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void RemoveSlotRpc(int idx)
+	{
+		if (_slots.Count < idx) return;
+		_slots.RemoveAt(idx);
+	}
+	#endregion
 
-                if (itemStack.Quantity <= 0) return;
-            }
-        }
-        
-        if (TryGetFreeSlot(out InventorySlot freeSlot))
-            freeSlot.ItemStack = itemStack;
-    }
+	#region Select/Deselect Slot
+	public void RequestSelectSlot(short idx)
+	{
+		if (IsMultiplayerAuthority())
+		{
+			SelectSlot(idx);
+			return;
+		}
 
-    public void AddItem(ItemData itemData)
-    {
-        AddItem(ItemStack.CreateFrom(itemData));
-    }
+		RpcId(GetMultiplayerAuthority(), MethodName.SelectSlot, idx);
+	}
 
-    public void RemoveItem(InventorySlot slot) => slot.ItemStack = null;
-    public void RemoveItem(short slotIdx)
-    {
-        if (TryGetSlot(slotIdx, out InventorySlot slot)) RemoveItem(slot);
-    }
-    #endregion
+	[Rpc(MultiplayerApi.RpcMode.AnyPeer, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void SelectSlot(short idx)
+	{
+		if (_slots.Count < idx) return;
+		if (idx == _selectedSlotIdx) idx = -1;
 
-    #region Move/Swap/Stack Item
-    public void MoveItem(InventorySlot fromSlot, InventorySlot toSlot)
-    {
-        if (fromSlot.IsEmpty()) return;
+		ReceiveSelectedSlotIdx(idx);
+		Rpc(MethodName.ReceiveSelectedSlotIdx, idx);
+	}
 
-        if (toSlot.IsEmpty())
-        {
-            toSlot.ItemStack = fromSlot.ItemStack;
-            fromSlot.ItemStack = null;
-        }
-        else if (toSlot.CanStackWith(fromSlot.ItemStack))
-        {
-            StackItem(toSlot, fromSlot.ItemStack);
-        }
-        else SwapItem(fromSlot, toSlot);
-    }
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void ReceiveSelectedSlotIdx(short idx)
+	{
+		_selectedSlotIdx = idx;
+		EmitSignal(SignalName.SlotSelected, idx);
+	}
 
-    public void SwapItem(InventorySlot fromSlot, InventorySlot toSlot)
-    {
-        if (fromSlot.IsEmpty()) return;
-        
-        ItemStack t = fromSlot.ItemStack;
-        fromSlot.ItemStack = toSlot.ItemStack;
-        toSlot.ItemStack = t;
-    }
+	#endregion
 
-    public void StackItem(InventorySlot slot, ItemStack itemStack)
-    {
-        if (slot == null || itemStack == null) return;
-        
-        if (slot.IsEmpty())
-        {
-            slot.ItemStack = itemStack;
-            return;
-        }
+	#region Add/Remove Item
+	public void AddItem(ItemStack itemStack)
+	{
+		foreach (InventorySlot slot in Slots)
+		{
+			if (!slot.IsEmpty() && slot.CanStackWith(itemStack))
+			{
+				StackItem(slot, itemStack);
 
-        if (slot.CanStackWith(itemStack))
-        {
-            ushort maxAmount = (ushort)slot.ItemStack.StackSize;
-            ushort currentAmount = slot.ItemStack.Quantity;
-            int spaceLeft = maxAmount - currentAmount;
+				if (itemStack.Quantity <= 0) return;
+			}
+		}
+		
+		if (TryGetFreeSlot(out InventorySlot freeSlot))
+			freeSlot.ItemStack = itemStack;
+	}
 
-            if (spaceLeft > 0)
-            {
-                ushort transferAmount = (ushort)Math.Min(spaceLeft, itemStack.Quantity);
-                slot.ItemStack.Quantity += transferAmount;
-                itemStack.Quantity -= transferAmount;
-            }
+	public void AddItem(ItemData itemData)
+	{
+		AddItem(ItemStack.CreateFrom(itemData));
+	}
 
-        }
-    }
+	public void RemoveItem(InventorySlot slot) => slot.ItemStack = null;
+	public void RemoveItem(short slotIdx)
+	{
+		if (TryGetSlot(slotIdx, out InventorySlot slot)) RemoveItem(slot);
+	}
+	#endregion
 
-    #endregion
+	#region Move/Swap/Stack Item
+	public void MoveItem(InventorySlot fromSlot, InventorySlot toSlot)
+	{
+		if (fromSlot.IsEmpty()) return;
 
-    Inventory()
-    {
-       // Interactable.GetOrCreate(this).AddInteraction(ResourceLoader.Load<Interaction>("uid://bf6f2mxftmr1l"));
-    }
+		if (toSlot.IsEmpty())
+		{
+			toSlot.ItemStack = fromSlot.ItemStack;
+			fromSlot.ItemStack = null;
+		}
+		else if (toSlot.CanStackWith(fromSlot.ItemStack))
+		{
+			StackItem(toSlot, fromSlot.ItemStack);
+		}
+		else SwapItem(fromSlot, toSlot);
+	}
 
-    public override void _Ready()
-    {
-        Interactable.GetOrCreate(_root).AddInteraction(ResourceLoader.Load<Interaction>("uid://cdo8axpxmp65j"));
-        _inventoryOwnerId = _root.GetMultiplayerAuthority();
-        SetProcessInput(IsInventoryOwner());
-        SetMultiplayerAuthority(GameServer.ServerId);
-        
-        if (IsMultiplayerAuthority())
-        {
-            InitSlots();
-            _isSynchronized = true;
-        }
-        else RequestSync();
-    }
+	public void SwapItem(InventorySlot fromSlot, InventorySlot toSlot)
+	{
+		if (fromSlot.IsEmpty()) return;
+		
+		ItemStack t = fromSlot.ItemStack;
+		fromSlot.ItemStack = toSlot.ItemStack;
+		toSlot.ItemStack = t;
+	}
 
-    public override void _Input(InputEvent @event)
-    {
-        for (short i = 0; i < 9; i++)
-        {
-            
-            if (Input.IsActionJustPressed($"inventory.selectslot_{i}"))
-            {
-                RequestSelectSlot(i);
-                break;
-            }
+	public void StackItem(InventorySlot slot, ItemStack itemStack)
+	{
+		if (slot == null || itemStack == null) return;
+		
+		if (slot.IsEmpty())
+		{
+			slot.ItemStack = itemStack;
+			return;
+		}
 
-        }
-    }
+		if (slot.CanStackWith(itemStack))
+		{
+			ushort maxAmount = (ushort)slot.ItemStack.StackSize;
+			ushort currentAmount = slot.ItemStack.Quantity;
+			int spaceLeft = maxAmount - currentAmount;
+
+			if (spaceLeft > 0)
+			{
+				ushort transferAmount = (ushort)Math.Min(spaceLeft, itemStack.Quantity);
+				slot.ItemStack.Quantity += transferAmount;
+				itemStack.Quantity -= transferAmount;
+			}
+
+		}
+	}
+
+	#endregion
+
+	Inventory()
+	{
+	   // Interactable.GetOrCreate(this).AddInteraction(ResourceLoader.Load<Interaction>("uid://bf6f2mxftmr1l"));
+	}
+
+	public override void _Ready()
+	{
+		Interactable.GetOrCreate(_root).AddInteraction(ResourceLoader.Load<Interaction>("uid://cdo8axpxmp65j"));
+		_inventoryOwnerId = _root.GetMultiplayerAuthority();
+		SetProcessInput(IsInventoryOwner());
+		SetMultiplayerAuthority(GameServer.ServerId);
+		
+		if (IsMultiplayerAuthority())
+		{
+			InitSlots();
+			_isSynchronized = true;
+		}
+		else RequestSync();
+	}
+
+	public override void _Input(InputEvent @event)
+	{
+		for (short i = 0; i < 9; i++)
+		{
+			
+			if (Input.IsActionJustPressed($"inventory.selectslot_{i}"))
+			{
+				RequestSelectSlot(i);
+				break;
+			}
+
+		}
+	}
 
 }
-
