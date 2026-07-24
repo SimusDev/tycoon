@@ -21,16 +21,18 @@ public partial class InventorySlot : Resource
     private static readonly GDNetBuffer _buffer = new();
     [Export] private GDNetCommunicator _communicator = new();
 
-    private long _netId = GDNet.GenerateUniqueID();
+    private long _netId = 0;
     
     public InventorySlot()
     {
+        _netId = GDNet.GenerateUniqueID();
         _communicator.OnBytesReceived += OnBytesReceived;
         _communicator.SynchronizeNetworkIDByUniqueID(_netId);
     }
 
     public InventorySlot(long netId)
     {
+        _netId = netId;
         _communicator.OnBytesReceived += OnBytesReceived;
         _communicator.SynchronizeNetworkIDByUniqueID(netId);
     }

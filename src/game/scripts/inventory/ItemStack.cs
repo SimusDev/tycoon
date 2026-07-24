@@ -51,12 +51,25 @@ public partial class ItemStack : Resource
     
     [Signal] public delegate void DataChangedEventHandler();
     [Export] protected Dictionary<string, Variant> data = [];
+
+    [Export] public Dictionary<string, Variant> sasTest
+    {
+        set
+        {
+            data = value;
+            Send(nameof(data), data);
+        }
+
+        get { return data; }
+    }
+
     public void SetData(string name, Variant value)
     {
         data[name] = value;
         Send(nameof(data), name, value);
         EmitSignal(SignalName.DataChanged);
     }
+
     public Dictionary<string, Variant> GetData() => data;
     public Variant GetDataValue(string name) => data[name];
 
@@ -142,7 +155,9 @@ public partial class ItemStack : Resource
         switch (type)
         {
             case 0: // Default
-                Set(_buffer.ReadString(), GD.BytesToVar(_buffer.ReadBytesDynamic()));
+                string property = _buffer.ReadString();
+                Variant variant = GD.BytesToVar(_buffer.ReadBytesDynamic());
+                Set(property, variant);
                 break;
             case 1: // Dictionary
                 Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = GD.BytesToVar(_buffer.ReadBytesDynamic());

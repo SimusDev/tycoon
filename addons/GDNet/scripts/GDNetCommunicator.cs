@@ -19,23 +19,8 @@ public partial class GDNetCommunicator : RefCounted, IDisposable
 	protected int[] Observers;
 	protected bool _observersEnabled = false;
 
-    protected MemoryStream _stream;
-    protected BinaryWriter _writer;
-    protected BinaryReader _reader;
-
-    public GDNetCommunicator()
-    {
-        _stream = new MemoryStream();
-        _writer = new BinaryWriter(_stream);
-        _reader = new BinaryReader(_stream);
-        SetNetworkID(_networkID);
-    }
-
     protected override void Dispose(bool disposing)
     {
-        _writer?.Dispose();
-        _reader?.Dispose();
-        _stream?.Dispose();
         base.Dispose(disposing);
     }
 
