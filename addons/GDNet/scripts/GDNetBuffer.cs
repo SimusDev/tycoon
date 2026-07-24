@@ -165,6 +165,25 @@ public partial class GDNetBuffer : RefCounted
 	public void WriteDouble(double value) => _stream.WriteDouble(value);
 	public double ReadDouble() => _stream.ReadDouble();
 
+	public void WriteArrayComplex(Godot.Collections.Array value)
+	{
+		WriteIntVar(value.Count);
+		foreach (var item in value)
+			Write(item);
+	}
+
+	public Godot.Collections.Array ReadArrayComplex()
+	{
+		Godot.Collections.Array result = new();
+
+		int count = ReadIntVar();
+		for (int i = 0; i < count; i++)
+		{
+			result.Add((Variant)Read());
+		}
+
+		return result;
+	}
 
 	public void WriteVector3(Vector3 value)
 	{
@@ -474,6 +493,16 @@ public partial class GDNetBuffer : RefCounted
 
 		GD.PushError($"Unknown VarType: {type}");
 		return new Variant();
+	}
+
+	public void WriteVarToBytes(Variant value)
+	{
+		WriteBytesDynamic(GD.VarToBytes(value));
+	}
+
+	public Variant ReadVarToBytes()
+	{
+		return GD.BytesToVar(ReadBytesDynamic());
 	}
 
 }

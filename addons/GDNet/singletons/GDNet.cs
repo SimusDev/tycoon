@@ -98,7 +98,6 @@ public partial class GDNet : Node
         string combined = input + "GDNetSalt";
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes(combined);
 
-        // FNV-1a 64-bit (ВСЕГДА ДЕТЕРМИНИРОВАН!)
         const ulong FNV_OFFSET = 14695981039346656037;
         const ulong FNV_PRIME = 1099511628211;
 
@@ -112,8 +111,6 @@ public partial class GDNet : Node
 
         return hash;
     }
-
-
 
     public override void _EnterTree()
 	{

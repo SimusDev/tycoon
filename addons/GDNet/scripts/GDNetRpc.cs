@@ -94,7 +94,7 @@ public partial class GDNetRpc : GDNetCommunicator
 		InvokeByTypeInternal(id, method, RpcType.Target, args, args.Length);
 	}
 
-	public void InvokeOnServer(string method, params object[] args)
+    public void InvokeOnServer(string method, params object[] args)
 	{
 		InvokeByTypeInternal(GDNet.ServerID, method, RpcType.OnServer, args, args.Length);
 	}
