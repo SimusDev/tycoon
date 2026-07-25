@@ -10,6 +10,7 @@
 
 [sub_resource type="Resource" id="Resource_yoh76"]
 script = ExtResource("2_t8fqn")
+StackSize = 32
 
 [sub_resource type="Resource" id="Resource_33ijn"]
 script = ExtResource("3_t8fqn")

@@ -4,7 +4,7 @@ using Godot.Collections;
 [GlobalClass]
 public partial class InventorySlotUI : Control
 {
-    private InventorySlot _slot;
+    [Export] private InventorySlot _slot;
     private InventoryUI _inventoryUI;
     [Export] private TextureRect iconTextureRect;
     [Export] private Label quantityLabel;
@@ -96,7 +96,6 @@ public partial class InventorySlotUI : Control
                 fromInventory
             );
 
-            GD.Print($"Moving: from {fromSlotIdx} to {toSlotIdx}");
         }
     }
 
@@ -105,7 +104,7 @@ public partial class InventorySlotUI : Control
     private string GetQuantityText()
     {
         if (_currentItemStack == null) return "";
-        if (_currentItemStack.Quantity < 1) return "";
+        if (_currentItemStack.Quantity <= 1) return "";
 
         return _currentItemStack.Quantity.ToString();
     }

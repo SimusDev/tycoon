@@ -12,14 +12,14 @@ public partial class InventoryUI : Control
 
     public override void _Ready()
     {
-        if (Inventory.IsSynchronized()) Update();
-        else Inventory.Synchronized += OnInventorySynchronized;
+        if (Inventory.IsSlotsInitialized) Update();
+        else Inventory.SlotsInitialized += OnSlotsInitialized;
     }
 
-    private void OnInventorySynchronized()
+    private void OnSlotsInitialized()
     {
         Update();
-        Inventory.Synchronized -= OnInventorySynchronized;
+        Inventory.SlotsInitialized -= OnSlotsInitialized;
     }
 
     private void Update()
@@ -47,17 +47,18 @@ public partial class InventoryUI : Control
 
     private void Clear()
     {
+
         if (_container == null) return; 
         foreach (Node node in _container.GetChildren())
         {
             _container.RemoveChild(node);
             node.QueueFree();
         }
+
     }
 
     private InventorySlotUI AddSlotUI(InventorySlot slot)
     {
-
         InventorySlotUI newSlot = _prefabSlotUI?.Instantiate<InventorySlotUI>();
         if (newSlot == null)
         {

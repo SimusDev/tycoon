@@ -32,9 +32,6 @@ public partial class InventoryUIContainer : HBoxContainer
         {
             Input.MouseMode = _lastMouseMode;
         }
-
-
-
     }
 
     public void OpenOther(Inventory inventory)
@@ -43,7 +40,7 @@ public partial class InventoryUIContainer : HBoxContainer
         {
             if (otherInventoryUI.Inventory == inventory)
             {
-                otherInventoryUI.Show();
+                Switch();
                 return;
             }
 

@@ -50,7 +50,7 @@ public partial class ItemStack : Resource
 
     
     [Signal] public delegate void DataChangedEventHandler();
-    [Export] protected Dictionary<string, Variant> data = [];
+    protected Dictionary<string, Variant> data = [];
 
     [Export] public Dictionary<string, Variant> sasTest
     {

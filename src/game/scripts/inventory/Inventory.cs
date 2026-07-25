@@ -72,26 +72,32 @@ public partial class Inventory : Node
 	[Signal] public delegate void SlotAddedEventHandler(InventorySlot slot);
 	[Signal] public delegate void SlotRemovedEventHandler(InventorySlot slot);
 	[Signal] public delegate void SlotSelectedEventHandler(short idx);
-	[Signal] private delegate void SlotsInitializedEventHandler();
+	[Signal] public delegate void SlotsInitializedEventHandler();
 	
 	[Export] private Array<InventorySlot> _slots = [];
 	public Array<InventorySlot> Slots => _slots;
 	private bool _isSlotsInitialized = false;
+	public bool IsSlotsInitialized => _isSlotsInitialized;
 
 	private void InitSlots()
 	{
 		if (_isSlotsInitialized) return;
-
+		
 		for (int i = 0; i < _slots.Count; i++)
 		{
 			if (_slots[i] is Resource resourceSlot)
 			{
 				long netId = GDNet.GenerateUniqueID();
 				var duplicated = resourceSlot.Duplicate(true) as InventorySlot;
+				if (duplicated.ItemStack != null)
+				{
+					duplicated.ItemStack = duplicated.ItemStack.Duplicate() as ItemStack;
+				}
 				duplicated.NetworkInit(netId);
 				_slots[i] = duplicated;
 			}
 		}
+
 		_isSlotsInitialized = true;
 		EmitSignal(SignalName.SlotsInitialized);
 	}

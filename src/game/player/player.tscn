@@ -29,6 +29,7 @@ metadata/_custom_type_script = "uid://by736kabyyjys"
 [sub_resource type="Resource" id="Resource_fdf0i"]
 script = ExtResource("4_fnd46")
 ItemData = ExtResource("3_t6wnj")
+Quantity = 14
 metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
 
 [sub_resource type="Resource" id="Resource_6obk6"]
@@ -50,16 +51,30 @@ metadata/_custom_type_script = "uid://by736kabyyjys"
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
+[sub_resource type="Resource" id="Resource_lm4eh"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("3_t6wnj")
+Quantity = 17
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
 [sub_resource type="Resource" id="Resource_t6wnj"]
 script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_lm4eh")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [sub_resource type="Resource" id="Resource_fnd46"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
+[sub_resource type="Resource" id="Resource_tw3dr"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("3_t6wnj")
+Quantity = 8
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
 [sub_resource type="Resource" id="Resource_1m3ve"]
 script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_tw3dr")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [sub_resource type="Resource" id="Resource_8lfix"]

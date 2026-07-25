@@ -5,7 +5,7 @@ using System;
 public partial class InventorySlot : Resource
 {
     [Signal] public delegate void ItemStackChangedEventHandler();
-    [Export] private ItemStack _itemStack = null;
+    private ItemStack _itemStack = null;
     [Export] public ItemStack ItemStack
     {
         get => _itemStack;
@@ -55,7 +55,6 @@ public partial class InventorySlot : Resource
         if (_buffer.ReadBool()) // != null
         {
             ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
-            GD.Print(ItemStack, " : ", this);
         }
 
         else
@@ -67,10 +66,10 @@ public partial class InventorySlot : Resource
     public bool CanStackWith(ItemStack itemStack)
     {
         if (ItemStack == null) return true;
-        // if (
-        //     itemStack.ItemData == ItemStack.ItemData &&
-        //     itemStack.GetData() == ItemStack.GetData()
-        //    ) return true;
+        if (
+            itemStack.ItemData == ItemStack.ItemData &&
+            itemStack.GetData().Equals(ItemStack.GetData())
+           ) return true;
         
         return false;
     }
