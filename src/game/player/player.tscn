@@ -5,10 +5,7 @@
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
-[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/resources/item_data/jirobas/jirobas.tres" id="3_t6wnj"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
-[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="4_fnd46"]
-[ext_resource type="Resource" uid="uid://3g3opgatre5p" path="res://src/game/resources/item_data/sas/sas.tres" id="5_1m3ve"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
 [ext_resource type="Script" uid="uid://dtlbmw8nhq7ar" path="res://src/game/scripts/inventory/ViewModelRoot.cs" id="7_dr81t"]
@@ -22,110 +19,27 @@
 [ext_resource type="Script" uid="uid://cgtm7q5lofp71" path="res://src/game/scripts/inventory/ui/InventoryUIContainer.cs" id="20_1m3ve"]
 [ext_resource type="PackedScene" uid="uid://bv2epmj154h2e" path="res://src/game/prefabs/inventory_ui/inventory.tscn" id="21_fdf0i"]
 
-[sub_resource type="Resource" id="Resource_viwye"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_fdf0i"]
-script = ExtResource("4_fnd46")
-ItemData = ExtResource("3_t6wnj")
-Quantity = 14
-metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
-
-[sub_resource type="Resource" id="Resource_6obk6"]
-script = ExtResource("2_viwye")
-ItemStack = SubResource("Resource_fdf0i")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_6qmy7"]
-script = ExtResource("4_fnd46")
-ItemData = ExtResource("5_1m3ve")
-metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
-
-[sub_resource type="Resource" id="Resource_1km7v"]
-script = ExtResource("2_viwye")
-ItemStack = SubResource("Resource_6qmy7")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
 [sub_resource type="Resource" id="Resource_usirl"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
-[sub_resource type="Resource" id="Resource_lm4eh"]
-script = ExtResource("4_fnd46")
-ItemData = ExtResource("3_t6wnj")
-Quantity = 17
-metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
-
 [sub_resource type="Resource" id="Resource_t6wnj"]
 script = ExtResource("2_viwye")
-ItemStack = SubResource("Resource_lm4eh")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [sub_resource type="Resource" id="Resource_fnd46"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
-[sub_resource type="Resource" id="Resource_tw3dr"]
-script = ExtResource("4_fnd46")
-ItemData = ExtResource("3_t6wnj")
-Quantity = 8
-metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
-
 [sub_resource type="Resource" id="Resource_1m3ve"]
 script = ExtResource("2_viwye")
-ItemStack = SubResource("Resource_tw3dr")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
-[sub_resource type="Resource" id="Resource_8lfix"]
+[sub_resource type="Resource" id="Resource_fdf0i"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
-[sub_resource type="Resource" id="Resource_6gle3"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_m3xhp"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_7hwkm"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_wvdpb"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_nfu6k"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_16hq7"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_ya7eq"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_a8ffs"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_r8pt6"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_ptro2"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_5nume"]
-script = ExtResource("2_viwye")
-metadata/_custom_type_script = "uid://by736kabyyjys"
-
-[sub_resource type="Resource" id="Resource_koc2e"]
+[sub_resource type="Resource" id="Resource_6qmy7"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
@@ -211,7 +125,7 @@ height = 2.7138672
 [node name="Inventory" type="Node" parent="." unique_id=423074224 node_paths=PackedStringArray("_root")]
 script = ExtResource("1_26fnn")
 _root = NodePath("..")
-_slots = Array[ExtResource("2_viwye")]([SubResource("Resource_viwye"), SubResource("Resource_6obk6"), SubResource("Resource_1km7v"), SubResource("Resource_usirl"), SubResource("Resource_t6wnj"), SubResource("Resource_fnd46"), SubResource("Resource_1m3ve"), SubResource("Resource_8lfix"), SubResource("Resource_6gle3"), SubResource("Resource_m3xhp"), SubResource("Resource_7hwkm"), SubResource("Resource_wvdpb"), SubResource("Resource_nfu6k"), SubResource("Resource_16hq7"), SubResource("Resource_ya7eq"), SubResource("Resource_a8ffs"), SubResource("Resource_r8pt6"), SubResource("Resource_ptro2"), SubResource("Resource_5nume"), SubResource("Resource_koc2e")])
+_slots = Array[ExtResource("2_viwye")]([SubResource("Resource_usirl"), SubResource("Resource_t6wnj"), SubResource("Resource_fnd46"), SubResource("Resource_1m3ve"), SubResource("Resource_fdf0i"), SubResource("Resource_6qmy7")])
 metadata/_custom_type_script = "uid://dl1aia5nkwjn6"
 
 [node name="StateMachine" type="Node" parent="." unique_id=1463452377]

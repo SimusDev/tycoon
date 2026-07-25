@@ -1,4 +1,3 @@
-using System.Reflection.Metadata.Ecma335;
 using Godot;
 using Godot.Collections;
 
@@ -80,16 +79,16 @@ public partial class ItemStack : Resource
     
     private long _netId = GDNet.GenerateUniqueID();
 
-    public ItemStack()
+    public void NetworkInit(long netId)
     {
+        _netId = netId;
         _communicator.OnBytesReceived += OnBytesReceived;
         _communicator.SynchronizeNetworkIDByUniqueID(_netId);
     }
 
-    public ItemStack(long netId)
+    public ItemStack()
     {
-        _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(netId);
+        NetworkInit(GDNet.GenerateUniqueID());
     }
 
     public void SetIn(Node node)
@@ -184,13 +183,13 @@ public partial class ItemStack : Resource
         _s_buffer.Clear();
         _s_buffer.SetBytes(bytes);
 
-        ItemStack itemStack = new(_s_buffer.ReadInt64())
-        {
-            ItemData = _s_buffer.ReadResource<ItemData>(),
-            Quantity = _s_buffer.ReadUInt16(),
-            SkinId = _s_buffer.ReadUInt16(),
-            //data = _buffer.ReadDictionarySimple<string, Variant>()
-        };
+        ItemStack itemStack = new();
+        itemStack.NetworkInit(_s_buffer.ReadInt64());
+
+        itemStack.ItemData = _s_buffer.ReadResource<ItemData>();
+        itemStack._quantity = _s_buffer.ReadUInt16();
+        itemStack._skinId = _s_buffer.ReadUInt16();
+        //itemStack.data = _buffer.ReadDictionarySimple<string, Variant>()
         
         return itemStack;
     }

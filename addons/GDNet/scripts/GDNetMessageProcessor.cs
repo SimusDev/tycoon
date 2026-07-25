@@ -252,7 +252,6 @@ public partial class GDNetMessageProcessor : Node
 
 			}
 		}
-		
 	}
 
 	private ProcessedCommunicationPacket ProcessReceivedCommunicatorPacket(CommunicationPacket packet)

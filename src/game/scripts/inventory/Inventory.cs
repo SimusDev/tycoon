@@ -46,11 +46,8 @@ public partial class Inventory : Node
 		for (short i = 0; i < slotCount; i++) 
 		{
 			var deserialized = InventorySlot.Deserialize(_buffer.ReadBytesDynamic());
-
 			_slots.Add(deserialized);
-
 		}
-
 
 		_selectedSlotIdx = _buffer.ReadInt16();
 
@@ -83,17 +80,18 @@ public partial class Inventory : Node
 	{
 		if (_isSlotsInitialized) return;
 		
+
 		for (int i = 0; i < _slots.Count; i++)
 		{
-			if (_slots[i] is Resource resourceSlot)
+			if (_slots[i] is InventorySlot slot)
 			{
-				long netId = GDNet.GenerateUniqueID();
-				var duplicated = resourceSlot.Duplicate(true) as InventorySlot;
-				if (duplicated.ItemStack != null)
-				{
-					duplicated.ItemStack = duplicated.ItemStack.Duplicate() as ItemStack;
-				}
-				duplicated.NetworkInit(netId);
+				InventorySlot duplicated = slot.DuplicateDeep() as InventorySlot;
+				
+				// if (duplicated.ItemStack != null)
+				// {
+				// 	duplicated.ItemStack = duplicated.ItemStack.DuplicateDeep() as ItemStack;
+				// }
+				
 				_slots[i] = duplicated;
 			}
 		}

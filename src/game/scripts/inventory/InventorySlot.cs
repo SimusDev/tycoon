@@ -23,6 +23,11 @@ public partial class InventorySlot : Resource
 
     private long _netId = 0;
 
+    public InventorySlot()
+    {
+        NetworkInit(GDNet.GenerateUniqueID());
+    }
+
     public void NetworkInit(long netId)
     {
         _netId = netId;
@@ -79,6 +84,7 @@ public partial class InventorySlot : Resource
         _buffer.Clear();
         
         _buffer.WriteInt64(_netId);
+        GD.Print(_netId);
 
         _buffer.WriteBool(_itemStack != null);
         if (_itemStack != null)
