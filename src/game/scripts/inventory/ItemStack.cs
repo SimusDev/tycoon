@@ -14,7 +14,6 @@ public partial class ItemStack : Resource
         set
         {
             _quantity = value;
-            Send(nameof(Quantity), value);
             EmitSignal(SignalName.QuantityChanged);
         }
     }
@@ -27,7 +26,6 @@ public partial class ItemStack : Resource
         set
         {
             _skinId = value;
-            Send(nameof(SkinId), value);
             EmitSignal(SignalName.SkinIdChanged);
         }
     }
@@ -49,42 +47,31 @@ public partial class ItemStack : Resource
 
     
     [Signal] public delegate void DataChangedEventHandler();
+    [Signal] public delegate void DataKeyChangedEventHandler(string name);
+
     protected Dictionary<string, Variant> data = [];
 
-    [Export] public Dictionary<string, Variant> sasTest
+    [Export] public Dictionary<string, Variant> Data
     {
         set
         {
             data = value;
-            Send(nameof(data), data);
+            EmitSignal(SignalName.DataChanged);
         }
 
         get { return data; }
     }
 
-    public void SetData(string name, Variant value)
+    public void SetDataKey(string name, Variant value)
     {
         data[name] = value;
-        Send(nameof(data), name, value);
-        EmitSignal(SignalName.DataChanged);
+        EmitSignal(SignalName.DataKeyChanged, name);
     }
 
     public Dictionary<string, Variant> GetData() => data;
     public Variant GetDataValue(string name) => data[name];
 
     private static readonly GDNetBuffer _buffer = new();
-    private static readonly GDNetBuffer _s_buffer = new();
-
-    [Export] private GDNetCommunicator _communicator = new();
-    
-    private long _netId = GDNet.GenerateUniqueID();
-
-    public void NetworkInit(long netId)
-    {
-        _netId = netId;
-        _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(_netId);
-    }
 
     public void SetIn(Node node)
     {
@@ -114,77 +101,30 @@ public partial class ItemStack : Resource
     }
 
 
-    private void Send(string propertyName, Variant value)
-    {
-        if (!GameServer.IsMultiplayerValid() || !GameServer.Instance.Multiplayer.IsServer()) return;
-
-        _buffer.Clear();
-        _buffer.WriteUInt8(0); // Default
-        _buffer.WriteString(propertyName);
-        _buffer.WriteBytesDynamic(GD.VarToBytes(value));
-        
-        _communicator.SendToAll(_buffer.GetBytes());
-    }
-    
-    private void Send(string dictName, string propertyName, Variant value)
-    {
-        if (!GameServer.IsMultiplayerValid() || !GameServer.Instance.Multiplayer.IsServer()) return;
-
-        _buffer.Clear();
-        _buffer.WriteUInt8(1); // Dictionary
-        _buffer.WriteString(dictName);
-        _buffer.WriteString(propertyName);
-        _buffer.WriteBytesDynamic(GD.VarToBytes(value));
-        
-        _communicator.SendToAll(_buffer.GetBytes());
-    }
-    
-    private void OnBytesReceived(int peer, byte[] bytes)
-    {
-        if (peer != GDNet.ServerID) return;
-
-        _buffer.SetBytes(bytes);
-        _buffer.Seek(0);
-        byte type = _buffer.ReadUInt8();
-        switch (type)
-        {
-            case 0: // Default
-                string property = _buffer.ReadString();
-                Variant variant = GD.BytesToVar(_buffer.ReadBytesDynamic());
-                Set(property, variant);
-                break;
-            case 1: // Dictionary
-                Get(_buffer.ReadString()).AsGodotDictionary()[_buffer.ReadString()] = GD.BytesToVar(_buffer.ReadBytesDynamic());
-                break;
-        }
-    }
-
-
     public byte[] Serialize()
     {
-        _s_buffer.Clear();
+        _buffer.Clear();
         
-        _s_buffer.WriteInt64(_netId);
-        _s_buffer.WriteResource(ItemData);
-        _s_buffer.WriteUInt16(Quantity);
-        _s_buffer.WriteUInt16(SkinId);
+        _buffer.WriteResource(ItemData);
+        _buffer.WriteUInt16(Quantity);
+        _buffer.WriteUInt16(SkinId);
         //_buffer.WriteDictionarySimple(data);
 
-        return _s_buffer.GetBytes();
+        return _buffer.GetBytes();
     }
 
     public static ItemStack Deserialize(byte[] bytes)
     {
-        _s_buffer.Clear();
-        _s_buffer.SetBytes(bytes);
+        _buffer.Clear();
+        _buffer.SetBytes(bytes);
 
-        ItemStack itemStack = new();
-        itemStack.NetworkInit(_s_buffer.ReadInt64());
-
-        itemStack.ItemData = _s_buffer.ReadResource<ItemData>();
-        itemStack._quantity = _s_buffer.ReadUInt16();
-        itemStack._skinId = _s_buffer.ReadUInt16();
-        //itemStack.data = _buffer.ReadDictionarySimple<string, Variant>()
+        ItemStack itemStack = new()
+        {
+            ItemData = _buffer.ReadResource<ItemData>(),
+            _quantity = _buffer.ReadUInt16(),
+            _skinId = _buffer.ReadUInt16(),
+            //data = _buffer.ReadDictionarySimple<string, Variant>()
+        };
         
         return itemStack;
     }

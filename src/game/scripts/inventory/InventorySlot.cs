@@ -12,58 +12,12 @@ public partial class InventorySlot : Resource
         set
         {
             _itemStack = value;
-            Send();
             EmitSignal(SignalName.ItemStackChanged);
         }
     }
     public bool IsEmpty() => ItemStack == null;
 
     private static readonly GDNetBuffer _buffer = new();
-    [Export] private GDNetCommunicator _communicator = new();
-
-    private long _netId = 0;
-
-    public void NetworkInit(long netId)
-    {
-        _netId = netId;
-        _communicator.OnBytesReceived += OnBytesReceived;
-        _communicator.SynchronizeNetworkIDByUniqueID(_netId);
-
-        //_itemStack?.NetworkInit(GDNet.GenerateUniqueID());
-    }
-
-    private void Send()
-    {
-        if (!GameServer.IsMultiplayerValid() || !GameServer.Instance.Multiplayer.IsServer()) return;
-
-        _buffer.Clear();
-        
-        _buffer.WriteBool(_itemStack != null);
-        if (_itemStack != null)
-        {
-            _buffer.WriteBytesDynamic(_itemStack.Serialize());
-        }
-        
-
-        _communicator.SendToAll(_buffer.GetBytes());
-    }
-
-    private void OnBytesReceived(int peer, byte[] bytes)
-    {
-        if (peer != GDNet.ServerID) return;
-
-        _buffer.SetBytes(bytes);
-        _buffer.Seek(0);
-        if (_buffer.ReadBool()) // != null
-        {
-            ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
-        }
-
-        else
-        {
-            ItemStack = null;
-        }
-    }
 
     public bool CanStackWith(ItemStack itemStack)
     {
@@ -79,9 +33,6 @@ public partial class InventorySlot : Resource
     public byte[] Serialize()
     {
         _buffer.Clear();
-        
-        _buffer.WriteInt64(_netId);
-        GD.Print(_netId);
 
         _buffer.WriteBool(_itemStack != null);
         if (_itemStack != null)
@@ -98,13 +49,11 @@ public partial class InventorySlot : Resource
         _buffer.SetBytes(bytes);
 
         InventorySlot newSlot = new();
-        newSlot.NetworkInit(_buffer.ReadInt64());
 
         if (_buffer.ReadBool())
         {
             newSlot.ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
         }
-
 
         return newSlot;
     }

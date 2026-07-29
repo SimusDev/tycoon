@@ -35,9 +35,9 @@ public partial class InventoryUI : Control
 
             if (_container != null)
             {
-                foreach (InventorySlot newSlot in Inventory.Slots)
+                for (short i = 0; i < Inventory.Slots.Count; i++)
                 {
-                    AddSlotUI(newSlot);
+                    AddSlotUI(i);
                 }
             }
 
@@ -57,7 +57,7 @@ public partial class InventoryUI : Control
 
     }
 
-    private InventorySlotUI AddSlotUI(InventorySlot slot)
+    private InventorySlotUI AddSlotUI(short idx)
     {
         InventorySlotUI newSlot = _prefabSlotUI?.Instantiate<InventorySlotUI>();
         if (newSlot == null)
@@ -65,13 +65,13 @@ public partial class InventoryUI : Control
             return null;
         }
 
-        newSlot.Init(this, slot);
+        newSlot.Init(this, idx);
         _container.AddChild(newSlot);
 
         return newSlot;
     }
 
-    private bool RemoveSlotUI(InventorySlot slot)
+    private bool RemoveSlotUI(short idx)
     {
         if (_container == null) return false;
 
@@ -80,7 +80,7 @@ public partial class InventoryUI : Control
         {
             if (node is InventorySlotUI inventorySlotUI)
             {
-                if (inventorySlotUI.GetSlot() == slot)
+                if (inventorySlotUI.SlotIdx == idx)
                 {
                     removedSlot = inventorySlotUI;
                     break;
@@ -98,14 +98,14 @@ public partial class InventoryUI : Control
         return false;
     }
 
-    private void OnSlotAdded(InventorySlot slot)
+    private void OnSlotAdded(short idx)
     {
-        AddSlotUI(slot);
+        AddSlotUI(idx);
     }
 
-    private void OnSlotRemoved(InventorySlot slot)
+    private void OnSlotRemoved(short idx)
     {
-        RemoveSlotUI(slot);
+        RemoveSlotUI(idx);
     }
 
 }

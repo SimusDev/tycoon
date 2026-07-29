@@ -69,8 +69,8 @@ public partial class Inventory : Node
 
 
 	#region Slots
-	[Signal] public delegate void SlotAddedEventHandler(InventorySlot slot);
-	[Signal] public delegate void SlotRemovedEventHandler(InventorySlot slot);
+	[Signal] public delegate void SlotAddedEventHandler(short idx);
+	[Signal] public delegate void SlotRemovedEventHandler(short idx);
 	[Signal] public delegate void SlotSelectedEventHandler(short idx);
 	[Signal] public delegate void SlotsInitializedEventHandler();
 	
@@ -79,33 +79,19 @@ public partial class Inventory : Node
 	private bool _isSlotsInitialized = false;
 	public bool IsSlotsInitialized => _isSlotsInitialized;
 
-	private void InitSlots()
+	private void InitSlots() // Server Only
 	{
 		if (_isSlotsInitialized) return;
 
-		for (int i = 0; i < _slots.Count; i++)
+		Array<InventorySlot> temp = [];
+		foreach (InventorySlot inventorySlot in _slots)
 		{
-			InventorySlot inventorySlot = _slots.ElementAt(i);
-			if (inventorySlot != null)
-			{
-				long netId = GDNet.GenerateUniqueID();
-				var duplicated = inventorySlot.Duplicate(true) as InventorySlot;
-				duplicated.NetworkInit(netId);
-				_slots[i] = duplicated;
-			}
+			temp.Add(inventorySlot.Duplicate(true) as InventorySlot);
 		}
+		_slots = temp;
+
 		_isSlotsInitialized = true;
 		EmitSignal(SignalName.SlotsInitialized);
-	}
-
-
-	public short IndexOfSlot(InventorySlot slot)
-	{
-		for (short i = 0; i < Slots.Count; i++)
-		{
-			if (_slots[i] == slot) return i;
-		}
-		return -1;
 	}
 
 	public InventorySlot GetSlot(short idx)
@@ -168,21 +154,13 @@ public partial class Inventory : Node
 	{
 		if (_slots.Contains(slot)) return;
 		_slots.Add(slot);
-		EmitSignal(SignalName.SlotAdded, slot);
+		EmitSignal(SignalName.SlotAdded, _slots.Count-1);
 	}
 	#endregion
 
 
 	#region RemoveSlot
-	public void RemoveSlot(InventorySlot slot)
-	{
-		if (!IsMultiplayerAuthority()) return;
-
-		RemoveSlotRpc(slot);
-		Rpc(MethodName.RemoveSlotRpc, slot.Serialize());
-	}
-
-	public void RemoveSlot() => RemoveSlot(GetSlot((short)_slots.Count)); //Remove front slot
+	public void RemoveSlot() => RemoveSlot(_slots.Count); //Remove front slot
 
 	public void RemoveSlot(int idx)
 	{
@@ -190,18 +168,9 @@ public partial class Inventory : Node
 
 		RemoveSlotRpc(idx);
 		Rpc(MethodName.RemoveSlotRpc, idx);
+		EmitSignal(SignalName.SlotRemoved, idx);
 	}
 
-	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-	private void RemoveSlotRpc(InventorySlot slot)
-	{
-		if (!_slots.Contains(slot)) return;
-		_slots.Remove(slot);
-		EmitSignal(SignalName.SlotRemoved, slot);
-	}
-
-	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
-	private void RemoveSlotRpc(byte[] bytes) => RemoveSlotRpc(InventorySlot.Deserialize(bytes));
 
 	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
 	private void RemoveSlotRpc(int idx)
@@ -251,7 +220,6 @@ public partial class Inventory : Node
 			if (!slot.IsEmpty() && slot.CanStackWith(itemStack))
 			{
 				StackItem(slot, itemStack);
-
 				if (itemStack.Quantity <= 0) return;
 			}
 		}
@@ -280,7 +248,10 @@ public partial class Inventory : Node
 		RpcId(GetMultiplayerAuthority(), MethodName.RemoveItem, slotIdx);
 	}
 
-	private void RemoveItem(InventorySlot slot) => slot.ItemStack = null;
+	private void RemoveItem(InventorySlot slot)
+	{
+		slot.ItemStack = null;
+	}
 	private void RemoveItem(short slotIdx)
 	{
 		if (TryGetSlot(slotIdx, out InventorySlot slot)) RemoveItem(slot);
@@ -348,8 +319,13 @@ public partial class Inventory : Node
 		else if (toSlot.CanStackWith(fromSlot.ItemStack))
 		{
 			StackItem(toSlot, fromSlot.ItemStack);
+			return;
 		}
-		else SwapItem(fromSlot, toSlot);
+		else
+		{
+			SwapItem(fromSlot, toSlot);
+			return;
+		}
 	}
 
 	public void RequestSwapItem(short fromIdx, short toIdx)
@@ -376,17 +352,14 @@ public partial class Inventory : Node
 	private void SwapItem(InventorySlot fromSlot, InventorySlot toSlot)
 	{
 		if (fromSlot.IsEmpty()) return;
-		
-		ItemStack t = fromSlot.ItemStack;
-		fromSlot.ItemStack = toSlot.ItemStack;
-		toSlot.ItemStack = t;
+		(fromSlot.ItemStack, toSlot.ItemStack) = (toSlot.ItemStack, fromSlot.ItemStack);
 	}
 
 
 	private void StackItem(InventorySlot toSlot, ItemStack itemStack)
 	{
 		if (toSlot == null || itemStack == null) return;
-		
+
 		if (toSlot.IsEmpty())
 		{
 			toSlot.ItemStack = itemStack;
@@ -395,15 +368,12 @@ public partial class Inventory : Node
 
 		if (toSlot.CanStackWith(itemStack))
 		{
-			ushort maxAmount = (ushort)toSlot.ItemStack.StackSize;
-			ushort currentAmount = toSlot.ItemStack.Quantity;
-			int spaceLeft = maxAmount - currentAmount;
-
+			int spaceLeft = toSlot.ItemStack.StackSize - toSlot.ItemStack.Quantity;
 			if (spaceLeft > 0)
 			{
-				ushort transferAmount = (ushort)Math.Min(spaceLeft, itemStack.Quantity);
-				toSlot.ItemStack.Quantity += transferAmount;
-				itemStack.Quantity -= transferAmount;
+				ushort transfer = (ushort)Math.Min(spaceLeft, itemStack.Quantity);
+				toSlot.ItemStack.Quantity += transfer;
+				itemStack.Quantity -= transfer;
 			}
 		}
 	}

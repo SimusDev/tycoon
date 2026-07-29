@@ -4,7 +4,27 @@ using Godot.Collections;
 [GlobalClass]
 public partial class InventorySlotUI : Control
 {
-    [Export] private InventorySlot _slot;
+    private short _slotIdx;
+    public short SlotIdx
+    {
+        get => _slotIdx;
+        set
+        {
+            _slotIdx = value;
+            
+            if (_inventoryUI.Inventory != null)
+            {
+                if (_inventoryUI.Inventory.TryGetSlot(_slotIdx, out var slot))
+                {
+                    _slot = slot;
+                }
+            }
+        }
+    }
+
+    private InventorySlot _slot;
+    public InventorySlot GetSlot() => _slot;
+
     private InventoryUI _inventoryUI;
 
     [Export] private TextureRect iconTextureRect;
@@ -12,16 +32,14 @@ public partial class InventorySlotUI : Control
 
     private ItemStack _currentItemStack;
 
-    public void Init(InventoryUI inventoryUI, InventorySlot slot)
+    public void Init(InventoryUI inventoryUI, short slotIdx)
     {
         _inventoryUI = inventoryUI;
-        _slot = slot;
+        _slotIdx = slotIdx;
 
         SubscribeToSlot();
         OnItemStackChanged();
     }
-
-    public InventorySlot GetSlot() => _slot;
 
     public override void _Ready()
     {
@@ -67,7 +85,7 @@ public partial class InventorySlotUI : Control
         if (_currentItemStack != null)
             _currentItemStack.QuantityChanged -= OnItemStackQuantityChanged;
 
-        _currentItemStack = _slot != null ? _slot.ItemStack : null;
+        _currentItemStack = _slot?.ItemStack;
 
         RefreshUI();
 
@@ -100,7 +118,7 @@ public partial class InventorySlotUI : Control
 
         Dictionary data = new();
         data["inventory"] = _inventoryUI.Inventory.GetPath();
-        data["slot_idx"] = _inventoryUI.Inventory.IndexOfSlot(_slot);
+        data["slot_idx"] = _slotIdx;
 
         return data;
     }
@@ -117,7 +135,7 @@ public partial class InventorySlotUI : Control
             NodePath fromInventory = dataDict["inventory"].As<NodePath>();
 
             short fromSlotIdx = dataDict["slot_idx"].AsInt16();
-            short toSlotIdx = _inventoryUI.Inventory.IndexOfSlot(_slot);
+            short toSlotIdx = _slotIdx;
 
             _inventoryUI.Inventory.RequestMoveItem(fromSlotIdx, toSlotIdx, fromInventory);
         }
