@@ -56,12 +56,12 @@ public partial class InventorySlot : Resource
         _buffer.Seek(0);
         if (_buffer.ReadBool()) // != null
         {
-            _itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+            ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
         }
 
         else
         {
-            _itemStack = null;
+            ItemStack = null;
         }
     }
 

@@ -6,6 +6,7 @@ public partial class InventorySlotUI : Control
 {
     [Export] private InventorySlot _slot;
     private InventoryUI _inventoryUI;
+
     [Export] private TextureRect iconTextureRect;
     [Export] private Label quantityLabel;
 
@@ -15,51 +16,80 @@ public partial class InventorySlotUI : Control
     {
         _inventoryUI = inventoryUI;
         _slot = slot;
+
+        SubscribeToSlot();
+        OnItemStackChanged();
     }
 
     public InventorySlot GetSlot() => _slot;
 
     public override void _Ready()
     {
-        OnItemStackChanged();
         if (_slot != null)
         {
-            _slot.ItemStackChanged += OnItemStackChanged;
+            SubscribeToSlot();
+            OnItemStackChanged();
         }
     }
 
-    private void Update()
+    private void SubscribeToSlot()
     {
-        iconTextureRect.Texture = GetSlotIcon();
-        quantityLabel.Text = GetQuantityText();
+        if (_slot == null) return;
+
+        _slot.ItemStackChanged += OnItemStackChanged;
+    }
+
+    private void UnsubscribeFromSlot()
+    {
+        if (_slot == null) return;
+        _slot.ItemStackChanged -= OnItemStackChanged;
+    }
+
+    public override void _ExitTree()
+    {
+        UnsubscribeFromSlot();
+
+        if (_currentItemStack != null)
+            _currentItemStack.QuantityChanged -= OnItemStackQuantityChanged;
+    }
+
+    private void RefreshUI()
+    {
+        if (iconTextureRect != null)
+            iconTextureRect.Texture = GetSlotIcon();
+
+        if (quantityLabel != null)
+            quantityLabel.Text = GetQuantityText();
     }
 
     private void OnItemStackChanged()
     {
-        if (_currentItemStack != null) _currentItemStack.QuantityChanged -= OnItemStackQuantityChanged;
+        if (_currentItemStack != null)
+            _currentItemStack.QuantityChanged -= OnItemStackQuantityChanged;
 
-        _currentItemStack = _slot.ItemStack;
-        Update();
+        _currentItemStack = _slot != null ? _slot.ItemStack : null;
 
-        if (_currentItemStack != null) _currentItemStack.QuantityChanged += OnItemStackQuantityChanged;
+        RefreshUI();
+
+        if (_currentItemStack != null)
+            _currentItemStack.QuantityChanged += OnItemStackQuantityChanged;
     }
 
     private void OnItemStackQuantityChanged()
     {
+        if (quantityLabel == null) return;
         quantityLabel.Text = GetQuantityText();
     }
 
     #region Drag/Drop
-    private bool _isDragging;
-
     public override Variant _GetDragData(Vector2 atPosition)
     {
         Control previewContainer = new();
         TextureRect preview = new()
         {
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,   
-            Texture = _slot.ItemStack?.ItemData?.Icon,
+            StretchMode = TextureRect.StretchModeEnum.KeepAspectCentered,
+            Texture = _slot?.ItemStack?.ItemData?.Icon,
             Size = Size * 0.8f,
         };
 
@@ -68,59 +98,48 @@ public partial class InventorySlotUI : Control
 
         SetDragPreview(previewContainer);
 
-        Dictionary data = [];
+        Dictionary data = new();
         data["inventory"] = _inventoryUI.Inventory.GetPath();
         data["slot_idx"] = _inventoryUI.Inventory.IndexOfSlot(_slot);
 
         return data;
     }
 
+    public override bool _CanDropData(Vector2 atPosition, Variant data) => true;
 
-    public override bool _CanDropData(Vector2 atPosition, Variant data)
-    {
-        //return data.Obj is long; // годот прикольно конвертирует int в long
-        return true;
-    }
-    
     public override void _DropData(Vector2 atPosition, Variant data)
     {
+        if (data.VariantType != Variant.Type.Dictionary)
+            return;
+
         if (data.Obj is Dictionary dataDict)
         {
             NodePath fromInventory = dataDict["inventory"].As<NodePath>();
+
             short fromSlotIdx = dataDict["slot_idx"].AsInt16();
             short toSlotIdx = _inventoryUI.Inventory.IndexOfSlot(_slot);
-            
-            _inventoryUI.Inventory.RequestMoveItem(
-                fromSlotIdx,
-                toSlotIdx,
-                fromInventory
-            );
 
+            _inventoryUI.Inventory.RequestMoveItem(fromSlotIdx, toSlotIdx, fromInventory);
         }
     }
-
     #endregion
 
     private string GetQuantityText()
     {
         if (_currentItemStack == null) return "";
         if (_currentItemStack.Quantity <= 1) return "";
-
         return _currentItemStack.Quantity.ToString();
     }
 
-    //H
     private Texture2D GetSlotIcon()
     {
         if (_currentItemStack == null) return null;
-        if (_currentItemStack.ItemData == null) return null;
+        var itemData = _currentItemStack.ItemData;
+        if (itemData == null) return null;
 
-        //Test
-        if (_currentItemStack.ItemData.Icon == null)
-        {
+        if (itemData.Icon == null)
             return ResourceLoader.Load<Texture2D>("res://textures/missing.png");
-        }
 
-        return _currentItemStack.ItemData.Icon;
+        return itemData.Icon;
     }
 }
