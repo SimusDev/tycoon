@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Godot;
 using Godot.Collections;
 
@@ -6,6 +7,7 @@ using Godot.Collections;
 public partial class Inventory : Node
 {
 	[Export] private Node _root;
+	[Export] private bool _clientSidePrediction = false;
 
 	#region Sync
 	[Signal] public delegate void SynchronizedEventHandler();
@@ -46,8 +48,9 @@ public partial class Inventory : Node
 		for (short i = 0; i < slotCount; i++) 
 		{
 			var deserialized = InventorySlot.Deserialize(_buffer.ReadBytesDynamic());
-			_slots.Add(deserialized);
+			ReceiveSlot(deserialized);
 		}
+
 
 		_selectedSlotIdx = _buffer.ReadInt16();
 
@@ -79,26 +82,22 @@ public partial class Inventory : Node
 	private void InitSlots()
 	{
 		if (_isSlotsInitialized) return;
-		
 
 		for (int i = 0; i < _slots.Count; i++)
 		{
-			if (_slots[i] is InventorySlot slot)
+			InventorySlot inventorySlot = _slots.ElementAt(i);
+			if (inventorySlot != null)
 			{
-				InventorySlot duplicated = slot.DuplicateDeep() as InventorySlot;
-				
-				// if (duplicated.ItemStack != null)
-				// {
-				// 	duplicated.ItemStack = duplicated.ItemStack.DuplicateDeep() as ItemStack;
-				// }
-				
+				long netId = GDNet.GenerateUniqueID();
+				var duplicated = inventorySlot.Duplicate(true) as InventorySlot;
+				duplicated.NetworkInit(netId);
 				_slots[i] = duplicated;
 			}
 		}
-
 		_isSlotsInitialized = true;
 		EmitSignal(SignalName.SlotsInitialized);
 	}
+
 
 	public short IndexOfSlot(InventorySlot slot)
 	{
@@ -246,6 +245,7 @@ public partial class Inventory : Node
 	#region Add/Remove Item
 	public void AddItem(ItemStack itemStack)
 	{
+		if (!IsMultiplayerAuthority()) return;
 		foreach (InventorySlot slot in Slots)
 		{
 			if (!slot.IsEmpty() && slot.CanStackWith(itemStack))
@@ -262,22 +262,21 @@ public partial class Inventory : Node
 
 	public void AddItem(ItemData itemData)
 	{
+		if (!IsMultiplayerAuthority()) return;
 		AddItem(ItemStack.CreateFrom(itemData));
 	}
 
 	// Remove
 
-	public void RequestRemoveItem(InventorySlot slot)
-	{
-		RemoveItem(slot);
-		if (IsMultiplayerAuthority()) return;
-		RpcId(GetMultiplayerAuthority(), MethodName.RemoveItem, slot);
-	}
-
 	public void RequestRemoveItem(short slotIdx)
 	{
-		RemoveItem(slotIdx);
-		if (IsMultiplayerAuthority()) return;
+		if (IsMultiplayerAuthority())
+		{
+			RemoveItem(slotIdx);
+			return;
+		}
+
+		if (_clientSidePrediction) RemoveItem(slotIdx);
 		RpcId(GetMultiplayerAuthority(), MethodName.RemoveItem, slotIdx);
 	}
 
@@ -289,20 +288,30 @@ public partial class Inventory : Node
 	#endregion
 
 	#region Move/Swap/Stack Item
-	/// <summary>
-	/// Move item fromSlotIdx toSlotIdx. 
-	/// </summary>
+
+	/// <summary> Move item in <b>this</b> Inventory </summary>
 	public void RequestMoveItem(short fromSlotIdx, short toSlotIdx) 
 	{
-		MoveItem(fromSlotIdx, toSlotIdx);
-		if (IsMultiplayerAuthority()) return;
+		if (IsMultiplayerAuthority())
+		{
+			MoveItem(fromSlotIdx, toSlotIdx);
+			return;
+		}
+		
+		if (_clientSidePrediction) MoveItem(fromSlotIdx, toSlotIdx);
 		RpcId(GetMultiplayerAuthority(), MethodName.MoveItem, fromSlotIdx, toSlotIdx);
 	}
 
+	/// <summary> Move item in <b>fromInventory</b> Inventory </summary>
 	public void RequestMoveItem(short fromSlotIdx, short toSlotIdx, NodePath fromInventory)
 	{
-		MoveItem(fromSlotIdx, toSlotIdx, fromInventory);
-		if (IsMultiplayerAuthority()) return;
+		if (IsMultiplayerAuthority())
+		{
+			MoveItem(fromSlotIdx, toSlotIdx, fromInventory);
+			return;
+		}
+
+		if (_clientSidePrediction) MoveItem(fromSlotIdx, toSlotIdx, fromInventory);
 		RpcId(GetMultiplayerAuthority(), MethodName.MoveItem, fromSlotIdx, toSlotIdx, fromInventory);
 	} 
 
@@ -345,8 +354,13 @@ public partial class Inventory : Node
 
 	public void RequestSwapItem(short fromIdx, short toIdx)
 	{
-		SwapItem(fromIdx, toIdx);
-		if (IsMultiplayerAuthority()) return;
+		if (IsMultiplayerAuthority())
+		{
+			SwapItem(fromIdx, toIdx);
+			return;
+		}
+		
+		if (_clientSidePrediction) SwapItem(fromIdx, toIdx);
 		RpcId(GetMultiplayerAuthority(), MethodName.SwapItem, fromIdx, toIdx);
 	}
 

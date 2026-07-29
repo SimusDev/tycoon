@@ -86,11 +86,6 @@ public partial class ItemStack : Resource
         _communicator.SynchronizeNetworkIDByUniqueID(_netId);
     }
 
-    public ItemStack()
-    {
-        NetworkInit(GDNet.GenerateUniqueID());
-    }
-
     public void SetIn(Node node)
     {
         node.SetMeta("ItemStack", this);

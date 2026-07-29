@@ -23,16 +23,13 @@ public partial class InventorySlot : Resource
 
     private long _netId = 0;
 
-    public InventorySlot()
-    {
-        NetworkInit(GDNet.GenerateUniqueID());
-    }
-
     public void NetworkInit(long netId)
     {
         _netId = netId;
         _communicator.OnBytesReceived += OnBytesReceived;
         _communicator.SynchronizeNetworkIDByUniqueID(_netId);
+
+        //_itemStack?.NetworkInit(GDNet.GenerateUniqueID());
     }
 
     private void Send()
@@ -59,12 +56,12 @@ public partial class InventorySlot : Resource
         _buffer.Seek(0);
         if (_buffer.ReadBool()) // != null
         {
-            ItemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
+            _itemStack = ItemStack.Deserialize(_buffer.ReadBytesDynamic());
         }
 
         else
         {
-            ItemStack = null;
+            _itemStack = null;
         }
     }
 
@@ -73,7 +70,7 @@ public partial class InventorySlot : Resource
         if (ItemStack == null) return true;
         if (
             itemStack.ItemData == ItemStack.ItemData &&
-            itemStack.GetData().Equals(ItemStack.GetData())
+            itemStack.GetData().Equals(ItemStack.GetData()) //тут чут чут надо пофиксит xD
            ) return true;
         
         return false;
