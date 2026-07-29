@@ -35,7 +35,7 @@ public partial class InventorySlotUI : Control
     public void Init(InventoryUI inventoryUI, short slotIdx)
     {
         _inventoryUI = inventoryUI;
-        _slotIdx = slotIdx;
+        SlotIdx = slotIdx;
 
         SubscribeToSlot();
         OnItemStackChanged();

@@ -5,7 +5,10 @@
 [ext_resource type="Script" uid="uid://uwx7o3qw48xq" path="res://src/game/scripts/StateMachine.cs" id="1_sp1u7"]
 [ext_resource type="Script" uid="uid://by736kabyyjys" path="res://src/game/scripts/inventory/InventorySlot.cs" id="2_viwye"]
 [ext_resource type="Script" uid="uid://c46eu7wy7s7ck" path="res://src/game/scripts/PlayerHead.cs" id="2_yr2hd"]
+[ext_resource type="Resource" uid="uid://ga210emhdoom" path="res://src/game/resources/item_data/jirobas/jirobas.tres" id="3_t6wnj"]
 [ext_resource type="Script" uid="uid://bly8grub8jce5" path="res://network/NetNodeFreeNodesIfServer.cs" id="4_aymqg"]
+[ext_resource type="Script" uid="uid://c6c3f2gldv0mp" path="res://src/game/scripts/inventory/ItemStack.cs" id="4_fnd46"]
+[ext_resource type="Resource" uid="uid://3g3opgatre5p" path="res://src/game/resources/item_data/sas/sas.tres" id="5_fnd46"]
 [ext_resource type="PackedScene" uid="uid://b8px06rc6ieyl" path="res://src/3d/humanZov/humanZov.fbx" id="5_lb1x8"]
 [ext_resource type="AnimationLibrary" uid="uid://dwjsl0718cua8" path="res://src/3d/humanZov/animation.res" id="6_0r077"]
 [ext_resource type="Script" uid="uid://dtlbmw8nhq7ar" path="res://src/game/scripts/inventory/ViewModelRoot.cs" id="7_dr81t"]
@@ -23,20 +26,41 @@
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
+[sub_resource type="Resource" id="Resource_o70eh"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("3_t6wnj")
+Quantity = 5
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
 [sub_resource type="Resource" id="Resource_t6wnj"]
 script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_o70eh")
 metadata/_custom_type_script = "uid://by736kabyyjys"
+
+[sub_resource type="Resource" id="Resource_8v72j"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("3_t6wnj")
+Quantity = 6
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
 
 [sub_resource type="Resource" id="Resource_fnd46"]
 script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_8v72j")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [sub_resource type="Resource" id="Resource_1m3ve"]
 script = ExtResource("2_viwye")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
+[sub_resource type="Resource" id="Resource_m3xhp"]
+script = ExtResource("4_fnd46")
+ItemData = ExtResource("5_fnd46")
+Quantity = 3
+metadata/_custom_type_script = "uid://c6c3f2gldv0mp"
+
 [sub_resource type="Resource" id="Resource_fdf0i"]
 script = ExtResource("2_viwye")
+ItemStack = SubResource("Resource_m3xhp")
 metadata/_custom_type_script = "uid://by736kabyyjys"
 
 [sub_resource type="Resource" id="Resource_6qmy7"]

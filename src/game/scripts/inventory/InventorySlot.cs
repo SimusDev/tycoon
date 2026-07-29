@@ -23,8 +23,8 @@ public partial class InventorySlot : Resource
     {
         if (ItemStack == null) return true;
         if (
-            itemStack.ItemData == ItemStack.ItemData &&
-            itemStack.GetData().Equals(ItemStack.GetData()) //тут чут чут надо пофиксит xD
+            itemStack.ItemData == ItemStack.ItemData
+            // && itemStack.GetData().Equals(ItemStack.GetData()) //тут чут чут надо пофиксит xD
            ) return true;
         
         return false;

@@ -94,6 +94,30 @@ public partial class Inventory : Node
 		EmitSignal(SignalName.SlotsInitialized);
 	}
 
+	// В #region Slots или в отдельный регион
+	public short IndexOfSlot(InventorySlot slot)
+	{
+		for (short i = 0; i < _slots.Count; i++)
+			if (_slots[i] == slot) return i;
+		return -1;
+	}
+
+	[Rpc(MultiplayerApi.RpcMode.Authority, CallLocal = false, TransferChannel = (int)GameServer.TransferChannels.Inventory)]
+	private void SyncSlot(short index, byte[] slotData)
+	{
+		if (!TryGetSlot(index, out var slot)) return;
+		var newSlot = InventorySlot.Deserialize(slotData);
+		slot.ItemStack = newSlot.ItemStack; // триггерит сигнал ItemStackChanged
+	}
+
+	private void BroadcastSlotUpdate(short index)
+	{
+		if (!IsMultiplayerAuthority() || !_isSynchronized) return;
+		var slot = GetSlot(index);
+		if (slot == null) return;
+		Rpc(MethodName.SyncSlot, index, slot.Serialize());
+	}
+
 	public InventorySlot GetSlot(short idx)
 	{
 		if (idx >= 0 && idx < _slots.Count) return _slots[idx];
@@ -220,12 +244,15 @@ public partial class Inventory : Node
 			if (!slot.IsEmpty() && slot.CanStackWith(itemStack))
 			{
 				StackItem(slot, itemStack);
+				BroadcastSlotUpdate(IndexOfSlot(slot)); // <-- добавить
 				if (itemStack.Quantity <= 0) return;
 			}
 		}
-		
 		if (TryGetFreeSlot(out InventorySlot freeSlot))
+		{
 			freeSlot.ItemStack = itemStack;
+			BroadcastSlotUpdate(IndexOfSlot(freeSlot)); // <-- добавить
+		}
 	}
 
 	public void AddItem(ItemData itemData)
@@ -251,7 +278,9 @@ public partial class Inventory : Node
 	private void RemoveItem(InventorySlot slot)
 	{
 		slot.ItemStack = null;
+		BroadcastSlotUpdate(IndexOfSlot(slot)); // <-- добавить
 	}
+
 	private void RemoveItem(short slotIdx)
 	{
 		if (TryGetSlot(slotIdx, out InventorySlot slot)) RemoveItem(slot);
@@ -309,22 +338,33 @@ public partial class Inventory : Node
 
 	private void MoveItem(InventorySlot fromSlot, InventorySlot toSlot)
 	{
-		if (fromSlot.IsEmpty()) return;
+		if (fromSlot.IsEmpty())
+		{
+			GD.Print("EEMMMPTYY");
+			return;
+		}
 
 		if (toSlot.IsEmpty())
 		{
 			toSlot.ItemStack = fromSlot.ItemStack;
 			fromSlot.ItemStack = null;
+			GD.Print("17");
+			BroadcastSlotUpdate(IndexOfSlot(fromSlot));
+			BroadcastSlotUpdate(IndexOfSlot(toSlot));
 		}
 		else if (toSlot.CanStackWith(fromSlot.ItemStack))
 		{
 			StackItem(toSlot, fromSlot.ItemStack);
-			return;
+			GD.Print("27");
+			BroadcastSlotUpdate(IndexOfSlot(fromSlot));
+			BroadcastSlotUpdate(IndexOfSlot(toSlot));
 		}
 		else
 		{
 			SwapItem(fromSlot, toSlot);
-			return;
+			GD.Print("37");
+			BroadcastSlotUpdate(IndexOfSlot(fromSlot));
+			BroadcastSlotUpdate(IndexOfSlot(toSlot));
 		}
 	}
 
@@ -353,6 +393,8 @@ public partial class Inventory : Node
 	{
 		if (fromSlot.IsEmpty()) return;
 		(fromSlot.ItemStack, toSlot.ItemStack) = (toSlot.ItemStack, fromSlot.ItemStack);
+		BroadcastSlotUpdate(IndexOfSlot(fromSlot));
+		BroadcastSlotUpdate(IndexOfSlot(toSlot));
 	}
 
 
@@ -363,11 +405,13 @@ public partial class Inventory : Node
 		if (toSlot.IsEmpty())
 		{
 			toSlot.ItemStack = itemStack;
+			GD.Print("Stack: 1");
 			return;
 		}
 
 		if (toSlot.CanStackWith(itemStack))
 		{
+			GD.Print("Stack: 2");
 			int spaceLeft = toSlot.ItemStack.StackSize - toSlot.ItemStack.Quantity;
 			if (spaceLeft > 0)
 			{
@@ -375,7 +419,7 @@ public partial class Inventory : Node
 				toSlot.ItemStack.Quantity += transfer;
 				itemStack.Quantity -= transfer;
 			}
-		}
+		} else GD.Print("Stack: 3");
 	}
 
 	#endregion
